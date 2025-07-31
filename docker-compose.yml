@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      - VITE_API_URL=https://api.supermock.ru
+      - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
+    depends_on:
+      - backend
+    networks:
+      - supermock-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - BOT_USERNAME=SuperMock_bot
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - FRONTEND_URL=https://supermock.ru
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    networks:
+      - supermock-network
+
+networks:
+  supermock-network:
+    driver: bridge

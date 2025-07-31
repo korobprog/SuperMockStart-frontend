@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
+import TelegramAuth from '@/components/TelegramAuth';
 
 function Home() {
   return (
@@ -18,6 +19,12 @@ function Home() {
         <p className="text-lg text-center text-muted-foreground mb-8">
           Моковые собеседования с коллегами
         </p>
+
+        {/* Компонент аутентификации через Telegram */}
+        <div className="mb-8">
+          <TelegramAuth />
+        </div>
+
         <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle>Добро пожаловать!</CardTitle>
