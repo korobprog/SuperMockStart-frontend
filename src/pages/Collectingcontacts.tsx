@@ -42,7 +42,6 @@ const CollectingContacts = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
-    watch,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,8 +53,6 @@ const CollectingContacts = () => {
     },
     mode: 'onChange', // Показывать ошибки при изменении полей
   });
-
-
 
   const onSubmit = async (data: FormData) => {
     try {

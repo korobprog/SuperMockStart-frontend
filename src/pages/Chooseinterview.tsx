@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   fetchUserStatus,
@@ -37,7 +37,6 @@ const ChooseInterview = () => {
       );
 
       if (response.ok) {
-        const userData = await response.json();
         // Для обновления статуса нам нужен ID из базы данных, а не Telegram ID
         // Получаем пользователя по Telegram ID, чтобы получить его ID в базе
         const userResponse = await fetch(
