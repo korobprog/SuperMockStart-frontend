@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
 import routes from './routes/index.js';
+import prisma from './services/prisma.js';
 
 // Загружаем переменные окружения
 dotenv.config();
@@ -121,12 +122,14 @@ try {
 }
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  await prisma.$disconnect();
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
+  await prisma.$disconnect();
   process.exit(0);
 });

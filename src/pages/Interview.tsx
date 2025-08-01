@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Command,
@@ -22,7 +22,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  addSelectedProfession,
+  setCurrentProfession,
+} from '@/store/slices/professionSlice';
+import ProfessionHistory from '@/components/ProfessionHistory';
 
 const itPositions = [
   // Frontend разработка
@@ -254,7 +260,38 @@ const itPositions = [
 const Interview = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
-  console.log('🚀 ~ Interview ~ value:', value);
+  const dispatch = useAppDispatch();
+  const { loading, error, currentProfession } = useAppSelector(
+    (state) => state.profession
+  );
+
+  // Временный userId для демонстрации (в реальном приложении должен приходить из аутентификации)
+  const tempUserId = 'temp-user-123';
+
+  const handleProfessionSelect = async (selectedValue: string) => {
+    if (selectedValue && selectedValue !== value) {
+      setValue(selectedValue);
+      setOpen(false);
+
+      // Находим выбранную профессию
+      const selectedProfession = itPositions.find(
+        (pos) => pos.value === selectedValue
+      );
+      if (selectedProfession) {
+        try {
+          await dispatch(
+            addSelectedProfession({
+              userId: tempUserId,
+              profession: selectedProfession.label,
+            })
+          ).unwrap();
+        } catch (error) {
+          console.error('Failed to add profession:', error);
+        }
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -266,71 +303,88 @@ const Interview = () => {
           <div className="w-20"></div>
         </div>
 
-        <Card className="max-w-2xl mx-auto w-full">
-          <CardHeader>
-            <CardTitle>Моковое собеседование</CardTitle>
-            <CardDescription>
-              Видео конфиренция с коллегами по профессии
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 flex flex-col items-center">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-[200px] justify-between"
-                >
-                  {value
-                    ? itPositions.find((framework) => framework.value === value)
-                        ?.label
-                    : 'Профессия...'}
-                  <ChevronsUpDown className="opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command>
-                  <CommandInput
-                    placeholder="Search framework..."
-                    className="h-9"
-                  />
-                  <CommandList>
-                    <CommandEmpty>No framework found.</CommandEmpty>
-                    <CommandGroup>
-                      {itPositions.map((framework) => (
-                        <CommandItem
-                          key={framework.value}
-                          value={framework.value}
-                          onSelect={(currentValue) => {
-                            setValue(
-                              currentValue === value ? '' : currentValue
-                            );
-                            setOpen(false);
-                          }}
-                        >
-                          {framework.label}
-                          <Check
-                            className={cn(
-                              'ml-auto',
-                              value === framework.value
-                                ? 'opacity-100'
-                                : 'opacity-0'
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <div className="flex justify-between pt-4 w-full">
-              <Button variant="outline">Предыдущий</Button>
-              <Button>Следующий</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Моковое собеседование</CardTitle>
+              <CardDescription>
+                Видео конфиренция с коллегами по профессии
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 flex flex-col items-center">
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-[200px] justify-between"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        {value
+                          ? itPositions.find(
+                              (framework) => framework.value === value
+                            )?.label
+                          : 'Профессия...'}
+                        <ChevronsUpDown className="opacity-50" />
+                      </>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder="Поиск профессии..."
+                      className="h-9"
+                    />
+                    <CommandList>
+                      <CommandEmpty>Профессия не найдена.</CommandEmpty>
+                      <CommandGroup>
+                        {itPositions.map((framework) => (
+                          <CommandItem
+                            key={framework.value}
+                            value={framework.value}
+                            onSelect={handleProfessionSelect}
+                          >
+                            {framework.label}
+                            <Check
+                              className={cn(
+                                'ml-auto',
+                                value === framework.value
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {error && (
+                <div className="text-red-500 text-sm mt-2">Ошибка: {error}</div>
+              )}
+
+              {currentProfession && (
+                <div className="text-green-600 text-sm mt-2">
+                  Выбранная профессия: {currentProfession}
+                </div>
+              )}
+              <div className="flex justify-between pt-4 w-full">
+                <Button variant="outline">Предыдущий</Button>
+                <Button>Следующий</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <ProfessionHistory userId={tempUserId} />
+        </div>
       </div>
     </div>
   );

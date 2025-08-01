@@ -1,12 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from './ui/card';
 
 interface TelegramUser {
   id: number;

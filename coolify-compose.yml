@@ -9,10 +9,11 @@ services:
       - '80:80'
       - '443:443'
     environment:
-      - VITE_API_URL=https://supermock.ru
+      - VITE_API_URL=${FRONTEND_URL}
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
       - supermock-network
 
@@ -29,12 +30,13 @@ services:
       - BOT_USERNAME=SuperMock_bot
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
-      - FRONTEND_URL=https://supermock.ru
+      - FRONTEND_URL=${FRONTEND_URL}
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - postgres
+    restart: unless-stopped
     networks:
       - supermock-network
 
@@ -43,14 +45,13 @@ services:
     container_name: supermock-postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-supermock}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - supermock-network
 
