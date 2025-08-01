@@ -51,3 +51,39 @@ export interface TelegramWebAppData {
   chat_type?: string;
   chat_instance?: string;
 }
+
+// Новые типы для системы статусов
+export enum UserStatus {
+  INTERVIEWER = 'INTERVIEWER',
+  CANDIDATE = 'CANDIDATE'
+}
+
+export enum InterviewStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  FEEDBACK_RECEIVED = 'FEEDBACK_RECEIVED'
+}
+
+export interface User {
+  id: string;
+  telegramId: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  status: UserStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Interview {
+  id: string;
+  interviewerId: string;
+  candidateId: string;
+  status: InterviewStatus;
+  feedback?: string;
+  feedbackReceivedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  interviewer?: User;
+  candidate?: User;
+}

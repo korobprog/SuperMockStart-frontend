@@ -34,7 +34,7 @@ function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Link to="/interview" className="block">
+            <Link to="/collecting-contacts" className="block">
               <Button className="w-full">Начать собеседование</Button>
             </Link>
             <Link to="/about" className="block">

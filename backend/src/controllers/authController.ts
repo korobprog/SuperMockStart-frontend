@@ -6,7 +6,7 @@ export class AuthController {
   /**
    * Аутентификация через Telegram Web App
    */
-  static async authenticate(req: Request, res: Response) {
+  static async authenticateWithTelegram(req: Request, res: Response) {
     try {
       const { initData } = req.body;
 
@@ -14,7 +14,7 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           error: 'Telegram initData is required',
-        });
+        } as ApiResponse);
       }
 
       const result = await AuthService.authenticateWithTelegram(initData);
@@ -23,18 +23,39 @@ export class AuthController {
         return res.status(401).json(result);
       }
 
-      return res.status(200).json(result);
+      res.json(result);
     } catch (error) {
-      console.error('Authentication controller error:', error);
-      return res.status(500).json({
+      console.error('Authentication error:', error);
+      res.status(500).json({
         success: false,
         error: 'Internal server error',
-      });
+      } as ApiResponse);
     }
   }
 
   /**
-   * Верификация токена
+   * Получение тестового токена для разработки
+   */
+  static async getTestToken(req: Request, res: Response) {
+    try {
+      const result = AuthService.getTestToken();
+
+      if (!result.success) {
+        return res.status(500).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Test token generation error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      } as ApiResponse);
+    }
+  }
+
+  /**
+   * Проверка валидности токена
    */
   static async verifyToken(req: Request, res: Response) {
     try {
@@ -45,17 +66,17 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           error: 'Token is required',
-        });
+        } as ApiResponse);
       }
 
       const result = AuthService.verifyToken(token);
-      return res.status(result.success ? 200 : 401).json(result);
+      res.json(result);
     } catch (error) {
-      console.error('Token verification controller error:', error);
-      return res.status(500).json({
+      console.error('Token verification error:', error);
+      res.status(500).json({
         success: false,
         error: 'Internal server error',
-      });
+      } as ApiResponse);
     }
   }
 

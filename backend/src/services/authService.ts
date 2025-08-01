@@ -63,6 +63,37 @@ export class AuthService {
   }
 
   /**
+   * Получает тестовый токен для разработки
+   */
+  static getTestToken(): ApiResponse<{ token: string; user: TelegramUser }> {
+    try {
+      const token = JwtUtils.generateTestToken();
+      const testUser: TelegramUser = {
+        id: 123456789,
+        is_bot: false,
+        first_name: 'Test',
+        last_name: 'User',
+        username: 'testuser',
+      };
+
+      return {
+        success: true,
+        data: {
+          token,
+          user: testUser,
+        },
+        message: 'Test token generated successfully',
+      };
+    } catch (error) {
+      console.error('Test token generation error:', error);
+      return {
+        success: false,
+        error: 'Failed to generate test token',
+      };
+    }
+  }
+
+  /**
    * Верифицирует JWT токен и возвращает данные пользователя
    */
   static verifyToken(token: string): ApiResponse<TelegramUser> {

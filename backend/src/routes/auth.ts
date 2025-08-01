@@ -13,7 +13,18 @@ const router = Router();
  * @desc Аутентификация через Telegram Web App
  * @access Public
  */
-router.post('/telegram', validateTelegramData, AuthController.authenticate);
+router.post(
+  '/telegram',
+  validateTelegramData,
+  AuthController.authenticateWithTelegram
+);
+
+/**
+ * @route GET /api/auth/test-token
+ * @desc Получение тестового токена для разработки
+ * @access Public
+ */
+router.get('/test-token', AuthController.getTestToken);
 
 /**
  * @route POST /api/auth/verify

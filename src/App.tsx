@@ -3,6 +3,8 @@ import Navigation from '@/components/Navigation';
 import Home from '@/pages/Home';
 import Interview from '@/pages/Interview';
 import About from '@/pages/About';
+import ChooseInterview from './pages/Chooseinterview';
+import CollectingContacts from './pages/Collectingcontacts';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/interview" element={<Interview />} />
           <Route path="/about" element={<About />} />
+          <Route path="/choose-interview" element={<ChooseInterview />} />
+          <Route path="/collecting-contacts" element={<CollectingContacts />} />
         </Routes>
       </div>
     </Router>

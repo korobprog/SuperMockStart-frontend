@@ -22,12 +22,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import {
-  addSelectedProfession,
-  setCurrentProfession,
-} from '@/store/slices/professionSlice';
+import { addSelectedProfession } from '@/store/slices/professionSlice';
 import ProfessionHistory from '@/components/ProfessionHistory';
 
 const itPositions = [
@@ -376,13 +373,21 @@ const Interview = () => {
                   Выбранная профессия: {currentProfession}
                 </div>
               )}
-              <div className="flex justify-between pt-4 w-full">
-                <Button variant="outline">Предыдущий</Button>
-                <Button>Следующий</Button>
+              <div className="flex justify-between pt-4">
+                <Link
+                  className={cn(
+                    'w-full',
+                    !currentProfession && 'pointer-events-none opacity-50'
+                  )}
+                  to="/choose-interview"
+                >
+                  <Button disabled={!currentProfession}>
+                    Выбрать собеседование
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
-
           <ProfessionHistory userId={tempUserId} />
         </div>
       </div>
