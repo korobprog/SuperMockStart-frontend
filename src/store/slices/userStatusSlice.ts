@@ -46,6 +46,8 @@ const getAuthToken = async () => {
         localStorage.setItem('authToken', token);
         if (data.data.user.id) {
           localStorage.setItem('userId', data.data.user.id.toString());
+        } else {
+          localStorage.setItem('userId', '');
         }
         console.log('Тестовый токен получен:', token);
       }
