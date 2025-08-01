@@ -7,6 +7,7 @@ import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { StringValue } from 'ms';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
 import routes from './routes/index.js';
@@ -27,7 +28,7 @@ const __dirname = path.dirname(__filename);
 TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
 JwtUtils.initialize(
   process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  process.env.JWT_EXPIRES_IN || '7d'
+  (process.env.JWT_EXPIRES_IN || '7d') as StringValue
 );
 
 // Middleware безопасности

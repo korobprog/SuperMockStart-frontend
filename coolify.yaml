@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  frontend:
+  supermock-app:
     build:
       context: .
       dockerfile: Dockerfile.frontend
@@ -13,7 +13,7 @@ services:
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
       - DOMAIN=${DOMAIN:-supermock.ru}
     depends_on:
-      - backend
+      - supermock-backend
     restart: unless-stopped
     networks:
       - supermock-network
@@ -22,8 +22,11 @@ services:
       - 'coolify.type=application'
       - 'coolify.domain=${DOMAIN:-supermock.ru}'
       - 'coolify.ssl=true'
+      - 'coolify.ssl.provider=letsencrypt'
+      - 'coolify.ssl.email=${SSL_EMAIL}'
+      - 'coolify.redirects.www=true'
 
-  backend:
+  supermock-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
@@ -41,7 +44,7 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=100
       - DATABASE_URL=${DATABASE_URL}
     depends_on:
-      - postgres
+      - supermock-postgres
     restart: unless-stopped
     networks:
       - supermock-network
@@ -49,7 +52,7 @@ services:
       - 'coolify.managed=true'
       - 'coolify.type=application'
 
-  postgres:
+  supermock-postgres:
     image: postgres:15-alpine
     container_name: supermock-postgres
     restart: unless-stopped
@@ -63,6 +66,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - supermock-network
+    labels:
+      - 'coolify.managed=true'
+      - 'coolify.type=database'
 
 volumes:
   postgres_data:
