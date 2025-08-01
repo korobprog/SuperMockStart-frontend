@@ -34,7 +34,7 @@ const API_BASE_URL = 'http://localhost:3001';
 
 // Получение токена из localStorage или генерация тестового
 const getAuthToken = async () => {
-  let token = localStorage.getItem('authToken');
+  let token = localStorage.getItem('authToken') || '';
 
   if (!token) {
     try {
