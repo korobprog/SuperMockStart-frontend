@@ -9,7 +9,7 @@ services:
       - '80:80'
       - '443:443'
     environment:
-      - VITE_API_URL=https://api.supermock.ru
+      - VITE_API_URL=https://supermock.ru
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
     depends_on:
       - backend
