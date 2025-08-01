@@ -9,7 +9,7 @@ services:
       - '3000:80'
       - '8443:443'
     environment:
-      - VITE_API_URL=https://supermock.ru
+      - VITE_API_URL=http://backend:3001
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
     depends_on:
       - backend
@@ -29,7 +29,7 @@ services:
       - BOT_USERNAME=SuperMock_bot
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
-      - FRONTEND_URL=https://supermock.ru
+      - FRONTEND_URL=http://frontend:80
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
