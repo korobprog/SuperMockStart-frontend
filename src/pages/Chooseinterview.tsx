@@ -14,11 +14,8 @@ import { Badge } from '@/components/ui/badge';
 
 const ChooseInterview = () => {
   const dispatch = useAppDispatch();
-  const { currentProfession } = useAppSelector((state) => state.profession);
   const { currentStatus, loading, error, availableCandidates, userInterviews } =
     useAppSelector((state) => state.userStatus);
-
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useEffect(() => {
     // Загружаем статус пользователя при монтировании компонента

@@ -44,7 +44,7 @@ const getAuthToken = async () => {
         const data = await response.json();
         token = data.data.token;
         localStorage.setItem('authToken', token);
-        localStorage.setItem('userId', data.data.user.id.toString());
+        localStorage.setItem('userId', data.data.user.id?.toString() || '');
         console.log('Тестовый токен получен:', token);
       }
     } catch (error) {

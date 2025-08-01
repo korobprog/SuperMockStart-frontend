@@ -55,7 +55,7 @@ const CollectingContacts = () => {
     mode: 'onChange', // Показывать ошибки при изменении полей
   });
 
-  const watchedValues = watch();
+
 
   const onSubmit = async (data: FormData) => {
     try {
