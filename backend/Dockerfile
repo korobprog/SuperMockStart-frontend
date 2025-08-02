@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Копируем файлы зависимостей
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Копируем исходный код
 COPY . .
@@ -27,7 +27,7 @@ WORKDIR /app
 
 # Устанавливаем только production зависимости
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist

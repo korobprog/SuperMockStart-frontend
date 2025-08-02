@@ -1,12 +1,11 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import type { StringValue } from 'ms';
 import { JwtPayload, TelegramUser } from '../types/index.js';
 
 export class JwtUtils {
   private static secret: string;
-  private static expiresIn: StringValue | number;
+  private static expiresIn: string | number;
 
-  static initialize(secret: string, expiresIn: StringValue | number) {
+  static initialize(secret: string, expiresIn: string | number) {
     this.secret = secret;
     this.expiresIn = expiresIn;
   }
