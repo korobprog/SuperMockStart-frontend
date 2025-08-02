@@ -5,8 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    ports:
-      - '9000:80'
     environment:
       - VITE_API_URL=http://backend:3001
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
@@ -28,13 +26,21 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`supermock.ru`) && PathPrefix(`/`)'
+      - 'traefik.http.routers.frontend.entrypoints=http'
+      - 'traefik.http.routers.frontend.entrypoints=https'
+      - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=80'
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
-    ports:
-      - '3001:3001'
+    # Убираем внешние порты - Traefik будет проксировать
+    # ports:
+    #   - '3001:3001'
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -65,6 +71,15 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=Host(`supermock.ru`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend.entrypoints=http'
+      - 'traefik.http.routers.backend.entrypoints=https'
+      - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.backend.loadbalancer.server.port=3001'
+      - 'traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api'
+      - 'traefik.http.routers.backend.middlewares=backend-stripprefix'
 
   postgres:
     image: postgres:15-alpine
@@ -74,8 +89,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-supermock}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-    ports:
-      - '5432:5432'
+    # Убираем внешние порты - только внутренний доступ
+    # ports:
+    #   - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
