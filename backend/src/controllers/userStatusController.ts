@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService.js';
-import { UserStatus, ApiResponse } from '../types';
+import { UserStatus, ApiResponse } from '../types/index.js';
 
 export class UserStatusController {
   // Получение текущего статуса пользователя

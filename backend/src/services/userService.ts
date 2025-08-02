@@ -1,5 +1,5 @@
 import prisma from './prisma';
-import { UserStatus, InterviewStatus } from '../types';
+import { UserStatus, InterviewStatus } from '../types/index.js';
 
 export interface CreateUserData {
   telegramId: string;
