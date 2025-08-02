@@ -1,112 +1,72 @@
 version: '3.8'
 
 services:
+  # Фронтенд
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
-    environment:
-      - VITE_API_URL=http://backend:3001
-      - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
+      dockerfile: Dockerfile
+    restart: always
+    expose:
+      - 80
+    networks:
+      - dokploy-network
     depends_on:
       - backend
-    networks:
-      - supermock-network
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'wget',
-          '--quiet',
-          '--tries=1',
-          '--spider',
-          'http://localhost/health',
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`supermock.ru`) && PathPrefix(`/`)'
-      - 'traefik.http.routers.frontend.entrypoints=http'
-      - 'traefik.http.routers.frontend.entrypoints=https'
-      - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.frontend.rule=Host(`your-domain.com`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certResolver=letsencrypt'
       - 'traefik.http.services.frontend.loadbalancer.server.port=80'
 
+  # Бэкенд
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.backend
-    # Убираем внешние порты - Traefik будет проксировать
-    # ports:
-    #   - '3001:3001'
+      dockerfile: Dockerfile
+    restart: always
+    expose:
+      - 3001
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - BOT_USERNAME=SuperMock_bot
+      - DATABASE_URL=postgresql://postgres:password@database:5432/supermock
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
-      - FRONTEND_URL=http://frontend:80
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - BOT_USERNAME=${BOT_USERNAME}
+      - FRONTEND_URL=https://your-domain.com
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
-      - supermock-network
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'wget',
-          '--quiet',
-          '--tries=1',
-          '--spider',
-          'http://localhost:3001/health',
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - dokploy-network
+    depends_on:
+      - database
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`supermock.ru`) && PathPrefix(`/api`)'
-      - 'traefik.http.routers.backend.entrypoints=http'
-      - 'traefik.http.routers.backend.entrypoints=https'
-      - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.backend.rule=Host(`api.your-domain.com`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certResolver=letsencrypt'
       - 'traefik.http.services.backend.loadbalancer.server.port=3001'
-      - 'traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api'
-      - 'traefik.http.routers.backend.middlewares=backend-stripprefix'
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: supermock-postgres
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-supermock}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-    # Убираем внешние порты - только внутренний доступ
-    # ports:
-    #   - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - supermock-network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - '../files/backend-logs:/app/logs'
 
-volumes:
-  postgres_data:
-    driver: local
+  # База данных PostgreSQL
+  database:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: supermock
+    networks:
+      - dokploy-network
+    volumes:
+      - '../files/postgres-data:/var/lib/postgresql/data'
+    expose:
+      - 5432
 
 networks:
-  supermock-network:
-    driver: bridge
+  dokploy-network:
+    external: true

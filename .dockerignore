@@ -15,4 +15,8 @@ build
 .vscode
 .idea
 coverage
-.nyc_output 
+.nyc_output
+backend/
+DEPLOY.md
+env.dokploy
+docker-compose.yml 
