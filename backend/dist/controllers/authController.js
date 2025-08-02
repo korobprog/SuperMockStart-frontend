@@ -3,7 +3,7 @@ export class AuthController {
     /**
      * Аутентификация через Telegram Web App
      */
-    static async authenticate(req, res) {
+    static async authenticateWithTelegram(req, res) {
         try {
             const { initData } = req.body;
             if (!initData) {
@@ -16,18 +16,37 @@ export class AuthController {
             if (!result.success) {
                 return res.status(401).json(result);
             }
-            return res.status(200).json(result);
+            res.json(result);
         }
         catch (error) {
-            console.error('Authentication controller error:', error);
-            return res.status(500).json({
+            console.error('Authentication error:', error);
+            res.status(500).json({
                 success: false,
                 error: 'Internal server error',
             });
         }
     }
     /**
-     * Верификация токена
+     * Получение тестового токена для разработки
+     */
+    static async getTestToken(req, res) {
+        try {
+            const result = AuthService.getTestToken();
+            if (!result.success) {
+                return res.status(500).json(result);
+            }
+            res.json(result);
+        }
+        catch (error) {
+            console.error('Test token generation error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Internal server error',
+            });
+        }
+    }
+    /**
+     * Проверка валидности токена
      */
     static async verifyToken(req, res) {
         try {
@@ -40,11 +59,11 @@ export class AuthController {
                 });
             }
             const result = AuthService.verifyToken(token);
-            return res.status(result.success ? 200 : 401).json(result);
+            res.json(result);
         }
         catch (error) {
-            console.error('Token verification controller error:', error);
-            return res.status(500).json({
+            console.error('Token verification error:', error);
+            res.status(500).json({
                 success: false,
                 error: 'Internal server error',
             });

@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import authRoutes from './auth.js';
 import professionRoutes from './professions.js';
+import userStatusRoutes from './userStatus.js';
 const router = Router();
 // API маршруты
 router.use('/api/auth', authRoutes);
 router.use('/api/professions', professionRoutes);
+router.use('/api/user-status', userStatusRoutes);
 // Health check endpoint
 router.get('/health', (req, res) => {
     res.status(200).json({

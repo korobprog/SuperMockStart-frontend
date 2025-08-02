@@ -8,6 +8,13 @@ export declare class AuthService {
         user: TelegramUser;
     }>>;
     /**
+     * Получает тестовый токен для разработки
+     */
+    static getTestToken(): ApiResponse<{
+        token: string;
+        user: TelegramUser;
+    }>;
+    /**
      * Верифицирует JWT токен и возвращает данные пользователя
      */
     static verifyToken(token: string): ApiResponse<TelegramUser>;

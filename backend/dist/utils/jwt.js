@@ -20,6 +20,26 @@ export class JwtUtils {
         return jwt.sign(payload, this.secret, options);
     }
     /**
+     * Создает тестовый JWT токен для разработки
+     */
+    static generateTestToken() {
+        const testUser = {
+            id: 123456789,
+            is_bot: false,
+            first_name: 'Test',
+            last_name: 'User',
+            username: 'testuser',
+        };
+        const payload = {
+            userId: testUser.id,
+            username: testUser.username,
+            firstName: testUser.first_name,
+            lastName: testUser.last_name,
+        };
+        const options = { expiresIn: '30d' }; // Тестовый токен на 30 дней
+        return jwt.sign(payload, this.secret, options);
+    }
+    /**
      * Верифицирует JWT токен
      */
     static verifyToken(token) {

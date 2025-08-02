@@ -1,13 +1,16 @@
-import type { StringValue } from 'ms';
 import { JwtPayload, TelegramUser } from '../types/index.js';
 export declare class JwtUtils {
     private static secret;
     private static expiresIn;
-    static initialize(secret: string, expiresIn: StringValue | number): void;
+    static initialize(secret: string, expiresIn: string | number): void;
     /**
      * Создает JWT токен для пользователя
      */
     static generateToken(user: TelegramUser): string;
+    /**
+     * Создает тестовый JWT токен для разработки
+     */
+    static generateTestToken(): string;
     /**
      * Верифицирует JWT токен
      */

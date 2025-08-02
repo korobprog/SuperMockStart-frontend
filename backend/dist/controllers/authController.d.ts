@@ -3,11 +3,15 @@ export declare class AuthController {
     /**
      * Аутентификация через Telegram Web App
      */
-    static authenticate(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static authenticateWithTelegram(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
-     * Верификация токена
+     * Получение тестового токена для разработки
      */
-    static verifyToken(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static getTestToken(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    /**
+     * Проверка валидности токена
+     */
+    static verifyToken(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
      * Обновление информации о пользователе
      */

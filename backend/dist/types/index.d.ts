@@ -45,4 +45,35 @@ export interface TelegramWebAppData {
     chat_type?: string;
     chat_instance?: string;
 }
+export declare enum UserStatus {
+    INTERVIEWER = "INTERVIEWER",
+    CANDIDATE = "CANDIDATE"
+}
+export declare enum InterviewStatus {
+    PENDING = "PENDING",
+    COMPLETED = "COMPLETED",
+    FEEDBACK_RECEIVED = "FEEDBACK_RECEIVED"
+}
+export interface User {
+    id: string;
+    telegramId: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    status: UserStatus;
+    createdAt: Date;
+    updatedAt: Date;
+}
+export interface Interview {
+    id: string;
+    interviewerId: string;
+    candidateId: string;
+    status: InterviewStatus;
+    feedback?: string;
+    feedbackReceivedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    interviewer?: User;
+    candidate?: User;
+}
 //# sourceMappingURL=index.d.ts.map
