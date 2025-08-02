@@ -1,4 +1,4 @@
-import prisma from './prisma';
+import prisma from './prisma.js';
 import { UserStatus, InterviewStatus } from '../types/index.js';
 
 export interface CreateUserData {

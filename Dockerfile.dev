@@ -1,0 +1,24 @@
+# Dockerfile для разработки фронтенда
+FROM node:20-alpine
+
+# Устанавливаем pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+# Копируем файлы зависимостей
+COPY package.json pnpm-lock.yaml ./
+
+# Устанавливаем зависимости
+RUN pnpm install
+
+# Копируем исходный код
+COPY . .
+
+# Открываем порт для разработки
+EXPOSE 5173
+
+# Запускаем в режиме разработки
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0", "--port", "5173", "--strictPort"] 

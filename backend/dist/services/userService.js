@@ -1,5 +1,5 @@
-import prisma from './prisma';
-import { UserStatus, InterviewStatus } from '../types';
+import prisma from './prisma.js';
+import { UserStatus, InterviewStatus } from '../types/index.js';
 export class UserService {
     // Создание нового пользователя
     static async createUser(data) {

@@ -1,4 +1,4 @@
-import { UserStatus } from '../types';
+import { UserStatus } from '../types/index.js';
 export interface CreateUserData {
     telegramId: string;
     username?: string;
@@ -32,7 +32,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -49,7 +49,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -66,7 +66,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -77,7 +77,7 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -105,7 +105,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -122,7 +122,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -139,7 +139,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -156,7 +156,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     })[]>;
@@ -167,7 +167,7 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -177,13 +177,13 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.InterviewStatus;
+        status: import("@prisma/client").$Enums.InterviewStatus;
         createdAt: Date;
         updatedAt: Date;
         feedback: string | null;
@@ -198,7 +198,7 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -208,13 +208,13 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.InterviewStatus;
+        status: import("@prisma/client").$Enums.InterviewStatus;
         createdAt: Date;
         updatedAt: Date;
         feedback: string | null;
@@ -229,7 +229,7 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -239,13 +239,13 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.InterviewStatus;
+        status: import("@prisma/client").$Enums.InterviewStatus;
         createdAt: Date;
         updatedAt: Date;
         feedback: string | null;
@@ -260,7 +260,7 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -270,13 +270,13 @@ export declare class UserService {
             telegramId: string;
             firstName: string | null;
             lastName: string | null;
-            status: import(".prisma/client").$Enums.UserStatus;
+            status: import("@prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.InterviewStatus;
+        status: import("@prisma/client").$Enums.InterviewStatus;
         createdAt: Date;
         updatedAt: Date;
         feedback: string | null;
@@ -297,7 +297,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     })[]>;
@@ -314,7 +314,7 @@ export declare class UserService {
         telegramId: string;
         firstName: string | null;
         lastName: string | null;
-        status: import(".prisma/client").$Enums.UserStatus;
+        status: import("@prisma/client").$Enums.UserStatus;
         createdAt: Date;
         updatedAt: Date;
     })[]>;

@@ -1,5 +1,5 @@
 import { UserService } from '../services/userService.js';
-import { UserStatus } from '../types';
+import { UserStatus } from '../types/index.js';
 export class UserStatusController {
     // Получение текущего статуса пользователя
     static async getUserStatus(req, res) {

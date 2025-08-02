@@ -1,5 +1,5 @@
 # Многоэтапная сборка для бэкенда
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -22,7 +22,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Этап продакшн
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 WORKDIR /app
 
 # Устанавливаем только production зависимости
@@ -32,7 +32,11 @@ RUN npm ci --omit=dev
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/prisma ./prisma
+
+# Убеждаемся, что package.json скопирован для npm start
+COPY --from=build /app/package.json ./package.json
 
 # Копируем скрипт настройки базы данных
 COPY scripts/setup-db.sh ./scripts/setup-db.sh
