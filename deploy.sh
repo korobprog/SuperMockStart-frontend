@@ -40,13 +40,13 @@ else
 fi
 
 # Проверка фронтенда
-if curl -f http://localhost:80 > /dev/null 2>&1; then
+if curl -f http://localhost:3000 > /dev/null 2>&1; then
     echo "✅ Frontend is healthy"
 else
     echo "❌ Frontend health check failed"
 fi
 
 echo "🎉 Deployment completed!"
-echo "📱 Frontend: http://localhost"
+echo "📱 Frontend: http://localhost:3000"
 echo "🔧 Backend: http://localhost:3001"
 echo "🏥 Health: http://localhost:3001/health" 

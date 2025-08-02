@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - '80:80'
-      - '443:443'
+      - '3000:80'
+      - '8443:443'
     environment:
       - VITE_API_URL=${FRONTEND_URL}
       - VITE_TELEGRAM_TOKEN=${VITE_TELEGRAM_TOKEN}
@@ -39,7 +39,7 @@ services:
       - BOT_USERNAME=SuperMock_bot
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=http://supermock-app:80
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
       - DATABASE_URL=${DATABASE_URL}
