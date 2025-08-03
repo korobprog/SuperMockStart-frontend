@@ -43,7 +43,7 @@ export class TelegramBotService {
       }
 
       // Простая проверка - пытаемся отправить тестовое сообщение
-      await this.bot.sendMessage(userId, 'test', {
+      await this.bot.sendMessage(userId, 'Вы авторизованны!', {
         disable_notification: true,
       });
 

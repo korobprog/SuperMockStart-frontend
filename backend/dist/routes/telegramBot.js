@@ -1,5 +1,5 @@
 import express from 'express';
-import { TelegramBotController } from '../controllers/telegramBotController';
+import { TelegramBotController } from '../controllers/telegramBotController.js';
 const router = express.Router();
 // Создание ссылки авторизации
 router.post('/auth-url', TelegramBotController.createAuthUrl);

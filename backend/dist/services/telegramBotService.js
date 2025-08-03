@@ -31,7 +31,7 @@ export class TelegramBotService {
                 throw new Error('Bot not initialized');
             }
             // Простая проверка - пытаемся отправить тестовое сообщение
-            await this.bot.sendMessage(userId, 'test', {
+            await this.bot.sendMessage(userId, 'Вы авторизованны!', {
                 disable_notification: true,
             });
             // Если сообщение отправилось, возвращаем базовую информацию
