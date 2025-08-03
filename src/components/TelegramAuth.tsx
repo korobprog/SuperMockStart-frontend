@@ -22,8 +22,8 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // API URL - используем переменную окружения или fallback
-  const API_URL = import.meta.env.VITE_API_URL || 'https://supermock.ru';
+  // API URL - используем переменную окружения или fallback на продакшен
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   useEffect(() => {
     const initTelegramAuth = async () => {

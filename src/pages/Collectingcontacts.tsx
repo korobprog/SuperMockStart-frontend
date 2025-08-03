@@ -21,6 +21,7 @@ import { countries } from 'countries-list';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useNavigate } from 'react-router-dom';
 
 // Схема валидации с Zod
 const formSchema = z.object({
@@ -36,6 +37,7 @@ type FormData = z.infer<typeof formSchema>;
 const CollectingContacts = () => {
   const [professionOpen, setProfessionOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const navigate = useNavigate();
 
   const {
     control,
@@ -57,12 +59,40 @@ const CollectingContacts = () => {
   const onSubmit = async (data: FormData) => {
     try {
       console.log('Form data:', data);
-      // Имитация API запроса
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert('Данные успешно отправлены!');
+
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('telegram_token');
+
+      if (!token) {
+        alert('Ошибка авторизации. Пожалуйста, войдите через Telegram.');
+        return;
+      }
+
+      // Отправляем данные на сервер
+      const response = await fetch('/api/form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при отправке данных');
+      }
+
+      const result = await response.json();
+      console.log('Server response:', result);
+
+      // Перенаправляем на страницу интервью
+      navigate('/interview');
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Ошибка при отправке данных');
+      alert(
+        error instanceof Error ? error.message : 'Ошибка при отправке данных'
+      );
     }
   };
 

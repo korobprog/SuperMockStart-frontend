@@ -15,7 +15,7 @@ const Home: React.FC = () => {
   const [authUrl, setAuthUrl] = useState('');
   const [userId] = useState(1736594064); // Реальный User ID
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   const createAuthUrl = async () => {
     console.log('🔗 Creating auth URL for user:', userId);

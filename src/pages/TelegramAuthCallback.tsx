@@ -26,11 +26,11 @@ const TelegramAuthCallback: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<TelegramAuthData | null>(null);
 
-  // API URL - используем HTTPS для Telegram или fallback
+  // API URL - используем HTTPS для Telegram или fallback на продакшен
   const API_URL =
     import.meta.env.VITE_API_URL_HTTPS ||
     import.meta.env.VITE_API_URL ||
-    'http://localhost:3001';
+    'https://api.supermock.ru';
 
   useEffect(() => {
     const processAuth = async () => {

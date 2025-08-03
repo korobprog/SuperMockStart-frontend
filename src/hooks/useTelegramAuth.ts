@@ -25,8 +25,8 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // API URL - используем переменную окружения или fallback
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  // API URL - используем переменную окружения или fallback на продакшен
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   const checkAuthStatus = useCallback(async () => {
     const savedToken = localStorage.getItem('telegram_token');

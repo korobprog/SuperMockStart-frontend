@@ -33,7 +33,7 @@ const TelegramAuthButton: React.FC<TelegramAuthButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
   const botUsername =
     import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'SuperMock_bot';
 
