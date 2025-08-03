@@ -2,9 +2,9 @@ name: Deploy to Dokploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
   deploy:
@@ -14,9 +14,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.supermock.ru
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+        env:
+          NODE_ENV: production
+
       - name: Deploy to Dokploy
         uses: dokploy/dokploy-action@v1
         with:
           dokploy_url: ${{ secrets.DOKPLOY_URL }}
           dokploy_token: ${{ secrets.DOKPLOY_TOKEN }}
           application_id: ${{ secrets.DOKPLOY_APPLICATION_ID }}
+        env:
+          NODE_ENV: production
+
+      - name: Health check
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30
+          curl -f https://api.supermock.ru/health || exit 1
+          echo "✅ Deployment successful!"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "🌐 Frontend: https://supermock.ru"
+          echo "🔗 API: https://api.supermock.ru"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs above for errors."

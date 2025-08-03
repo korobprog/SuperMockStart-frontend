@@ -54,6 +54,8 @@ app.use(
         'https://localhost:5173',
         'http://localhost:5174',
         'https://localhost:5174',
+        'https://supermock.ru',
+        'http://supermock.ru',
       ];
 
       if (process.env.FRONTEND_URL) {

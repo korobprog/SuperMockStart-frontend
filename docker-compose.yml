@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
-    ports:
-      - '5174:80'
     expose:
       - 80
     networks:
@@ -26,8 +24,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: always
-    ports:
-      - '3002:3001'
     expose:
       - 3001
     environment:
@@ -47,7 +43,7 @@ services:
       - database
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`api.supermock.ru`)'
+      - 'traefik.http.routers.backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'
       - 'traefik.http.routers.backend.entrypoints=websecure'
       - 'traefik.http.routers.backend.tls.certResolver=letsencrypt'
       - 'traefik.http.services.backend.loadbalancer.server.port=3001'
