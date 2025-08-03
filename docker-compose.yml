@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    ports:
+      - '5174:80'
     expose:
       - 80
     networks:
@@ -24,6 +26,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: always
+    ports:
+      - '3002:3001'
     expose:
       - 3001
     environment:
