@@ -34,6 +34,9 @@ JwtUtils.initialize(
 // Middleware безопасности
 app.use(helmet());
 
+// Доверяем прокси (для работы с Traefik)
+app.set('trust proxy', true);
+
 // CORS настройки
 app.use(
   cors({
@@ -75,6 +78,10 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Правильная обработка IP адресов за прокси
+  keyGenerator: (req) => {
+    return req.ip || req.connection.remoteAddress || 'unknown';
+  },
 });
 
 app.use(limiter);

@@ -24,6 +24,8 @@ TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
 JwtUtils.initialize(process.env.JWT_SECRET || 'your-secret-key-change-in-production', process.env.JWT_EXPIRES_IN || '7d');
 // Middleware безопасности
 app.use(helmet());
+// Доверяем прокси (для работы с Traefik)
+app.set('trust proxy', true);
 // CORS настройки
 app.use(cors({
     origin: function (origin, callback) {
@@ -61,6 +63,10 @@ const limiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Правильная обработка IP адресов за прокси
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+    },
 });
 app.use(limiter);
 // Парсинг JSON
