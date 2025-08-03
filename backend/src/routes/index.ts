@@ -3,6 +3,7 @@ import authRoutes from './auth.js';
 import professionRoutes from './professions.js';
 import userStatusRoutes from './userStatus.js';
 import telegramBotRoutes from './telegramBot.js';
+import formRoutes from './form.js';
 
 const router = Router();
 
@@ -11,6 +12,7 @@ router.use('/api/auth', authRoutes);
 router.use('/api/professions', professionRoutes);
 router.use('/api/user-status', userStatusRoutes);
 router.use('/api/telegram-bot', telegramBotRoutes);
+router.use('/api/form', formRoutes);
 
 // API info endpoint
 router.get('/api', (req, res) => {
@@ -23,6 +25,7 @@ router.get('/api', (req, res) => {
       professions: '/api/professions',
       userStatus: '/api/user-status',
       telegramBot: '/api/telegram-bot',
+      form: '/api/form',
       health: '/health',
     },
     timestamp: new Date().toISOString(),

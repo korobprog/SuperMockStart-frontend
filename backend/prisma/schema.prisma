@@ -36,6 +36,7 @@ model User {
 
   // Связи
   selectedProfessions SelectedProfession[]
+  formData UserFormData[]
   conductedInterviews Interview[] @relation("InterviewerInterviews")
   receivedInterviews  Interview[] @relation("CandidateInterviews")
 
@@ -69,4 +70,20 @@ model SelectedProfession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("selected_professions")
+}
+
+model UserFormData {
+  id        String   @id @default(cuid())
+  userId    String
+  profession String
+  country   String
+  experience String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  // Связь с пользователем
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_form_data")
 }
