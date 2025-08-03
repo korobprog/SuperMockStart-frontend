@@ -9,6 +9,7 @@ import Auth from './pages/Auth';
 import DebugAuth from './components/DebugAuth';
 import AuthDemo from './pages/AuthDemo';
 import TelegramAuthCallback from './pages/TelegramAuthCallback';
+import TokenCheck from './pages/TokenCheck';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/debug-auth" element={<DebugAuth />} />
           <Route path="/auth-demo" element={<AuthDemo />} />
           <Route path="/auth-callback" element={<TelegramAuthCallback />} />
+          <Route path="/token-check" element={<TokenCheck />} />
         </Routes>
       </div>
     </Router>

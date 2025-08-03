@@ -17,18 +17,22 @@ router.post('/send-message', TelegramBotController.sendMessage);
 
 // Получение URL для проверки токена
 router.get('/check-url', (req, res) => {
+  const { userId } = req.query;
   const isProduction = process.env.NODE_ENV === 'production';
   const baseUrl = isProduction
     ? 'https://supermock.ru'
-    : 'https://supermock.ru'; // Используем production URL для кнопки
+    : 'http://localhost:5173'; // Используем localhost для разработки
 
-  const checkUrl = `${baseUrl}/token-check`;
+  const checkUrl = userId
+    ? `${baseUrl}/token-check?userId=${userId}`
+    : `${baseUrl}/token-check`;
 
   res.json({
     success: true,
     data: {
       checkUrl,
       environment: isProduction ? 'production' : 'development',
+      userId: userId || null,
     },
   });
 });

@@ -282,9 +282,9 @@ export class TelegramBotService {
       const isProduction = process.env.NODE_ENV === 'production';
       const baseUrl = isProduction
         ? 'https://supermock.ru'
-        : 'https://supermock.ru'; // Используем production URL для кнопки
+        : 'http://localhost:5173'; // Используем localhost для разработки
 
-      const checkUrl = `${baseUrl}`;
+      const checkUrl = `${baseUrl}/token-check?userId=${chatId}`;
       const environment = isProduction ? 'production' : 'development';
 
       const keyboard = {
