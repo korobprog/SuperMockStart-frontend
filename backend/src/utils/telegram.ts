@@ -1,6 +1,16 @@
 import crypto from 'crypto';
 import { TelegramUser, TelegramWebAppData } from '../types/index.js';
 
+interface TelegramWidgetData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
 export class TelegramUtils {
   private static botToken: string;
 
@@ -70,6 +80,38 @@ export class TelegramUtils {
     } catch (error) {
       console.error('Error validating Telegram Web App data:', error);
       return null;
+    }
+  }
+
+  /**
+   * Валидирует данные от Telegram Login Widget
+   */
+  static validateWidgetData(widgetData: TelegramWidgetData): boolean {
+    try {
+      // Создаем строку для проверки
+      const dataCheckString = Object.entries(widgetData)
+        .filter(([key]) => key !== 'hash')
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n');
+
+      // Создаем секретный ключ
+      const secretKey = crypto
+        .createHmac('sha256', 'WebAppData')
+        .update(this.botToken)
+        .digest();
+
+      // Вычисляем хеш
+      const calculatedHash = crypto
+        .createHmac('sha256', secretKey)
+        .update(dataCheckString)
+        .digest('hex');
+
+      // Проверяем хеш
+      return calculatedHash === widgetData.hash;
+    } catch (error) {
+      console.error('Error validating Telegram Widget data:', error);
+      return false;
     }
   }
 

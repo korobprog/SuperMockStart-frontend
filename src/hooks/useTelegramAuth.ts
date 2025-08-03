@@ -26,11 +26,11 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
   const navigate = useNavigate();
 
   // API URL - используем переменную окружения или fallback
-  const API_URL = import.meta.env.VITE_API_URL || 'https://supermock.ru';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const checkAuthStatus = useCallback(async () => {
     const savedToken = localStorage.getItem('telegram_token');
-    
+
     if (!savedToken) {
       setLoading(false);
       return;
@@ -40,14 +40,14 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
       const response = await fetch(`${API_URL}/api/auth/verify`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${savedToken}`,
+          Authorization: `Bearer ${savedToken}`,
           'Content-Type': 'application/json',
         },
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.data) {
         setUser(data.data);
         setError(null);
       } else {
@@ -86,4 +86,4 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
     logout,
     checkAuthStatus,
   };
-}; 
+};

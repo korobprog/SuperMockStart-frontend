@@ -8,6 +8,7 @@ import CollectingContacts from './pages/Collectingcontacts';
 import Auth from './pages/Auth';
 import DebugAuth from './components/DebugAuth';
 import AuthDemo from './pages/AuthDemo';
+import TelegramAuthCallback from './pages/TelegramAuthCallback';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/debug-auth" element={<DebugAuth />} />
           <Route path="/auth-demo" element={<AuthDemo />} />
+          <Route path="/auth-callback" element={<TelegramAuthCallback />} />
         </Routes>
       </div>
     </Router>

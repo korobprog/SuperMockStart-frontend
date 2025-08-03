@@ -23,6 +23,7 @@ router.get('/test', (req, res) => {
       verify: '/api/auth/verify',
       profile: '/api/auth/profile',
       status: '/api/auth/status',
+      'telegram-widget': '/api/auth/telegram-widget',
     },
   });
 });
@@ -37,6 +38,13 @@ router.post(
   validateTelegramData,
   AuthController.authenticateWithTelegram
 );
+
+/**
+ * @route POST /api/auth/telegram-widget
+ * @desc Аутентификация через Telegram Login Widget
+ * @access Public
+ */
+router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
 
 /**
  * @route GET /api/auth/test-token

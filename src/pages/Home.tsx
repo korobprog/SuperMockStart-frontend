@@ -7,60 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 
 const Home: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const { user, loading, isAuthenticated, logout } = useTelegramAuth();
   const [step, setStep] = useState(1);
   const [authUrl, setAuthUrl] = useState('');
   const [userId] = useState(1736594064); // Реальный User ID
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-  useEffect(() => {
-    // Проверяем, есть ли сохраненный токен
-    const token = localStorage.getItem('telegram_token');
-    if (token) {
-      checkTokenValidity(token);
-    }
-  }, []);
-
-  const checkTokenValidity = async (token: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/auth/profile`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setIsAuthenticated(true);
-        setUserInfo(data.data);
-        console.log('✅ User authenticated:', data.data);
-      } else {
-        // Токен недействителен, удаляем его
-        localStorage.removeItem('telegram_token');
-        setIsAuthenticated(false);
-        setUserInfo(null);
-      }
-    } catch (error) {
-      console.error('❌ Error checking token:', error);
-      localStorage.removeItem('telegram_token');
-      setIsAuthenticated(false);
-      setUserInfo(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const createAuthUrl = async () => {
-    setLoading(true);
     console.log('🔗 Creating auth URL for user:', userId);
 
     try {
@@ -89,13 +46,10 @@ const Home: React.FC = () => {
     } catch (error) {
       console.error('❌ Network Error:', error);
       alert(`Ошибка сети: ${error}`);
-    } finally {
-      setLoading(false);
     }
   };
 
   const checkAuth = async () => {
-    setLoading(true);
     console.log('🔍 Checking auth for user:', userId);
 
     try {
@@ -121,9 +75,8 @@ const Home: React.FC = () => {
           console.log('💾 Token saved to localStorage');
         }
 
-        setIsAuthenticated(true);
-        setUserInfo(data.data);
-        setStep(4);
+        // Перезагружаем страницу для обновления состояния авторизации
+        window.location.reload();
       } else {
         console.error('❌ Auth verification failed:', data.error);
         alert(`Ошибка авторизации: ${data.error || 'Неизвестная ошибка'}`);
@@ -131,8 +84,6 @@ const Home: React.FC = () => {
     } catch (error) {
       console.error('❌ Network Error during auth check:', error);
       alert(`Ошибка сети при проверке авторизации: ${error}`);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -181,9 +132,7 @@ const Home: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('telegram_token');
-    setIsAuthenticated(false);
-    setUserInfo(null);
+    logout();
     setStep(1);
     setAuthUrl('');
     console.log('🚪 User logged out');
@@ -199,7 +148,7 @@ const Home: React.FC = () => {
     );
   }
 
-  if (isAuthenticated && userInfo) {
+  if (isAuthenticated && user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-4xl mx-auto">
@@ -221,13 +170,10 @@ const Home: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p>
-                    <strong>ID:</strong> {userInfo.user?.id || userInfo.id}
+                    <strong>ID:</strong> {user.id}
                   </p>
                   <p>
-                    <strong>Имя:</strong>{' '}
-                    {userInfo.user?.first_name ||
-                      userInfo.firstName ||
-                      'Пользователь'}
+                    <strong>Имя:</strong> {user.first_name}
                   </p>
                 </div>
                 <div>
@@ -304,12 +250,8 @@ const Home: React.FC = () => {
                 Нажмите кнопку ниже, чтобы создать уникальную ссылку для
                 авторизации через Telegram бота.
               </p>
-              <Button
-                onClick={createAuthUrl}
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? 'Создание...' : 'Создать ссылку авторизации'}
+              <Button onClick={createAuthUrl} className="w-full">
+                Создать ссылку авторизации
               </Button>
             </div>
           )}
@@ -373,12 +315,8 @@ const Home: React.FC = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Button
-                  onClick={checkAuth}
-                  disabled={loading}
-                  className="w-full"
-                >
-                  {loading ? 'Проверка...' : 'Проверить авторизацию'}
+                <Button onClick={checkAuth} className="w-full">
+                  Проверить авторизацию
                 </Button>
                 <Button
                   variant="outline"

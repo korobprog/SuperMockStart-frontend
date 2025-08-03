@@ -6,6 +6,16 @@ import {
   ApiResponse,
 } from '../types/index.js';
 
+interface TelegramWidgetData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
 export class AuthService {
   /**
    * Аутентифицирует пользователя через Telegram Web App
@@ -55,6 +65,63 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Authentication error:', error);
+      return {
+        success: false,
+        error: 'Authentication failed',
+      };
+    }
+  }
+
+  /**
+   * Аутентифицирует пользователя через Telegram Login Widget
+   */
+  static async authenticateWithTelegramWidget(
+    widgetData: TelegramWidgetData
+  ): Promise<ApiResponse<{ token: string; user: TelegramUser }>> {
+    try {
+      // Валидируем данные от Telegram Widget
+      const isValid = TelegramUtils.validateWidgetData(widgetData);
+
+      if (!isValid) {
+        return {
+          success: false,
+          error: 'Invalid Telegram Widget data',
+        };
+      }
+
+      // Проверяем, не устарели ли данные (5 минут)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const fiveMinutes = 5 * 60;
+
+      if (currentTime - widgetData.auth_date > fiveMinutes) {
+        return {
+          success: false,
+          error: 'Telegram data has expired',
+        };
+      }
+
+      const user: TelegramUser = {
+        id: widgetData.id,
+        is_bot: false,
+        first_name: widgetData.first_name,
+        last_name: widgetData.last_name,
+        username: widgetData.username,
+        photo_url: widgetData.photo_url,
+      };
+
+      // Генерируем JWT токен
+      const token = JwtUtils.generateToken(user);
+
+      return {
+        success: true,
+        data: {
+          token,
+          user,
+        },
+        message: 'Authentication successful',
+      };
+    } catch (error) {
+      console.error('Telegram Widget authentication error:', error);
       return {
         success: false,
         error: 'Authentication failed',
