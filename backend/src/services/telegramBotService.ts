@@ -284,7 +284,7 @@ export class TelegramBotService {
         ? 'https://supermock.ru'
         : 'https://supermock.ru'; // Используем production URL для кнопки
 
-      const checkUrl = `${baseUrl}/token-check`;
+      const checkUrl = `${baseUrl}`;
       const environment = isProduction ? 'production' : 'development';
 
       const keyboard = {
