@@ -280,29 +280,36 @@ export class TelegramBotService {
       }
 
       const isProduction = process.env.NODE_ENV === 'production';
-      const baseUrl = isProduction
-        ? 'https://supermock.ru'
-        : 'http://localhost:5173'; // Используем localhost для разработки
 
-      const checkUrl = `${baseUrl}/token-check?userId=${chatId}`;
-      const environment = isProduction ? 'production' : 'development';
+      // Telegram не принимает localhost URLs, поэтому используем production URL
+      // или отправляем инструкцию для разработки
+      if (isProduction) {
+        const baseUrl = 'https://supermock.ru';
+        const checkUrl = `${baseUrl}/token-check?userId=${chatId}`;
 
-      const keyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: `🔍 Проверить токен (${environment})`,
-              url: checkUrl,
-            },
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔍 Проверить токен',
+                url: checkUrl,
+              },
+            ],
           ],
-        ],
-      };
+        };
 
-      await this.bot.sendMessage(
-        chatId,
-        `🔗 Нажмите кнопку ниже, чтобы проверить ваш токен авторизации:\n\n🌐 Среда: ${environment}\n🔗 Ссылка: ${checkUrl}`,
-        { reply_markup: keyboard }
-      );
+        await this.bot.sendMessage(
+          chatId,
+          `🔗 Нажмите кнопку ниже, чтобы проверить ваш токен авторизации:\n\n🌐 Среда: production\n🔗 Ссылка: ${checkUrl}`,
+          { reply_markup: keyboard }
+        );
+      } else {
+        // В режиме разработки отправляем инструкцию без кнопки
+        await this.bot.sendMessage(
+          chatId,
+          `🔗 Для проверки токена в режиме разработки:\n\n1️⃣ Откройте приложение: http://localhost:5173\n2️⃣ Перейдите на страницу: /token-check?userId=${chatId}\n\n🌐 Среда: development\n⚠️ В режиме разработки кнопка недоступна`
+        );
+      }
 
       console.log('✅ Check token button sent to chat:', chatId);
     } catch (error) {

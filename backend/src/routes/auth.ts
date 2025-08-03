@@ -2,8 +2,11 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/authController.js';
 import {
   authenticateToken,
+  authenticateExtendedToken,
   validateTelegramData,
   optionalAuth,
+  optionalExtendedAuth,
+  requireAdmin,
 } from '../middleware/auth.js';
 
 const router = Router();
@@ -27,6 +30,27 @@ router.get('/test', (req, res) => {
     },
   });
 });
+
+/**
+ * @route POST /api/auth/register
+ * @desc Регистрация нового пользователя
+ * @access Public
+ */
+router.post('/register', AuthController.register);
+
+/**
+ * @route POST /api/auth/login
+ * @desc Вход через email/password
+ * @access Public
+ */
+router.post('/login', AuthController.login);
+
+/**
+ * @route POST /api/auth/change-password
+ * @desc Изменение пароля
+ * @access Private
+ */
+router.post('/change-password', authenticateExtendedToken, AuthController.changePassword);
 
 /**
  * @route POST /api/auth/telegram
@@ -65,7 +89,7 @@ router.post('/verify', AuthController.verifyToken);
  * @desc Получение профиля текущего пользователя
  * @access Private
  */
-router.get('/profile', authenticateToken, AuthController.getProfile);
+router.get('/profile', authenticateExtendedToken, AuthController.getProfile);
 
 /**
  * @route PUT /api/auth/refresh-user-info
@@ -83,6 +107,13 @@ router.put(
  * @desc Проверка статуса аутентификации
  * @access Public
  */
-router.get('/status', optionalAuth, AuthController.checkAuthStatus);
+router.get('/status', optionalExtendedAuth, AuthController.checkAuthStatus);
+
+/**
+ * @route POST /api/auth/link-telegram
+ * @desc Привязка Telegram аккаунта к существующему пользователю
+ * @access Private
+ */
+router.post('/link-telegram', authenticateExtendedToken, AuthController.linkTelegram);
 
 export default router;

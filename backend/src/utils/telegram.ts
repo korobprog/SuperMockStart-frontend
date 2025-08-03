@@ -85,19 +85,39 @@ export class TelegramUtils {
 
   /**
    * Валидирует данные от Telegram Login Widget
+   * Использует правильный алгоритм для Login Widget согласно документации
    */
   static validateWidgetData(widgetData: TelegramWidgetData): boolean {
     try {
-      // Создаем строку для проверки
+      // Проверяем обязательные поля
+      if (
+        !widgetData.id ||
+        !widgetData.first_name ||
+        !widgetData.auth_date ||
+        !widgetData.hash
+      ) {
+        console.error('Missing required fields in widget data');
+        return false;
+      }
+
+      // Проверяем срок действия данных (не более 5 минут для Login Widget)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const fiveMinutes = 5 * 60;
+      if (currentTime - widgetData.auth_date > fiveMinutes) {
+        console.error('Widget data expired');
+        return false;
+      }
+
+      // Создаем строку для проверки (исключаем hash)
       const dataCheckString = Object.entries(widgetData)
         .filter(([key]) => key !== 'hash')
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([key, value]) => `${key}=${value}`)
         .join('\n');
 
-      // Создаем секретный ключ
+      // Для Login Widget используется другой алгоритм создания секретного ключа
       const secretKey = crypto
-        .createHmac('sha256', 'WebAppData')
+        .createHash('sha256')
         .update(this.botToken)
         .digest();
 
@@ -108,7 +128,13 @@ export class TelegramUtils {
         .digest('hex');
 
       // Проверяем хеш
-      return calculatedHash === widgetData.hash;
+      const isValid = calculatedHash === widgetData.hash;
+
+      if (!isValid) {
+        console.error('Widget data hash validation failed');
+      }
+
+      return isValid;
     } catch (error) {
       console.error('Error validating Telegram Widget data:', error);
       return false;

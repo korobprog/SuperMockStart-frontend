@@ -19,9 +19,11 @@ router.post('/send-message', TelegramBotController.sendMessage);
 router.get('/check-url', (req, res) => {
   const { userId } = req.query;
   const isProduction = process.env.NODE_ENV === 'production';
+
+  // Telegram не принимает localhost URLs
   const baseUrl = isProduction
     ? 'https://supermock.ru'
-    : 'http://localhost:5173'; // Используем localhost для разработки
+    : 'http://localhost:5173'; // Только для внутреннего использования
 
   const checkUrl = userId
     ? `${baseUrl}/token-check?userId=${userId}`
@@ -33,6 +35,7 @@ router.get('/check-url', (req, res) => {
       checkUrl,
       environment: isProduction ? 'production' : 'development',
       userId: userId || null,
+      isTelegramCompatible: isProduction, // Флаг для фронтенда
     },
   });
 });

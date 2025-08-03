@@ -1,9 +1,15 @@
 import { TelegramUtils } from '../utils/telegram.js';
 import { JwtUtils } from '../utils/jwt.js';
+import { UserService } from './userService.js';
 import {
   TelegramUser,
   TelegramWebAppData,
   ApiResponse,
+  LoginCredentials,
+  RegisterData,
+  User,
+  UserRole,
+  ExtendedJwtPayload,
 } from '../types/index.js';
 
 interface TelegramWidgetData {
@@ -18,11 +24,77 @@ interface TelegramWidgetData {
 
 export class AuthService {
   /**
+   * Регистрирует нового пользователя
+   */
+  static async registerUser(data: RegisterData): Promise<ApiResponse<{ token: string; user: User }>> {
+    try {
+      const userResult = await UserService.createUser(data);
+      
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error,
+        };
+      }
+
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'email');
+
+      return {
+        success: true,
+        data: {
+          token,
+          user: userResult.data,
+        },
+        message: 'Регистрация прошла успешно',
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при регистрации',
+      };
+    }
+  }
+
+  /**
+   * Аутентифицирует пользователя через email/password
+   */
+  static async loginWithEmail(credentials: LoginCredentials): Promise<ApiResponse<{ token: string; user: User }>> {
+    try {
+      const userResult = await UserService.authenticateUser(credentials.email, credentials.password);
+      
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error,
+        };
+      }
+
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'email');
+
+      return {
+        success: true,
+        data: {
+          token,
+          user: userResult.data,
+        },
+        message: 'Аутентификация успешна',
+      };
+    } catch (error) {
+      console.error('Email login error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при аутентификации',
+      };
+    }
+  }
+
+  /**
    * Аутентифицирует пользователя через Telegram Web App
    */
   static async authenticateWithTelegram(
     initData: string
-  ): Promise<ApiResponse<{ token: string; user: TelegramUser }>> {
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
       // Валидируем данные от Telegram
       const webAppData = TelegramUtils.validateWebAppData(initData);
@@ -42,24 +114,39 @@ export class AuthService {
         };
       }
 
-      const user = webAppData.user;
+      const telegramUser = webAppData.user;
 
       // Проверяем, что пользователь не бот
-      if (user.is_bot) {
+      if (telegramUser.is_bot) {
         return {
           success: false,
           error: 'Bots are not allowed to authenticate',
         };
       }
 
+      // Находим или создаем пользователя в БД
+      const userResult = await UserService.findOrCreateTelegramUser({
+        id: telegramUser.id,
+        username: telegramUser.username,
+        firstName: telegramUser.first_name,
+        lastName: telegramUser.last_name,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error || 'Failed to create/find user',
+        };
+      }
+
       // Генерируем JWT токен
-      const token = JwtUtils.generateToken(user);
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
 
       return {
         success: true,
         data: {
           token,
-          user,
+          user: userResult.data,
         },
         message: 'Authentication successful',
       };
@@ -77,7 +164,7 @@ export class AuthService {
    */
   static async authenticateWithTelegramWidget(
     widgetData: TelegramWidgetData
-  ): Promise<ApiResponse<{ token: string; user: TelegramUser }>> {
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
       // Валидируем данные от Telegram Widget
       const isValid = TelegramUtils.validateWidgetData(widgetData);
@@ -100,23 +187,29 @@ export class AuthService {
         };
       }
 
-      const user: TelegramUser = {
+      // Находим или создаем пользователя в БД
+      const userResult = await UserService.findOrCreateTelegramUser({
         id: widgetData.id,
-        is_bot: false,
-        first_name: widgetData.first_name,
-        last_name: widgetData.last_name,
         username: widgetData.username,
-        photo_url: widgetData.photo_url,
-      };
+        firstName: widgetData.first_name,
+        lastName: widgetData.last_name,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error || 'Failed to create/find user',
+        };
+      }
 
       // Генерируем JWT токен
-      const token = JwtUtils.generateToken(user);
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
 
       return {
         success: true,
         data: {
           token,
-          user,
+          user: userResult.data,
         },
         message: 'Authentication successful',
       };
@@ -189,6 +282,55 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Token verification error:', error);
+      return {
+        success: false,
+        error: 'Token verification failed',
+      };
+    }
+  }
+
+  /**
+   * Верифицирует расширенный JWT токен и возвращает данные пользователя
+   */
+  static async verifyExtendedToken(token: string): Promise<ApiResponse<User>> {
+    try {
+      const payload = JwtUtils.verifyExtendedToken(token);
+
+      if (!payload) {
+        return {
+          success: false,
+          error: 'Invalid or expired token',
+        };
+      }
+
+      // Для email авторизации используем userDbId, для Telegram - ищем по telegramId
+      let userResult: ApiResponse<User>;
+      
+      if (payload.authType === 'email' && payload.userDbId) {
+        userResult = await UserService.getUserById(payload.userDbId);
+      } else if (payload.authType === 'telegram') {
+        userResult = await UserService.getUserByTelegramId(payload.userId.toString());
+      } else {
+        return {
+          success: false,
+          error: 'Invalid token format',
+        };
+      }
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: 'User not found',
+        };
+      }
+
+      return {
+        success: true,
+        data: userResult.data,
+        message: 'Token verified successfully',
+      };
+    } catch (error) {
+      console.error('Extended token verification error:', error);
       return {
         success: false,
         error: 'Token verification failed',

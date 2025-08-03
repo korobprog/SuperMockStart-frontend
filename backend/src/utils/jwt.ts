@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { JwtPayload, TelegramUser } from '../types/index.js';
+import { JwtPayload, TelegramUser, User, ExtendedJwtPayload, UserRole } from '../types/index.js';
 
 export class JwtUtils {
   private static secret: string;
@@ -11,7 +11,7 @@ export class JwtUtils {
   }
 
   /**
-   * Создает JWT токен для пользователя
+   * Создает JWT токен для пользователя (для обратной совместимости)
    */
   static generateToken(user: TelegramUser): string {
     const payload: JwtPayload = {
@@ -19,6 +19,42 @@ export class JwtUtils {
       username: user.username,
       firstName: user.first_name,
       lastName: user.last_name,
+    };
+
+    const options: SignOptions = { expiresIn: this.expiresIn };
+    return jwt.sign(payload, this.secret, options);
+  }
+
+  /**
+   * Создает расширенный JWT токен для пользователя
+   */
+  static generateExtendedToken(user: User, authType: 'email' | 'telegram'): string {
+    const payload: ExtendedJwtPayload = {
+      userId: authType === 'telegram' ? parseInt(user.telegramId || '0') : user.id,
+      username: user.username,
+      firstName: user.firstName || '',
+      lastName: user.lastName,
+      role: user.role,
+      authType,
+      // Для email авторизации добавляем ID пользователя в отдельное поле
+      ...(authType === 'email' && { userDbId: user.id }),
+    };
+
+    const options: SignOptions = { expiresIn: this.expiresIn };
+    return jwt.sign(payload, this.secret, options);
+  }
+
+  /**
+   * Создает JWT токен для пользователя Telegram
+   */
+  static generateTelegramToken(user: TelegramUser, role: UserRole = UserRole.USER): string {
+    const payload: ExtendedJwtPayload = {
+      userId: user.id,
+      username: user.username,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      role,
+      authType: 'telegram',
     };
 
     const options: SignOptions = { expiresIn: this.expiresIn };
@@ -59,6 +95,44 @@ export class JwtUtils {
       console.error('JWT verification failed:', error);
       return null;
     }
+  }
+
+  /**
+   * Верифицирует расширенный JWT токен
+   */
+  static verifyExtendedToken(token: string): ExtendedJwtPayload | null {
+    try {
+      const decoded = jwt.verify(token, this.secret) as ExtendedJwtPayload;
+      return decoded;
+    } catch (error) {
+      console.error('Extended JWT verification failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Проверяет роль пользователя в токене
+   */
+  static hasRole(token: string, requiredRole: UserRole): boolean {
+    try {
+      const decoded = this.verifyExtendedToken(token);
+      if (!decoded) return false;
+
+      // Администратор имеет доступ ко всем ролям
+      if (decoded.role === UserRole.ADMIN) return true;
+
+      return decoded.role === requiredRole;
+    } catch (error) {
+      console.error('Role verification failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Проверяет, является ли пользователь администратором
+   */
+  static isAdmin(token: string): boolean {
+    return this.hasRole(token, UserRole.ADMIN);
   }
 
   /**

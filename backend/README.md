@@ -1,6 +1,32 @@
 # SuperMock Backend
 
-Бэкенд для приложения SuperMock с аутентификацией через Telegram бота.
+Backend приложения SuperMock с расширенной системой авторизации, поддерживающей как классическую аутентификацию, так и интеграцию с Telegram.
+
+## 🚀 Основные возможности
+
+### 💫 Система авторизации
+
+- 📧 **Email/Password авторизация** - классическая регистрация и вход
+- 🤖 **Telegram Web App** - авторизация через Telegram приложения
+- 🔗 **Telegram Login Widget** - вход через веб-виджет Telegram
+- 🔐 **JWT токены с ролями** - безопасная система сессий (USER/ADMIN)
+- 👥 **Управление ролями** - администраторы и обычные пользователи
+- 🔄 **Смена паролей** - безопасное обновление учетных данных
+- 🔗 **Привязка аккаунтов** - связывание email и Telegram аккаунтов
+
+### 🎯 Бизнес-логика
+
+- 📊 Система профессий и интервью
+- 👤 Управление статусами пользователей (интервьюер/кандидат)
+- 📝 Система обратной связи и форм
+
+### 🛡️ Безопасность и производительность
+
+- 🔒 Хэширование паролей с bcrypt (12 rounds)
+- 🏥 Health checks для zero downtime deployment
+- 📈 Rate limiting для защиты от атак
+- ⚡ Валидация входных данных
+- 🗄️ PostgreSQL с Prisma ORM
 
 ## 🚀 Быстрый старт
 
@@ -32,16 +58,21 @@ cp env.example .env
 TELEGRAM_TOKEN=your_telegram_bot_token_here
 BOT_USERNAME=SuperMock_bot
 
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-
 # JWT Configuration
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=your_super_secret_jwt_key_change_in_production
 JWT_EXPIRES_IN=7d
 
-# CORS Configuration
+# Database Configuration
+DATABASE_URL="postgresql://postgres:password@localhost:5432/supermock"
+
+# Server Configuration
+PORT=3001
+HTTPS_PORT=3443
+NODE_ENV=development
+
+# URLs Configuration
 FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:3001/api
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
@@ -53,6 +84,14 @@ RATE_LIMIT_MAX_REQUESTS=100
 **Режим разработки:**
 
 ```bash
+# Инициализация базы данных
+npm run db:generate
+npm run db:push
+
+# Создание администратора по умолчанию
+npm run create-admin
+
+# Запуск сервера
 npm run dev
 ```
 
@@ -60,14 +99,104 @@ npm run dev
 
 ```bash
 npm run build
+npm run db:generate
+npm run db:push
+npm run create-admin
 npm start
 ```
 
 Сервер будет доступен по адресу: `http://localhost:3001`
 
+### 🔧 Настройка базы данных
+
+Проект использует PostgreSQL с Prisma ORM:
+
+```bash
+# Генерация Prisma клиента
+npm run db:generate
+
+# Применение изменений схемы к БД
+npm run db:push
+
+# Создание миграций
+npm run db:migrate
+
+# Prisma Studio (веб-интерфейс для БД)
+npm run db:studio
+```
+
+### 👤 Создание администратора
+
+```bash
+# Автоматическое создание администратора по умолчанию
+npm run create-admin
+
+# Интерактивное создание
+npm run create-admin interactive
+
+# Проверка существующих администраторов
+npm run create-admin check
+```
+
+**Данные администратора по умолчанию:**
+
+- Email: `korobprog@gmail.com`
+- Пароль: `Krishna1284Radha`
+- Роль: ADMIN
+
+⚠️ **Обязательно смените пароль после первого входа!**
+
 ## 📡 API Endpoints
 
 ### Аутентификация
+
+#### POST `/api/auth/register`
+
+Регистрация нового пользователя
+
+**Тело запроса:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "username": "johndoe"
+}
+```
+
+#### POST `/api/auth/login`
+
+Вход через email/password
+
+**Тело запроса:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123"
+}
+```
+
+#### POST `/api/auth/change-password`
+
+Изменение пароля (требует авторизации)
+
+**Заголовки:**
+
+```
+Authorization: Bearer your_jwt_token
+```
+
+**Тело запроса:**
+
+```json
+{
+  "currentPassword": "OldPassword123",
+  "newPassword": "NewPassword123"
+}
+```
 
 #### POST `/api/auth/telegram`
 
@@ -81,7 +210,45 @@ npm start
 }
 ```
 
-**Ответ:**
+#### POST `/api/auth/telegram-widget`
+
+Аутентификация через Telegram Login Widget
+
+**Тело запроса:**
+
+```json
+{
+  "id": 123456789,
+  "first_name": "John",
+  "last_name": "Doe",
+  "username": "johndoe",
+  "auth_date": 1640995200,
+  "hash": "telegram_hash"
+}
+```
+
+#### POST `/api/auth/link-telegram`
+
+Привязка Telegram аккаунта (требует авторизации)
+
+**Заголовки:**
+
+```
+Authorization: Bearer your_jwt_token
+```
+
+**Тело запроса:**
+
+```json
+{
+  "telegramId": "123456789",
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+**Стандартный ответ авторизации:**
 
 ```json
 {
@@ -89,10 +256,14 @@ npm start
   "data": {
     "token": "jwt_token_here",
     "user": {
-      "id": 123456789,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe"
+      "id": "user_db_id",
+      "email": "user@example.com",
+      "telegramId": "123456789",
+      "firstName": "John",
+      "lastName": "Doe",
+      "username": "johndoe",
+      "role": "USER",
+      "status": "INTERVIEWER"
     }
   },
   "message": "Authentication successful"
@@ -211,13 +382,73 @@ src/
 ### Основные
 
 - `express` - веб-фреймворк
+- `@prisma/client` - Prisma ORM клиент
+- `bcryptjs` - хэширование паролей
 - `node-telegram-bot-api` - работа с Telegram Bot API
 - `jsonwebtoken` - JWT токены
 - `cors` - CORS middleware
-- `helmet` - безопасность
+- `helmet` - безопасность HTTP заголовков
+- `express-rate-limit` - ограничение запросов
+- `dotenv` - переменные окружения
+- `uuid` - генерация уникальных ID
 
 ### Разработка
 
 - `typescript` - типизация
 - `nodemon` - автоматическая перезагрузка
 - `tsx` - TypeScript runner
+- `prisma` - ORM для работы с базой данных
+
+## 🚀 Деплой
+
+### Docker и Dokploy
+
+Проект готов для деплоя с Dokploy:
+
+1. **См. подробную инструкцию**: [DOKPLOY_DEPLOYMENT.md](../DOKPLOY_DEPLOYMENT.md)
+2. **Docker Compose**: настроен в корневой директории
+3. **Health Checks**: встроены для zero downtime deployment
+4. **Environment Variables**: настроены для production
+
+### Ключевые особенности для production
+
+- 🏥 Health checks на `/api/health`
+- 🗄️ PostgreSQL с persistent volumes
+- 🔒 Безопасные переменные окружения
+- 📊 Logging в `/app/logs`
+- ⚡ Rate limiting настроен
+- 🔐 Секретные JWT ключи
+
+## 🛠️ Архитектура
+
+```
+backend/
+├── src/
+│   ├── controllers/     # Контроллеры для обработки запросов
+│   │   ├── authController.ts
+│   │   └── ...
+│   ├── middleware/      # Middleware (аутентификация, роли)
+│   │   ├── auth.ts
+│   │   └── ...
+│   ├── routes/          # Маршруты API
+│   │   ├── auth.ts
+│   │   ├── index.ts
+│   │   └── ...
+│   ├── services/        # Бизнес-логика
+│   │   ├── authService.ts
+│   │   ├── userService.ts
+│   │   └── prisma.ts
+│   ├── utils/           # Утилиты
+│   │   ├── jwt.ts
+│   │   ├── password.ts
+│   │   ├── telegram.ts
+│   │   └── validation.ts
+│   ├── types/           # TypeScript типы
+│   └── index.ts         # Главный файл сервера
+├── prisma/              # Схема базы данных
+│   ├── schema.prisma
+│   └── migrations/
+├── scripts/             # Скрипты для управления
+│   └── createAdmin.ts
+└── Dockerfile          # Docker образ
+```

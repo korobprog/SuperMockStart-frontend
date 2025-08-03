@@ -23,6 +23,19 @@ export interface JwtPayload {
   exp?: number;
 }
 
+// Extended JWT payload with role and auth type
+export interface ExtendedJwtPayload extends JwtPayload {
+  role: UserRole;
+  authType: 'email' | 'telegram';
+  userDbId?: string;
+}
+
+// User roles enum
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -55,15 +68,16 @@ export interface TelegramWebAppData {
 // Новые типы для системы статусов
 export enum UserStatus {
   INTERVIEWER = 'INTERVIEWER',
-  CANDIDATE = 'CANDIDATE'
+  CANDIDATE = 'CANDIDATE',
 }
 
 export enum InterviewStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
-  FEEDBACK_RECEIVED = 'FEEDBACK_RECEIVED'
+  FEEDBACK_RECEIVED = 'FEEDBACK_RECEIVED',
 }
 
+// Обновленный интерфейс пользователя - соответствует текущей схеме Prisma
 export interface User {
   id: string;
   telegramId: string;
@@ -71,6 +85,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   status: UserStatus;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,222 +1,264 @@
-import prisma from './prisma.js';
-import { UserStatus, InterviewStatus } from '../types/index.js';
+import { PrismaClient } from '@prisma/client';
+import { User, UserStatus, ApiResponse } from '../types/index.js';
 
-export interface CreateUserData {
-  telegramId: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface AddProfessionData {
-  userId: string;
-  profession: string;
-}
-
-export interface UpdateUserStatusData {
-  userId: string;
-  status: UserStatus;
-}
-
-export interface UpdateUserStatusByTelegramIdData {
-  telegramId: string;
-  status: UserStatus;
-}
-
-export interface CreateInterviewData {
-  interviewerId: string;
-  candidateId: string;
-}
-
-export interface UpdateInterviewFeedbackData {
-  interviewId: string;
-  feedback: string;
-}
+const prisma = new PrismaClient();
 
 export class UserService {
-  // Создание нового пользователя
-  static async createUser(data: CreateUserData) {
-    return await prisma.user.create({
-      data,
-    });
+  /**
+   * Находит или создает пользователя по Telegram ID
+   */
+  static async findOrCreateTelegramUser(telegramData: {
+    id: number;
+    username?: string;
+    firstName: string;
+    lastName?: string;
+  }): Promise<ApiResponse<User>> {
+    try {
+      const telegramId = telegramData.id.toString();
+
+      // Ищем существующего пользователя
+      let user = await prisma.user.findUnique({
+        where: { telegramId },
+      });
+
+      if (user) {
+        // Обновляем данные пользователя
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            username: telegramData.username || user.username,
+            firstName: telegramData.firstName || user.firstName,
+            lastName: telegramData.lastName || user.lastName,
+          },
+        });
+
+        const userResponse: User = {
+          id: user.id,
+          telegramId: user.telegramId,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          status: user.status as UserStatus,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+
+        return {
+          success: true,
+          data: userResponse,
+          message: 'Пользователь найден',
+        };
+      }
+
+      // Создаем нового пользователя
+      const newUser = await prisma.user.create({
+        data: {
+          telegramId,
+          username: telegramData.username,
+          firstName: telegramData.firstName,
+          lastName: telegramData.lastName,
+          status: UserStatus.INTERVIEWER,
+        },
+      });
+
+      const userResponse: User = {
+        id: newUser.id,
+        telegramId: newUser.telegramId,
+        username: newUser.username,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        status: newUser.status as UserStatus,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+
+      return {
+        success: true,
+        data: userResponse,
+        message: 'Пользователь создан',
+      };
+    } catch (error) {
+      console.error('Telegram user find/create error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при работе с пользователем Telegram',
+      };
+    }
   }
 
-  // Получение пользователя по Telegram ID
-  static async getUserByTelegramId(telegramId: string) {
-    return await prisma.user.findUnique({
-      where: { telegramId },
-      include: {
-        selectedProfessions: true,
-      },
-    });
+  /**
+   * Получает пользователя по ID
+   */
+  static async getUserById(id: string): Promise<ApiResponse<User>> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          error: 'Пользователь не найден',
+        };
+      }
+
+      const userResponse: User = {
+        id: user.id,
+        telegramId: user.telegramId,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status as UserStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
+      return {
+        success: true,
+        data: userResponse,
+      };
+    } catch (error) {
+      console.error('Get user by ID error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при получении пользователя',
+      };
+    }
   }
 
-  // Получение пользователя по ID
-  static async getUserById(id: string) {
-    return await prisma.user.findUnique({
-      where: { id },
-      include: {
-        selectedProfessions: true,
-      },
-    });
+  /**
+   * Получает пользователя по Telegram ID
+   */
+  static async getUserByTelegramId(
+    telegramId: string
+  ): Promise<ApiResponse<User>> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { telegramId },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          error: 'Пользователь не найден',
+        };
+      }
+
+      const userResponse: User = {
+        id: user.id,
+        telegramId: user.telegramId,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status as UserStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
+      return {
+        success: true,
+        data: userResponse,
+      };
+    } catch (error) {
+      console.error('Get user by Telegram ID error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при получении пользователя',
+      };
+    }
   }
 
-  // Добавление выбранной профессии пользователю
-  static async addSelectedProfession(data: AddProfessionData) {
-    return await prisma.selectedProfession.create({
-      data,
-      include: {
-        user: true,
-      },
-    });
+  /**
+   * Обновляет статус пользователя
+   */
+  static async updateUserStatus(
+    userId: string,
+    status: UserStatus
+  ): Promise<ApiResponse<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id: userId },
+        data: { status },
+      });
+
+      const userResponse: User = {
+        id: user.id,
+        telegramId: user.telegramId,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status as UserStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
+      return {
+        success: true,
+        data: userResponse,
+        message: 'Статус пользователя обновлен',
+      };
+    } catch (error) {
+      console.error('Update user status error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при обновлении статуса пользователя',
+      };
+    }
   }
 
-  // Получение всех выбранных профессий пользователя
-  static async getUserProfessions(userId: string) {
-    return await prisma.selectedProfession.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-    });
+  /**
+   * Получает всех пользователей
+   */
+  static async getAllUsers(): Promise<ApiResponse<User[]>> {
+    try {
+      const users = await prisma.user.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const usersResponse: User[] = users.map((user) => ({
+        id: user.id,
+        telegramId: user.telegramId,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status as UserStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }));
+
+      return {
+        success: true,
+        data: usersResponse,
+      };
+    } catch (error) {
+      console.error('Get all users error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при получении пользователей',
+      };
+    }
   }
 
-  // Удаление выбранной профессии
-  static async removeSelectedProfession(id: string) {
-    return await prisma.selectedProfession.delete({
-      where: { id },
-    });
-  }
+  /**
+   * Удаляет пользователя
+   */
+  static async deleteUser(userId: string): Promise<ApiResponse<boolean>> {
+    try {
+      await prisma.user.delete({
+        where: { id: userId },
+      });
 
-  // Обновление или создание пользователя
-  static async upsertUser(data: CreateUserData) {
-    return await prisma.user.upsert({
-      where: { telegramId: data.telegramId },
-      update: {
-        username: data.username,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      },
-      create: data,
-    });
-  }
-
-  // Обновление статуса пользователя по ID
-  static async updateUserStatus(data: UpdateUserStatusData) {
-    return await prisma.user.update({
-      where: { id: data.userId },
-      data: { status: data.status },
-      include: {
-        selectedProfessions: true,
-      },
-    });
-  }
-
-  // Обновление статуса пользователя по Telegram ID
-  static async updateUserStatusByTelegramId(
-    data: UpdateUserStatusByTelegramIdData
-  ) {
-    return await prisma.user.update({
-      where: { telegramId: data.telegramId },
-      data: { status: data.status },
-      include: {
-        selectedProfessions: true,
-      },
-    });
-  }
-
-  // Получение пользователей по статусу
-  static async getUsersByStatus(status: UserStatus) {
-    return await prisma.user.findMany({
-      where: { status },
-      include: {
-        selectedProfessions: true,
-      },
-    });
-  }
-
-  // Создание интервью
-  static async createInterview(data: CreateInterviewData) {
-    return await prisma.interview.create({
-      data,
-      include: {
-        interviewer: true,
-        candidate: true,
-      },
-    });
-  }
-
-  // Завершение интервью
-  static async completeInterview(interviewId: string) {
-    return await prisma.interview.update({
-      where: { id: interviewId },
-      data: { status: InterviewStatus.COMPLETED },
-      include: {
-        interviewer: true,
-        candidate: true,
-      },
-    });
-  }
-
-  // Добавление обратной связи к интервью
-  static async addInterviewFeedback(data: UpdateInterviewFeedbackData) {
-    const interview = await prisma.interview.update({
-      where: { id: data.interviewId },
-      data: {
-        feedback: data.feedback,
-        status: InterviewStatus.FEEDBACK_RECEIVED,
-        feedbackReceivedAt: new Date(),
-      },
-      include: {
-        interviewer: true,
-        candidate: true,
-      },
-    });
-
-    // Автоматически меняем статус интервьюера на кандидата
-    await this.updateUserStatus({
-      userId: interview.interviewerId,
-      status: UserStatus.CANDIDATE,
-    });
-
-    return interview;
-  }
-
-  // Получение интервью пользователя
-  static async getUserInterviews(userId: string) {
-    return await prisma.interview.findMany({
-      where: {
-        OR: [{ interviewerId: userId }, { candidateId: userId }],
-      },
-      include: {
-        interviewer: true,
-        candidate: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  // Получение доступных кандидатов для интервью
-  static async getAvailableCandidates(excludeUserId?: string) {
-    return await prisma.user.findMany({
-      where: {
-        status: UserStatus.CANDIDATE,
-        ...(excludeUserId && { id: { not: excludeUserId } }),
-      },
-      include: {
-        selectedProfessions: true,
-      },
-    });
-  }
-
-  // Получение доступных интервьюеров
-  static async getAvailableInterviewers(excludeUserId?: string) {
-    return await prisma.user.findMany({
-      where: {
-        status: UserStatus.INTERVIEWER,
-        ...(excludeUserId && { id: { not: excludeUserId } }),
-      },
-      include: {
-        selectedProfessions: true,
-      },
-    });
+      return {
+        success: true,
+        data: true,
+        message: 'Пользователь удален',
+      };
+    } catch (error) {
+      console.error('Delete user error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при удалении пользователя',
+      };
+    }
   }
 }

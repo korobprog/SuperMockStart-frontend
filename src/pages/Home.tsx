@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,133 +8,26 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import TelegramAuth from '@/components/TelegramAuth';
+import TelegramBotAuth from '@/components/TelegramBotAuth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Home: React.FC = () => {
   const { user, loading, isAuthenticated, logout } = useTelegramAuth();
-  const [step, setStep] = useState(1);
-  const [authUrl, setAuthUrl] = useState('');
-  const [userId] = useState(1736594064); // Реальный User ID
+  const [activeTab, setActiveTab] = React.useState('webapp');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
-
-  const createAuthUrl = async () => {
-    console.log('🔗 Creating auth URL for user:', userId);
-
-    try {
-      const response = await fetch(`${API_URL}/api/telegram-bot/auth-url`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          redirectUrl: `${window.location.origin}/auth-callback`,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('📡 API Response:', data);
-
-      if (data.success) {
-        console.log('✅ Auth URL created successfully:', data.data?.authUrl);
-        setAuthUrl(data.data?.authUrl || '');
-        setStep(2);
-      } else {
-        console.error('❌ API Error:', data.error);
-        alert(`Ошибка: ${data.error}`);
-      }
-    } catch (error) {
-      console.error('❌ Network Error:', error);
-      alert(`Ошибка сети: ${error}`);
-    }
+  const handleAuthSuccess = (user: any, token: string) => {
+    console.log('Авторизация успешна:', user);
+    // Перезагружаем страницу для обновления состояния
+    window.location.reload();
   };
 
-  const checkAuth = async () => {
-    console.log('🔍 Checking auth for user:', userId);
-
-    try {
-      const response = await fetch(`${API_URL}/api/telegram-bot/verify-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('📡 Verify API Response:', data);
-
-      if (data.success) {
-        console.log('✅ Auth verification successful');
-
-        // Сохраняем токен в localStorage
-        if (data.data?.token) {
-          localStorage.setItem('telegram_token', data.data.token);
-          console.log('💾 Token saved to localStorage');
-        }
-
-        // Перезагружаем страницу для обновления состояния авторизации
-        window.location.reload();
-      } else {
-        console.error('❌ Auth verification failed:', data.error);
-        alert(`Ошибка авторизации: ${data.error || 'Неизвестная ошибка'}`);
-      }
-    } catch (error) {
-      console.error('❌ Network Error during auth check:', error);
-      alert(`Ошибка сети при проверке авторизации: ${error}`);
-    }
-  };
-
-  const openTelegram = () => {
-    console.log('🔗 Opening Telegram URL:', authUrl);
-
-    if (authUrl) {
-      try {
-        // Попробуем открыть в новом окне
-        const newWindow = window.open(authUrl, '_blank');
-
-        if (newWindow) {
-          console.log('✅ Telegram window opened successfully');
-          setStep(3);
-        } else {
-          console.log('❌ Failed to open window, trying alternative method');
-          // Альтернативный способ - скопировать ссылку в буфер обмена
-          navigator.clipboard
-            .writeText(authUrl)
-            .then(() => {
-              alert(
-                'Ссылка скопирована в буфер обмена! Откройте Telegram и вставьте ссылку.'
-              );
-              setStep(3);
-            })
-            .catch(() => {
-              alert(
-                `Не удалось открыть Telegram автоматически. Скопируйте эту ссылку и откройте в Telegram:\n\n${authUrl}`
-              );
-              setStep(3);
-            });
-        }
-      } catch (error) {
-        console.error('❌ Error opening Telegram:', error);
-        alert(
-          `Ошибка при открытии Telegram: ${error}\n\nСкопируйте эту ссылку и откройте в Telegram:\n\n${authUrl}`
-        );
-        setStep(3);
-      }
-    } else {
-      console.error('❌ No auth URL available');
-      alert(
-        'Ошибка: ссылка авторизации не создана. Попробуйте создать ссылку заново.'
-      );
-    }
+  const handleAuthError = (error: string) => {
+    console.error('Ошибка авторизации:', error);
   };
 
   const handleLogout = () => {
     logout();
-    setStep(1);
-    setAuthUrl('');
     console.log('🚪 User logged out');
   };
 
@@ -230,7 +123,7 @@ const Home: React.FC = () => {
     );
   }
 
-  // Неавторизованный пользователь - показываем форму авторизации
+  // Неавторизованный пользователь - показываем новую форму авторизации
   return (
     <div className="container mx-auto px-4 py-8">
       <Card className="max-w-2xl mx-auto">
@@ -241,98 +134,87 @@ const Home: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {step === 1 && (
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">
-                Шаг 1: Создание ссылки авторизации
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Нажмите кнопку ниже, чтобы создать уникальную ссылку для
-                авторизации через Telegram бота.
-              </p>
-              <Button onClick={createAuthUrl} className="w-full">
-                Создать ссылку авторизации
-              </Button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">
-                Шаг 2: Открытие в Telegram
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Ссылка создана! Теперь откройте её в Telegram и нажмите "Start".
-              </p>
-              <div className="bg-gray-100 p-4 rounded-lg mb-4">
-                <p className="text-sm text-gray-700 break-all">{authUrl}</p>
-              </div>
-              <div className="space-y-2">
-                <Button onClick={openTelegram} className="w-full">
-                  Открыть в Telegram
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(1)}
-                  className="w-full"
-                >
-                  Назад
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">
-                Шаг 3: Проверка авторизации
-              </h3>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-center">
+          {/* Проверяем, находимся ли мы в Telegram Web App */}
+          {window.Telegram?.WebApp ? (
+            // Если мы в Telegram Web App, показываем только Web App авторизацию
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center">
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                    className="h-5 w-5 text-blue-400 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
                     <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  <span className="text-yellow-800">
-                    Ожидание подтверждения в Telegram...
+                  <span className="text-sm text-blue-700">
+                    Вы используете Telegram Web App
                   </span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Button onClick={checkAuth} className="w-full">
-                  Проверить авторизацию
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  className="w-full"
-                >
-                  Назад
-                </Button>
-              </div>
+
+              <TelegramAuth
+                onAuthSuccess={handleAuthSuccess}
+                onAuthError={handleAuthError}
+              />
             </div>
+          ) : (
+            // Если мы в обычном браузере, показываем выбор метода авторизации
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="webapp">Web App</TabsTrigger>
+                <TabsTrigger value="bot">Telegram Bot</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="webapp" className="space-y-4">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-600 mb-2">
+                    Откройте приложение в Telegram для авторизации
+                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-xs text-yellow-800">
+                      💡 Совет: Добавьте приложение в Telegram через
+                      @SuperMock_bot
+                    </p>
+                  </div>
+                </div>
+
+                <TelegramAuth
+                  onAuthSuccess={handleAuthSuccess}
+                  onAuthError={handleAuthError}
+                />
+              </TabsContent>
+
+              <TabsContent value="bot" className="space-y-4">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-600 mb-2">
+                    Авторизация через Telegram бота
+                  </p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs text-green-800">
+                      ✅ Рекомендуется для обычных браузеров
+                    </p>
+                  </div>
+                </div>
+
+                <TelegramBotAuth
+                  onAuthSuccess={handleAuthSuccess}
+                  onAuthError={handleAuthError}
+                />
+              </TabsContent>
+            </Tabs>
           )}
 
           <div className="text-xs text-gray-500 text-center">
-            <p>API URL: {API_URL}</p>
-            <p>User ID: {userId}</p>
-            <p>Step: {step}/3</p>
+            <p>Безопасная авторизация через Telegram</p>
           </div>
         </CardContent>
       </Card>

@@ -39,6 +39,14 @@ function Navigation() {
                 О проекте
               </Button>
             </Link>
+            <Link to="/auth">
+              <Button
+                variant={location.pathname === '/auth' ? 'default' : 'ghost'}
+                size="sm"
+              >
+                Авторизация
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

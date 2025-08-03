@@ -1,8 +1,158 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/authService.js';
-import { ApiResponse } from '../types/index.js';
+import { UserService } from '../services/userService.js';
+import { ValidationUtils } from '../utils/validation.js';
+import { ApiResponse, LoginCredentials, RegisterData } from '../types/index.js';
 
 export class AuthController {
+  /**
+   * Регистрация нового пользователя
+   */
+  static async register(req: Request, res: Response) {
+    try {
+      const { email, password, firstName, lastName, username }: RegisterData = req.body;
+
+      if (!email || !password || !firstName) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email, пароль и имя обязательны',
+        } as ApiResponse);
+      }
+
+      const result = await AuthService.registerUser({
+        email,
+        password,
+        firstName,
+        lastName,
+        username,
+      });
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Registration controller error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+      } as ApiResponse);
+    }
+  }
+
+  /**
+   * Вход через email/password
+   */
+  static async login(req: Request, res: Response) {
+    try {
+      const { email, password }: LoginCredentials = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email и пароль обязательны',
+        } as ApiResponse);
+      }
+
+      const result = await AuthService.loginWithEmail({ email, password });
+
+      if (!result.success) {
+        return res.status(401).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Login controller error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+      } as ApiResponse);
+    }
+  }
+
+  /**
+   * Изменение пароля
+   */
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          error: 'Текущий пароль и новый пароль обязательны',
+        } as ApiResponse);
+      }
+
+      if (!req.extendedUser) {
+        return res.status(401).json({
+          success: false,
+          error: 'Пользователь не аутентифицирован',
+        } as ApiResponse);
+      }
+
+      const result = await UserService.updatePassword(
+        req.extendedUser.id,
+        currentPassword,
+        newPassword
+      );
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Change password controller error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+      } as ApiResponse);
+    }
+  }
+
+  /**
+   * Привязка Telegram аккаунта
+   */
+  static async linkTelegram(req: Request, res: Response) {
+    try {
+      const { telegramId, username, firstName, lastName } = req.body;
+
+      if (!telegramId || !firstName) {
+        return res.status(400).json({
+          success: false,
+          error: 'Telegram ID и имя обязательны',
+        } as ApiResponse);
+      }
+
+      if (!req.extendedUser) {
+        return res.status(401).json({
+          success: false,
+          error: 'Пользователь не аутентифицирован',
+        } as ApiResponse);
+      }
+
+      const result = await UserService.linkTelegramAccount(
+        req.extendedUser.id,
+        telegramId.toString(),
+        { username, firstName, lastName }
+      );
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Link Telegram controller error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+      } as ApiResponse);
+    }
+  }
+
   /**
    * Аутентификация через Telegram Web App
    */
@@ -154,7 +304,7 @@ export class AuthController {
    */
   static async getProfile(req: Request, res: Response) {
     try {
-      if (!req.user) {
+      if (!req.extendedUser) {
         return res.status(401).json({
           success: false,
           error: 'User not authenticated',
@@ -163,7 +313,7 @@ export class AuthController {
 
       return res.status(200).json({
         success: true,
-        data: req.user,
+        data: req.extendedUser,
         message: 'Profile retrieved successfully',
       });
     } catch (error) {
@@ -186,18 +336,34 @@ export class AuthController {
       if (!token) {
         return res.status(200).json({
           success: true,
-          data: { authenticated: false },
+          data: { 
+            authenticated: false,
+            user: null,
+          },
           message: 'No token provided',
         });
       }
 
+      // Проверяем, есть ли расширенный пользователь (установлен optionalExtendedAuth middleware)
+      if (req.extendedUser) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            authenticated: true,
+            user: req.extendedUser,
+          },
+          message: 'User is authenticated',
+        });
+      }
+
+      // Fallback к старому методу для обратной совместимости
       const isValid = AuthService.isTokenValid(token);
 
       return res.status(200).json({
         success: true,
         data: {
           authenticated: isValid,
-          token: isValid ? token : null,
+          user: isValid ? req.user || null : null,
         },
         message: isValid ? 'Token is valid' : 'Token is invalid or expired',
       });
