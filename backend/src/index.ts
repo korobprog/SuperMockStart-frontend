@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import ms from 'ms';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
+import { TelegramBotService } from './services/telegramBotService.js';
 import routes from './routes/index.js';
 import prisma from './services/prisma.js';
 
@@ -26,6 +27,7 @@ const __dirname = path.dirname(__filename);
 
 // Инициализируем утилиты
 TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
+TelegramBotService.initialize(process.env.TELEGRAM_TOKEN || '');
 JwtUtils.initialize(
   process.env.JWT_SECRET || 'your-secret-key-change-in-production',
   process.env.JWT_EXPIRES_IN || '7d'
@@ -40,7 +42,10 @@ app.set('trust proxy', true);
 // CORS настройки
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: function (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
@@ -79,7 +84,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Правильная обработка IP адресов за прокси
-  keyGenerator: (req) => {
+  keyGenerator: (req: express.Request) => {
     return req.ip || req.connection.remoteAddress || 'unknown';
   },
 });
@@ -91,10 +96,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Логирование запросов
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+app.use(
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+  }
+);
 
 // Маршруты
 app.use('/', routes);

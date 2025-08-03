@@ -23,6 +23,10 @@ export declare class AuthService {
      */
     static refreshUserInfo(userId: number): Promise<ApiResponse<TelegramUser>>;
     /**
+     * Генерирует JWT токен для пользователя
+     */
+    static generateTokenForUser(user: TelegramUser): string;
+    /**
      * Проверяет, действителен ли токен
      */
     static isTokenValid(token: string): boolean;

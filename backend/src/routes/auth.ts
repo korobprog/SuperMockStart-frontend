@@ -9,6 +9,25 @@ import {
 const router = Router();
 
 /**
+ * @route GET /api/auth/test
+ * @desc Тестовый эндпоинт для проверки подключения
+ * @access Public
+ */
+router.get('/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Auth API доступен',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      telegram: '/api/auth/telegram',
+      verify: '/api/auth/verify',
+      profile: '/api/auth/profile',
+      status: '/api/auth/status',
+    },
+  });
+});
+
+/**
  * @route POST /api/auth/telegram
  * @desc Аутентификация через Telegram Web App
  * @access Public

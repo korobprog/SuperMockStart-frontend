@@ -160,6 +160,13 @@ export class AuthService {
   }
 
   /**
+   * Генерирует JWT токен для пользователя
+   */
+  static generateTokenForUser(user: TelegramUser): string {
+    return JwtUtils.generateToken(user);
+  }
+
+  /**
    * Проверяет, действителен ли токен
    */
   static isTokenValid(token: string): boolean {

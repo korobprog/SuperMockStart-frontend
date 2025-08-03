@@ -54,7 +54,7 @@ function About() {
             </div>
 
             <div className="pt-4">
-              <Link to="/interview">
+              <Link to="/collectingcontacts">
                 <Button className="w-full">Попробовать сейчас</Button>
               </Link>
             </div>

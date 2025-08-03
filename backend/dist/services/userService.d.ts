@@ -39,9 +39,9 @@ export declare class UserService {
     static getUserByTelegramId(telegramId: string): Promise<({
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -56,9 +56,9 @@ export declare class UserService {
     static getUserById(id: string): Promise<({
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -83,21 +83,21 @@ export declare class UserService {
         };
     } & {
         id: string;
+        userId: string;
         createdAt: Date;
         profession: string;
-        userId: string;
     }>;
     static getUserProfessions(userId: string): Promise<{
         id: string;
+        userId: string;
         createdAt: Date;
         profession: string;
-        userId: string;
     }[]>;
     static removeSelectedProfession(id: string): Promise<{
         id: string;
+        userId: string;
         createdAt: Date;
         profession: string;
-        userId: string;
     }>;
     static upsertUser(data: CreateUserData): Promise<{
         id: string;
@@ -112,9 +112,9 @@ export declare class UserService {
     static updateUserStatus(data: UpdateUserStatusData): Promise<{
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -129,9 +129,9 @@ export declare class UserService {
     static updateUserStatusByTelegramId(data: UpdateUserStatusByTelegramIdData): Promise<{
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -146,9 +146,9 @@ export declare class UserService {
     static getUsersByStatus(status: UserStatus): Promise<({
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -287,9 +287,9 @@ export declare class UserService {
     static getAvailableCandidates(excludeUserId?: string): Promise<({
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;
@@ -304,9 +304,9 @@ export declare class UserService {
     static getAvailableInterviewers(excludeUserId?: string): Promise<({
         selectedProfessions: {
             id: string;
+            userId: string;
             createdAt: Date;
             profession: string;
-            userId: string;
         }[];
     } & {
         id: string;

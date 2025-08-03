@@ -138,6 +138,12 @@ export class AuthService {
         }
     }
     /**
+     * Генерирует JWT токен для пользователя
+     */
+    static generateTokenForUser(user) {
+        return JwtUtils.generateToken(user);
+    }
+    /**
      * Проверяет, действителен ли токен
      */
     static isTokenValid(token) {

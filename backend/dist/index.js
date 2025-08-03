@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
+import { TelegramBotService } from './services/telegramBotService.js';
 import routes from './routes/index.js';
 import prisma from './services/prisma.js';
 // Загружаем переменные окружения
@@ -21,6 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Инициализируем утилиты
 TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
+TelegramBotService.initialize(process.env.TELEGRAM_TOKEN || '');
 JwtUtils.initialize(process.env.JWT_SECRET || 'your-secret-key-change-in-production', process.env.JWT_EXPIRES_IN || '7d');
 // Middleware безопасности
 app.use(helmet());

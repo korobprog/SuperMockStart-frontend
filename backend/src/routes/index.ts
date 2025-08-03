@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.js';
 import professionRoutes from './professions.js';
 import userStatusRoutes from './userStatus.js';
+import telegramBotRoutes from './telegramBot.js';
 
 const router = Router();
 
@@ -9,6 +10,7 @@ const router = Router();
 router.use('/api/auth', authRoutes);
 router.use('/api/professions', professionRoutes);
 router.use('/api/user-status', userStatusRoutes);
+router.use('/api/telegram-bot', telegramBotRoutes);
 
 // API info endpoint
 router.get('/api', (req, res) => {
@@ -20,6 +22,7 @@ router.get('/api', (req, res) => {
       auth: '/api/auth',
       professions: '/api/professions',
       userStatus: '/api/user-status',
+      telegramBot: '/api/telegram-bot',
       health: '/health',
     },
     timestamp: new Date().toISOString(),
