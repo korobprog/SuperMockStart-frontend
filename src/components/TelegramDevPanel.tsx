@@ -21,6 +21,7 @@ const TelegramDevPanel: React.FC = () => {
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   // Проверяем, есть ли данные Telegram в localStorage
   useEffect(() => {
@@ -45,23 +46,20 @@ const TelegramDevPanel: React.FC = () => {
 
         if (webApp.initData) {
           // Если есть данные от Telegram, отправляем их на сервер
-          const response = await fetch(
-            'https://localhost:3001/api/auth/telegram-widget',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                id: webApp.initDataUnsafe?.user?.id,
-                first_name: webApp.initDataUnsafe?.user?.first_name,
-                last_name: webApp.initDataUnsafe?.user?.last_name,
-                username: webApp.initDataUnsafe?.user?.username,
-                photo_url: webApp.initDataUnsafe?.user?.photo_url,
-                hash: webApp.initData,
-              }),
-            }
-          );
+          const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: webApp.initDataUnsafe?.user?.id,
+              first_name: webApp.initDataUnsafe?.user?.first_name,
+              last_name: webApp.initDataUnsafe?.user?.last_name,
+              username: webApp.initDataUnsafe?.user?.username,
+              photo_url: webApp.initDataUnsafe?.user?.photo_url,
+              hash: webApp.initData,
+            }),
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -105,7 +103,7 @@ const TelegramDevPanel: React.FC = () => {
         photo_url: 'https://via.placeholder.com/150',
       };
 
-      const response = await fetch('https://localhost:3001/api/auth/test', {
+      const response = await fetch(`${API_URL}/api/auth/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

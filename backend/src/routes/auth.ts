@@ -50,7 +50,11 @@ router.post('/login', AuthController.login);
  * @desc Изменение пароля
  * @access Private
  */
-router.post('/change-password', authenticateExtendedToken, AuthController.changePassword);
+router.post(
+  '/change-password',
+  authenticateExtendedToken,
+  AuthController.changePassword
+);
 
 /**
  * @route POST /api/auth/telegram
@@ -78,11 +82,25 @@ router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
 router.get('/test-token', AuthController.getTestToken);
 
 /**
+ * @route POST /api/auth/test-token-user
+ * @desc Создание тестового токена для реального пользователя
+ * @access Public
+ */
+router.post('/test-token-user', AuthController.createTestTokenForUser);
+
+/**
  * @route POST /api/auth/verify
  * @desc Верификация JWT токена
  * @access Public
  */
 router.post('/verify', AuthController.verifyToken);
+
+/**
+ * @route POST /api/auth/verify-extended-token
+ * @desc Верификация расширенного JWT токена
+ * @access Public
+ */
+router.post('/verify-extended-token', AuthController.verifyExtendedToken);
 
 /**
  * @route GET /api/auth/profile
@@ -114,6 +132,10 @@ router.get('/status', optionalExtendedAuth, AuthController.checkAuthStatus);
  * @desc Привязка Telegram аккаунта к существующему пользователю
  * @access Private
  */
-router.post('/link-telegram', authenticateExtendedToken, AuthController.linkTelegram);
+router.post(
+  '/link-telegram',
+  authenticateExtendedToken,
+  AuthController.linkTelegram
+);
 
 export default router;

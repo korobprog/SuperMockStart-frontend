@@ -3,6 +3,7 @@ import { AuthService } from '../services/authService.js';
 import { UserService } from '../services/userService.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ApiResponse, LoginCredentials, RegisterData } from '../types/index.js';
+import { JwtUtils } from '../utils/jwt.js';
 
 export class AuthController {
   /**
@@ -10,7 +11,8 @@ export class AuthController {
    */
   static async register(req: Request, res: Response) {
     try {
-      const { email, password, firstName, lastName, username }: RegisterData = req.body;
+      const { email, password, firstName, lastName, username }: RegisterData =
+        req.body;
 
       if (!email || !password || !firstName) {
         return res.status(400).json({
@@ -251,6 +253,63 @@ export class AuthController {
   }
 
   /**
+   * Создание тестового токена для реального пользователя (без валидации)
+   */
+  static async createTestTokenForUser(req: Request, res: Response) {
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          error: 'userId is required',
+        } as ApiResponse);
+      }
+
+      // Создаем тестового пользователя
+      const testUser = {
+        id: parseInt(userId),
+        first_name: 'Test',
+        last_name: 'User',
+        username: `test_${userId}`,
+      };
+
+      // Находим или создаем пользователя в БД
+      const userResult = await UserService.findOrCreateTelegramUser({
+        id: parseInt(userId),
+        username: testUser.username,
+        firstName: testUser.first_name,
+        lastName: testUser.last_name,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return res.status(500).json({
+          success: false,
+          error: userResult.error || 'Failed to create/find user',
+        } as ApiResponse);
+      }
+
+      // Генерируем JWT токен
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
+
+      res.json({
+        success: true,
+        data: {
+          token,
+          user: userResult.data,
+        },
+        message: 'Test token created successfully',
+      } as ApiResponse);
+    } catch (error) {
+      console.error('Create test token error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      } as ApiResponse);
+    }
+  }
+
+  /**
    * Проверка валидности токена
    */
   static async verifyToken(req: Request, res: Response) {
@@ -269,6 +328,32 @@ export class AuthController {
       res.json(result);
     } catch (error) {
       console.error('Token verification error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      } as ApiResponse);
+    }
+  }
+
+  /**
+   * Верификация расширенного JWT токена
+   */
+  static async verifyExtendedToken(req: Request, res: Response) {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          error: 'Token is required',
+        } as ApiResponse);
+      }
+
+      const result = await AuthService.verifyExtendedToken(token);
+      res.json(result);
+    } catch (error) {
+      console.error('Extended token verification error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
@@ -336,7 +421,7 @@ export class AuthController {
       if (!token) {
         return res.status(200).json({
           success: true,
-          data: { 
+          data: {
             authenticated: false,
             user: null,
           },

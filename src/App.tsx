@@ -10,11 +10,15 @@ import DebugAuth from './components/DebugAuth';
 import AuthDemo from './pages/AuthDemo';
 import TelegramAuthCallback from './pages/TelegramAuthCallback';
 import TokenCheck from './pages/TokenCheck';
+import Feedback from './pages/Feedback';
+import FeedbackHistory from './pages/FeedbackHistory';
+import TestFeedback from './pages/TestFeedback';
+import TestCompleteSession from './pages/TestCompleteSession';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Navigation />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -27,6 +31,13 @@ function App() {
           <Route path="/auth-demo" element={<AuthDemo />} />
           <Route path="/auth-callback" element={<TelegramAuthCallback />} />
           <Route path="/token-check" element={<TokenCheck />} />
+          <Route path="/feedback/:sessionId" element={<Feedback />} />
+          <Route path="/feedback-history" element={<FeedbackHistory />} />
+          <Route path="/test-feedback" element={<TestFeedback />} />
+          <Route
+            path="/test-complete-session"
+            element={<TestCompleteSession />}
+          />
         </Routes>
       </div>
     </Router>

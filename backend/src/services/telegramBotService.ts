@@ -264,9 +264,9 @@ export class TelegramBotService {
       }
 
       // Пытаемся отправить тестовое сообщение
-      await this.bot.sendMessage(userId, 'Поздравляю! 🎉', {
-        disable_notification: true,
-      });
+      // await this.bot.sendMessage(userId, 'Поздравляю! 🎉', {
+      //   disable_notification: true,
+      // });
       return true;
     } catch (error) {
       return false;

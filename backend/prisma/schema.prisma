@@ -8,19 +8,25 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  telegramId          String               @unique
-  username            String?
-  firstName           String?
-  lastName            String?
-  status              UserStatus           @default(INTERVIEWER)
-  role                UserRole             @default(USER)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  receivedInterviews  Interview[]          @relation("CandidateInterviews")
-  conductedInterviews Interview[]          @relation("InterviewerInterviews")
-  selectedProfessions SelectedProfession[]
-  formData            UserFormData[]
+  id                        String               @id @default(cuid())
+  telegramId                String               @unique
+  username                  String?
+  firstName                 String?
+  lastName                  String?
+  status                    UserStatus           @default(INTERVIEWER)
+  role                      UserRole             @default(USER)
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  receivedInterviews        Interview[]          @relation("CandidateInterviews")
+  conductedInterviews       Interview[]          @relation("InterviewerInterviews")
+  selectedProfessions       SelectedProfession[]
+  formData                  UserFormData[]
+  queueEntries              InterviewQueue[]
+  candidateSessionsReceived InterviewSession[]   @relation("CandidateSessionsReceived")
+  interviewerSessionsConducted InterviewSession[] @relation("InterviewerSessionsConducted")
+  notifications             Notification[]
+  feedbackGiven             Feedback[]           @relation("FeedbackGiven")
+  feedbackReceived          Feedback[]           @relation("FeedbackReceived")
 
   @@map("users")
 }
@@ -36,8 +42,83 @@ model Interview {
   updatedAt          DateTime        @updatedAt
   candidate          User            @relation("CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
   interviewer        User            @relation("InterviewerInterviews", fields: [interviewerId], references: [id], onDelete: Cascade)
+  session            InterviewSession? // Связь с конкретной встречей
 
   @@map("interviews")
+}
+
+model InterviewQueue {
+  id                String          @id @default(cuid())
+  userId            String
+  profession        String
+  language          String          // Язык собеседования
+  preferredDateTime DateTime
+  timeFlexibility   Int             @default(30) // минут гибкости (±30 минут)
+  status            QueueStatus     @default(WAITING)
+  queueType         QueueType       // CANDIDATE или INTERVIEWER
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchedSession    InterviewSession? @relation(fields: [matchedSessionId], references: [id])
+  matchedSessionId  String?
+
+  @@map("interview_queue")
+}
+
+model InterviewSession {
+  id                String              @id @default(cuid())
+  interviewId       String              @unique
+  scheduledDateTime DateTime
+  profession        String
+  language          String              // Язык собеседования
+  meetingLink       String              // Ссылка на видеоконференцию
+  status            SessionStatus       @default(SCHEDULED)
+  candidateId       String
+  interviewerId     String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  interview         Interview           @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  candidate         User                @relation("CandidateSessionsReceived", fields: [candidateId], references: [id], onDelete: Cascade)
+  interviewer       User                @relation("InterviewerSessionsConducted", fields: [interviewerId], references: [id], onDelete: Cascade)
+  queueEntries      InterviewQueue[]
+  notifications     Notification[]
+  feedbacks         Feedback[]
+
+  @@map("interview_sessions")
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  userId    String
+  sessionId String?
+  type      NotificationType
+  title     String
+  message   String
+  scheduled DateTime?         // Когда отправить уведомление
+  sent      Boolean           @default(false)
+  sentAt    DateTime?
+  createdAt DateTime          @default(now())
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   InterviewSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Feedback {
+  id        String           @id @default(cuid())
+  sessionId String
+  fromUserId String
+  toUserId  String
+  rating    Int              // 1-5 звезд
+  comment   String?
+  skills    Json?            // Оценки по навыкам
+  createdAt DateTime         @default(now())
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  fromUser  User             @relation("FeedbackGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser    User             @relation("FeedbackReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, fromUserId]) // Один фидбек от пользователя на сессию
+  @@map("feedback")
 }
 
 model SelectedProfession {
@@ -55,6 +136,7 @@ model UserFormData {
   userId     String
   profession String
   country    String
+  language   String   // Язык на основе страны
   experience String
   email      String?
   phone      String?
@@ -78,4 +160,33 @@ enum InterviewStatus {
   PENDING
   COMPLETED
   FEEDBACK_RECEIVED
+}
+
+enum QueueStatus {
+  WAITING      // Ожидает матчинга
+  MATCHED      // Найден партнер
+  CANCELLED    // Отменен пользователем
+  EXPIRED      // Истек по времени
+}
+
+enum QueueType {
+  CANDIDATE    // Ищет интервьюера
+  INTERVIEWER  // Ищет кандидата
+}
+
+enum SessionStatus {
+  SCHEDULED    // Запланирована
+  IN_PROGRESS  // В процессе
+  COMPLETED    // Завершена
+  CANCELLED    // Отменена
+  NO_SHOW      // Кто-то не явился
+}
+
+enum NotificationType {
+  INTERVIEW_CONFIRMED    // Собеседование подтверждено
+  INTERVIEW_REMINDER     // Напоминание за 30 минут
+  INTERVIEW_CANCELLED    // Собеседование отменено
+  FEEDBACK_REQUEST       // Просьба оставить фидбек
+  FEEDBACK_REMINDER      // Напоминание о незаполненном фидбеке
+  ROLE_CHANGED          // Роли поменяны местами
 }

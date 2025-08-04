@@ -24,7 +24,7 @@ const initialState: ProfessionState = {
 };
 
 // Базовый URL для API
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Async thunks
 export const addSelectedProfession = createAsyncThunk(

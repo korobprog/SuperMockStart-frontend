@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Form Test</title>
+   <style>
+      body {
+         font-family: Arial, sans-serif;
+         margin: 20px;
+      }
+
+      .test-section {
+         margin: 20px 0;
+         padding: 15px;
+         border: 1px solid #ccc;
+         border-radius: 5px;
+      }
+
+      button {
+         padding: 10px 15px;
+         margin: 5px;
+         background: #007bff;
+         color: white;
+         border: none;
+         border-radius: 3px;
+         cursor: pointer;
+      }
+
+      button:hover {
+         background: #0056b3;
+      }
+
+      .result {
+         margin-top: 10px;
+         padding: 10px;
+         background: #f8f9fa;
+         border-radius: 3px;
+      }
+
+      .success {
+         background: #d4edda;
+         color: #155724;
+      }
+
+      .error {
+         background: #f8d7da;
+         color: #721c24;
+      }
+   </style>
+</head>
+
+<body>
+   <h1>🧪 Тест формы SuperMock</h1>
+
+   <div class="test-section">
+      <h3>1. Тест получения токена</h3>
+      <button onclick="getTestToken()">Получить тестовый токен</button>
+      <div id="tokenResult" class="result"></div>
+   </div>
+
+   <div class="test-section">
+      <h3>2. Тест отправки формы</h3>
+      <button onclick="submitForm()">Отправить тестовую форму</button>
+      <div id="formResult" class="result"></div>
+   </div>
+
+   <div class="test-section">
+      <h3>3. Тест получения данных формы</h3>
+      <button onclick="getFormData()">Получить данные формы</button>
+      <div id="getFormResult" class="result"></div>
+   </div>
+
+   <div class="test-section">
+      <h3>4. Проверка localStorage</h3>
+      <button onclick="checkLocalStorage()">Проверить токен в localStorage</button>
+      <div id="localStorageResult" class="result"></div>
+   </div>
+
+   <script>
+      let currentToken = null;
+
+      function showResult(elementId, message, isSuccess = true) {
+         const element = document.getElementById(elementId);
+         element.innerHTML = `<strong>${isSuccess ? '✅' : '❌'}</strong> ${message}`;
+         element.className = `result ${isSuccess ? 'success' : 'error'}`;
+      }
+
+      async function getTestToken() {
+         try {
+            const response = await fetch('/api/auth/test-token');
+            const data = await response.json();
+
+            if (data.success) {
+               currentToken = data.data.token;
+               localStorage.setItem('telegram_token', currentToken);
+               showResult('tokenResult', `Токен получен: ${currentToken.substring(0, 20)}...`);
+            } else {
+               showResult('tokenResult', `Ошибка: ${data.error}`, false);
+            }
+         } catch (error) {
+            showResult('tokenResult', `Ошибка сети: ${error.message}`, false);
+         }
+      }
+
+      async function submitForm() {
+         try {
+            const token = localStorage.getItem('telegram_token') || currentToken;
+
+            if (!token) {
+               showResult('formResult', 'Сначала получите токен!', false);
+               return;
+            }
+
+            const formData = {
+               profession: 'frontend-developer',
+               country: 'RU',
+               experience: '1-3',
+               email: 'test@example.com',
+               phone: '+7 (999) 123-45-67'
+            };
+
+            const response = await fetch('/api/form', {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+               },
+               body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+               showResult('formResult', `Форма отправлена успешно! Данные: ${JSON.stringify(data.data)}`);
+            } else {
+               showResult('formResult', `Ошибка: ${data.error || response.status}`, false);
+            }
+         } catch (error) {
+            showResult('formResult', `Ошибка сети: ${error.message}`, false);
+         }
+      }
+
+      async function getFormData() {
+         try {
+            const token = localStorage.getItem('telegram_token') || currentToken;
+
+            if (!token) {
+               showResult('getFormResult', 'Сначала получите токен!', false);
+               return;
+            }
+
+            const response = await fetch('/api/form', {
+               method: 'GET',
+               headers: {
+                  'Authorization': `Bearer ${token}`
+               }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+               showResult('getFormResult', `Данные получены: ${JSON.stringify(data.data)}`);
+            } else {
+               showResult('getFormResult', `Ошибка: ${data.error || response.status}`, false);
+            }
+         } catch (error) {
+            showResult('getFormResult', `Ошибка сети: ${error.message}`, false);
+         }
+      }
+
+      function checkLocalStorage() {
+         const token = localStorage.getItem('telegram_token');
+         if (token) {
+            showResult('localStorageResult', `Токен найден: ${token.substring(0, 20)}...`);
+         } else {
+            showResult('localStorageResult', 'Токен не найден в localStorage', false);
+         }
+      }
+
+      // Автоматически получаем токен при загрузке страницы
+      window.onload = function () {
+         getTestToken();
+      };
+   </script>
+</body>
+
+</html>

@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { UserService } from '../services/userService.js';
+
+const prisma = new PrismaClient();
 
 export class ProfessionController {
   // Добавление выбранной профессии
@@ -14,26 +17,32 @@ export class ProfessionController {
         });
       }
 
-      // Временное решение без базы данных
-      const mockSelectedProfession = {
-        id: `prof_${Date.now()}`,
-        userId,
-        profession,
-        createdAt: new Date().toISOString(),
-        user: {
-          id: userId,
-          telegramId: userId,
-          username: 'temp-user',
-          firstName: 'Temp',
-          lastName: 'User',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+      // Находим пользователя по telegramId
+      const user = await prisma.user.findUnique({
+        where: { telegramId: userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Пользователь не найден',
+        });
+      }
+
+      // Сохраняем выбранную профессию в базу данных
+      const selectedProfession = await prisma.selectedProfession.create({
+        data: {
+          userId: user.id,
+          profession,
         },
-      };
+        include: {
+          user: true,
+        },
+      });
 
       res.status(201).json({
         success: true,
-        data: mockSelectedProfession,
+        data: selectedProfession,
       });
     } catch (error) {
       console.error('Error adding selected profession:', error);
@@ -56,25 +65,27 @@ export class ProfessionController {
         });
       }
 
-      // Временное решение без базы данных
-      const mockProfessions = [
-        {
-          id: 'prof_1',
-          userId,
-          profession: 'Frontend Developer',
-          createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 день назад
-        },
-        {
-          id: 'prof_2',
-          userId,
-          profession: 'React Developer',
-          createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 дня назад
-        },
-      ];
+      // Находим пользователя по telegramId
+      const user = await prisma.user.findUnique({
+        where: { telegramId: userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Пользователь не найден',
+        });
+      }
+
+      // Получаем все выбранные профессии пользователя
+      const professions = await prisma.selectedProfession.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      });
 
       res.status(200).json({
         success: true,
-        data: mockProfessions,
+        data: professions,
       });
     } catch (error) {
       console.error('Error getting user professions:', error);
@@ -97,7 +108,10 @@ export class ProfessionController {
         });
       }
 
-      // Временное решение без базы данных
+      // Удаляем профессию из базы данных
+      await prisma.selectedProfession.delete({
+        where: { id },
+      });
 
       res.status(200).json({
         success: true,

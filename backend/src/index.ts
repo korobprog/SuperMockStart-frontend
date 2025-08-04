@@ -11,6 +11,7 @@ import ms from 'ms';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
 import { TelegramBotService } from './services/telegramBotService.js';
+import { CronService } from './services/cronService.js';
 import routes from './routes/index.js';
 import prisma from './services/prisma.js';
 
@@ -54,6 +55,8 @@ app.use(
         'https://localhost:5173',
         'http://localhost:5174',
         'https://localhost:5174',
+        'http://localhost:5175',
+        'https://localhost:5175',
         'https://supermock.ru',
         'http://supermock.ru',
       ];
@@ -70,7 +73,7 @@ app.use(
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
@@ -136,6 +139,9 @@ app.listen(PORT, () => {
   );
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+
+  // Запускаем cron задачи
+  CronService.startAll();
 });
 
 // Запуск HTTPS сервера
@@ -162,12 +168,14 @@ try {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  CronService.stopAll();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
+  CronService.stopAll();
   await prisma.$disconnect();
   process.exit(0);
 });

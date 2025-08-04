@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { getLanguageFromCountry } from '../utils/language.js';
 
 const prisma = new PrismaClient();
 
 interface FormData {
   profession: string;
   country: string;
+  language: string;
   experience: string;
   email?: string;
   phone?: string;
@@ -13,8 +15,14 @@ interface FormData {
 
 export const saveFormData = async (req: Request, res: Response) => {
   try {
-    const { profession, country, experience, email, phone }: FormData =
-      req.body;
+    const {
+      profession,
+      country,
+      language,
+      experience,
+      email,
+      phone,
+    }: FormData = req.body;
     const telegramId = req.user?.id?.toString();
 
     if (!telegramId) {
@@ -25,10 +33,11 @@ export const saveFormData = async (req: Request, res: Response) => {
     }
 
     // Валидация обязательных полей
-    if (!profession || !country || !experience) {
+    if (!profession || !country || !language || !experience) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: profession, country, experience',
+        error:
+          'Missing required fields: profession, country, language, experience',
       });
     }
 
@@ -58,19 +67,15 @@ export const saveFormData = async (req: Request, res: Response) => {
         userId: user.id,
         profession,
         country,
+        language,
         experience,
         email,
         phone,
       },
     });
 
-    // Обновляем статус пользователя на CANDIDATE
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        status: 'CANDIDATE',
-      },
-    });
+    // НЕ обновляем статус пользователя - оставляем как есть (INTERVIEWER по умолчанию)
+    // Статус CANDIDATE устанавливается только после получения обратной связи
 
     res.status(200).json({
       success: true,
@@ -110,6 +115,10 @@ export const getFormData = async (req: Request, res: Response) => {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
+        formData: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
       },
     });
 
@@ -121,12 +130,25 @@ export const getFormData = async (req: Request, res: Response) => {
     }
 
     const latestProfession = user.selectedProfessions[0];
+    const latestFormData = user.formData[0];
+
+    // Проверяем, может ли пользователь быть кандидатом (получал ли он обратную связь)
+    const feedbackReceived = await prisma.feedback.findFirst({
+      where: {
+        toUserId: user.id,
+      },
+    });
+
+    const canBeCandidate = feedbackReceived !== null;
 
     res.status(200).json({
       success: true,
       data: {
         profession: latestProfession?.profession || null,
-        status: user.status,
+        language: latestFormData?.language || 'en',
+        country: latestFormData?.country || null,
+        status: user.status || 'INTERVIEWER', // По умолчанию INTERVIEWER
+        canBeCandidate,
       },
     });
   } catch (error) {

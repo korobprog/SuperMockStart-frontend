@@ -24,29 +24,25 @@ const ChooseInterview = () => {
     dispatch(fetchUserInterviews());
   }, [dispatch]);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
   const handleStatusChange = async (status: UserStatus) => {
     try {
       // Получаем ID пользователя из базы данных по Telegram ID
-      const response = await fetch(
-        'http://localhost:3001/api/user-status/status',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/user-status/status`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+      });
 
       if (response.ok) {
         // Для обновления статуса нам нужен ID из базы данных, а не Telegram ID
         // Получаем пользователя по Telegram ID, чтобы получить его ID в базе
-        const userResponse = await fetch(
-          `http://localhost:3001/api/user-status/status`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-            },
-          }
-        );
+        const userResponse = await fetch(`${API_URL}/api/user-status/status`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
 
         if (userResponse.ok) {
           // Используем Telegram ID для обновления статуса
@@ -74,7 +70,7 @@ const ChooseInterview = () => {
 
   const handleGetTestToken = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/test-token');
+      const response = await fetch(`${API_URL}/api/auth/test-token`);
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('authToken', data.data.token);

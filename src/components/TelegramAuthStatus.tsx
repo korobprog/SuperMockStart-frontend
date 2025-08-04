@@ -40,7 +40,7 @@ const TelegramAuthStatus: React.FC<TelegramAuthStatusProps> = ({
             className="w-8 h-8 rounded-full"
           />
         ) : (
-          <div className="w-8 h-8 bg-[#0088cc] rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-medium">
               {user.first_name.charAt(0)}
             </span>
@@ -67,4 +67,4 @@ const TelegramAuthStatus: React.FC<TelegramAuthStatusProps> = ({
   );
 };
 
-export default TelegramAuthStatus; 
+export default TelegramAuthStatus;

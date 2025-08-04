@@ -16,7 +16,7 @@ import {
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { itPositions, ItPosition } from '@/data/itPositions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { countries } from 'countries-list';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 const formSchema = z.object({
   profession: z.string().min(1, 'Выберите профессию'),
   country: z.string().min(1, 'Выберите страну'),
+  language: z.string().min(1, 'Выберите язык собеседования'),
   experience: z.string().min(1, 'Выберите опыт работы'),
   email: z.string().email('Неверный формат email').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
@@ -37,6 +38,8 @@ type FormData = z.infer<typeof formSchema>;
 const CollectingContacts = () => {
   const [professionOpen, setProfessionOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -44,17 +47,71 @@ const CollectingContacts = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       profession: '',
       country: '',
+      language: '',
       experience: '',
       email: '',
       phone: '',
     },
     mode: 'onChange', // Показывать ошибки при изменении полей
   });
+
+  // Автоматическая аутентификация в режиме разработки
+  useEffect(() => {
+    const authenticateInDev = async () => {
+      const token = localStorage.getItem('telegram_token');
+
+      // Если токена нет и мы в режиме разработки, получаем тестовый токен
+      if (!token && import.meta.env.DEV) {
+        setIsAuthenticating(true);
+        try {
+          // Принудительно очищаем кэш в режиме разработки
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
+          }
+
+          // Удаляем service workers если они есть
+          if ('serviceWorker' in navigator) {
+            const registrations =
+              await navigator.serviceWorker.getRegistrations();
+            await Promise.all(
+              registrations.map((registration) => registration.unregister())
+            );
+          }
+
+          const apiUrl =
+            import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const response = await fetch(`${apiUrl}/api/auth/test-token`, {
+            cache: 'no-cache',
+            headers: {
+              'Cache-Control': 'no-cache',
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              localStorage.setItem('telegram_token', data.data.token);
+              console.log(
+                '✅ Автоматически получен тестовый токен в режиме разработки'
+              );
+            }
+          }
+        } catch (error) {
+          console.error('Ошибка получения тестового токена:', error);
+        } finally {
+          setIsAuthenticating(false);
+        }
+      }
+    };
+
+    authenticateInDev();
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -69,13 +126,15 @@ const CollectingContacts = () => {
       }
 
       // Отправляем данные на сервер
-      const response = await fetch('/api/form', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(data),
+        cache: 'no-cache',
       });
 
       if (!response.ok) {
@@ -104,6 +163,40 @@ const CollectingContacts = () => {
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
+  // Получаем языки из countries-list
+  const getLanguagesFromCountry = (countryCode: string) => {
+    const country = countries[countryCode as keyof typeof countries];
+    if (!country || !country.languages) return [];
+
+    return country.languages.map((lang: string) => ({
+      value: lang,
+      label: getLanguageName(lang),
+    }));
+  };
+
+  // Названия языков
+  const getLanguageName = (code: string) => {
+    const languageNames: Record<string, string> = {
+      ru: 'Русский',
+      en: 'English',
+      de: 'Deutsch',
+      fr: 'Français',
+      es: 'Español',
+      pt: 'Português',
+      it: 'Italiano',
+      nl: 'Nederlands',
+      pl: 'Polski',
+      cs: 'Čeština',
+      tr: 'Türkçe',
+      ja: '日本語',
+      ko: '한국어',
+      zh: '中文',
+      ar: 'العربية',
+      he: 'עברית',
+    };
+    return languageNames[code] || code;
+  };
+
   const experienceOptions = [
     { value: '0-0', label: '0-0 study' },
     { value: '0-1', label: '0-1 year' },
@@ -112,6 +205,18 @@ const CollectingContacts = () => {
     { value: '5-10', label: '5-10 years' },
     { value: '10+', label: '10+ years' },
   ];
+
+  // Показываем загрузку во время аутентификации
+  if (isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Настройка аутентификации...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -206,7 +311,7 @@ const CollectingContacts = () => {
             {/* Выбор страны */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Язык <span className="text-red-500">*</span>
+                Страна <span className="text-red-500">*</span>
               </label>
               <Controller
                 name="country"
@@ -247,6 +352,13 @@ const CollectingContacts = () => {
                                 value={item.value}
                                 onSelect={() => {
                                   setValue('country', item.value);
+                                  // Автоматически устанавливаем первый язык страны
+                                  const languages = getLanguagesFromCountry(
+                                    item.value
+                                  );
+                                  if (languages.length > 0) {
+                                    setValue('language', languages[0].value);
+                                  }
                                   setCountryOpen(false);
                                 }}
                               >
@@ -271,6 +383,87 @@ const CollectingContacts = () => {
               {errors.country && (
                 <p className="text-xs text-red-500 mt-1">
                   {errors.country.message}
+                </p>
+              )}
+            </div>
+
+            {/* Выбор языка собеседования */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Язык собеседования <span className="text-red-500">*</span>
+              </label>
+              <Controller
+                name="language"
+                control={control}
+                render={({ field }) => {
+                  const selectedCountry = watch('country');
+                  const availableLanguages = selectedCountry
+                    ? getLanguagesFromCountry(selectedCountry)
+                    : [];
+
+                  return (
+                    <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={languageOpen}
+                          className={cn(
+                            'w-full justify-between',
+                            errors.language && 'border-red-400'
+                          )}
+                          disabled={isSubmitting || !selectedCountry}
+                        >
+                          {field.value
+                            ? availableLanguages.find(
+                                (item) => item.value === field.value
+                              )?.label || field.value
+                            : selectedCountry
+                            ? 'Выберите язык...'
+                            : 'Сначала выберите страну'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Поиск языка..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>Язык не найден.</CommandEmpty>
+                            <CommandGroup>
+                              {availableLanguages.map((item) => (
+                                <CommandItem
+                                  key={item.value}
+                                  value={item.value}
+                                  onSelect={() => {
+                                    setValue('language', item.value);
+                                    setLanguageOpen(false);
+                                  }}
+                                >
+                                  {item.label}
+                                  <Check
+                                    className={cn(
+                                      'ml-auto h-4 w-4',
+                                      field.value === item.value
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  );
+                }}
+              />
+              {errors.language && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.language.message}
                 </p>
               )}
             </div>

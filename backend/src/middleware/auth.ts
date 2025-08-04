@@ -73,10 +73,16 @@ export const authenticateExtendedToken = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('🔍 authenticateExtendedToken вызван');
+
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+  console.log('🔍 authHeader:', authHeader);
+  console.log('🔍 token:', token ? 'найден' : 'не найден');
+
   if (!token) {
+    console.log('❌ Токен не найден в заголовке');
     return res.status(401).json({
       success: false,
       error: 'Access token required',
@@ -84,20 +90,27 @@ export const authenticateExtendedToken = async (
   }
 
   try {
+    console.log('🔍 Вызываем AuthService.verifyExtendedToken');
     const result = await AuthService.verifyExtendedToken(token);
 
+    console.log('🔍 Результат верификации:', result);
+
     if (!result.success || !result.data) {
+      console.log('❌ Верификация токена не удалась:', result.error);
       return res.status(401).json({
         success: false,
         error: result.error || 'Invalid token',
       });
     }
 
+    console.log('✅ Токен верифицирован успешно');
+    console.log('🔍 result.data:', result.data);
+
     req.extendedUser = result.data;
     req.user = result.data;
     next();
   } catch (error) {
-    console.error('Extended token authentication error:', error);
+    console.error('❌ Extended token authentication error:', error);
     return res.status(401).json({
       success: false,
       error: 'Token verification failed',

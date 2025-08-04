@@ -207,6 +207,47 @@ export class UserService {
   }
 
   /**
+   * Обновляет статус пользователя по Telegram ID
+   */
+  static async updateUserStatusByTelegramId({
+    telegramId,
+    status,
+  }: {
+    telegramId: string;
+    status: UserStatus;
+  }): Promise<ApiResponse<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { telegramId },
+        data: { status },
+      });
+
+      const userResponse: User = {
+        id: user.id,
+        telegramId: user.telegramId,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status as UserStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
+      return {
+        success: true,
+        data: userResponse,
+        message: 'Статус пользователя обновлен',
+      };
+    } catch (error) {
+      console.error('Update user status by Telegram ID error:', error);
+      return {
+        success: false,
+        error: 'Ошибка при обновлении статуса пользователя',
+      };
+    }
+  }
+
+  /**
    * Получает всех пользователей
    */
   static async getAllUsers(): Promise<ApiResponse<User[]>> {

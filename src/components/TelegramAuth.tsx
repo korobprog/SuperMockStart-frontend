@@ -51,14 +51,13 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
         }
 
         // Аутентифицируемся с нашим бэкендом
-        const response = await fetch(`${API_URL}/api/auth/authenticate`, {
+        const response = await fetch(`${API_URL}/api/auth/telegram`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             initData,
-            user: tg.initDataUnsafe?.user,
           }),
         });
 
@@ -74,7 +73,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
           setUser(userData);
           setToken(authToken);
 
-          // Сохраняем токен в localStorage
+          // Сохраняем токен в localStorage с правильным ключом
           localStorage.setItem('telegram_token', authToken);
 
           // Вызываем callback
@@ -98,6 +97,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
   // Проверяем сохраненный токен при загрузке
   useEffect(() => {
     const savedToken = localStorage.getItem('telegram_token');
+
     if (savedToken && !token) {
       // Проверяем валидность токена
       fetch(`${API_URL}/api/auth/verify`, {
@@ -109,13 +109,14 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
         .then((data) => {
           if (data.success) {
             setToken(savedToken);
-            setUser(data.data.user);
-            onAuthSuccess?.(data.data.user, savedToken);
+            setUser(data.data);
+            onAuthSuccess?.(data.data, savedToken);
           } else {
             localStorage.removeItem('telegram_token');
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Error checking token:', error);
           localStorage.removeItem('telegram_token');
         })
         .finally(() => {

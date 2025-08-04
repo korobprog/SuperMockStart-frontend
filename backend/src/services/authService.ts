@@ -26,10 +26,12 @@ export class AuthService {
   /**
    * Регистрирует нового пользователя
    */
-  static async registerUser(data: RegisterData): Promise<ApiResponse<{ token: string; user: User }>> {
+  static async registerUser(
+    data: RegisterData
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
       const userResult = await UserService.createUser(data);
-      
+
       if (!userResult.success || !userResult.data) {
         return {
           success: false,
@@ -59,10 +61,15 @@ export class AuthService {
   /**
    * Аутентифицирует пользователя через email/password
    */
-  static async loginWithEmail(credentials: LoginCredentials): Promise<ApiResponse<{ token: string; user: User }>> {
+  static async loginWithEmail(
+    credentials: LoginCredentials
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
-      const userResult = await UserService.authenticateUser(credentials.email, credentials.password);
-      
+      const userResult = await UserService.authenticateUser(
+        credentials.email,
+        credentials.password
+      );
+
       if (!userResult.success || !userResult.data) {
         return {
           success: false,
@@ -303,13 +310,20 @@ export class AuthService {
         };
       }
 
-      // Для email авторизации используем userDbId, для Telegram - ищем по telegramId
+      // Используем userDbId для всех типов авторизации, если он есть
       let userResult: ApiResponse<User>;
-      
-      if (payload.authType === 'email' && payload.userDbId) {
+
+      if (payload.userDbId) {
+        // Если есть userDbId, используем его для поиска пользователя
         userResult = await UserService.getUserById(payload.userDbId);
+      } else if (payload.authType === 'email') {
+        // Для email авторизации без userDbId (обратная совместимость)
+        userResult = await UserService.getUserById(payload.userId);
       } else if (payload.authType === 'telegram') {
-        userResult = await UserService.getUserByTelegramId(payload.userId.toString());
+        // Для Telegram авторизации без userDbId (обратная совместимость)
+        userResult = await UserService.getUserByTelegramId(
+          payload.userId.toString()
+        );
       } else {
         return {
           success: false,

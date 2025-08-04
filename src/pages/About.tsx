@@ -10,13 +10,13 @@ import { Link } from 'react-router-dom';
 
 function About() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
             <Button variant="outline">← Назад</Button>
           </Link>
-          <h1 className="text-3xl font-bold text-foreground">О проекте</h1>
+          <h1 className="text-3xl font-bold text-gray-900">О проекте</h1>
           <div className="w-20"></div>
         </div>
 

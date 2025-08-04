@@ -1,216 +1,144 @@
-# Настройка для разработки
+# Настройка среды разработки
 
-## Проблема с Telegram Login Widget в dev режиме
+## Проблема
 
-Telegram Login Widget требует:
+При разработке возникает конфликт портов между:
 
-- Правильно настроенного бота
-- Настроенного домена в @BotFather
-- HTTPS (в продакшене)
+- **Docker контейнерами** (production/development)
+- **Локальными процессами** Node.js
 
-В режиме разработки это сложно настроить, поэтому мы добавили **альтернативное решение**.
+## Решение
 
-## Решение для разработки
+### 1. Автоматическое решение
 
-### 1. Автоматическое определение
-
-Система автоматически определяет режим:
-
-- **DEV режим** → тестовая авторизация
-- **PROD режим** → настоящий Telegram Login Widget
-
-### 2. Тестовая авторизация
-
-В dev режиме при ошибке виджета показывается:
-
-- Модальное окно "Режим разработки"
-- Кнопка "Тестовая авторизация (Dev)"
-- Получение тестового токена с backend
-
-### 3. Настройка переменных окружения
-
-Создайте файл `.env` в корне проекта:
-
-```env
-# API URL для разработки
-VITE_API_URL=http://localhost:3001
-
-# Имя Telegram бота (для продакшена)
-VITE_TELEGRAM_NAME=your_bot_username
-```
-
-## Как это работает
-
-### В dev режиме:
-
-1. **Пользователь нажимает** "Войти через Telegram"
-2. **Показывается Telegram Login Widget**
-3. **При ошибке** (Username invalid) → показывается dev модальное окно
-4. **Пользователь нажимает** "Тестовая авторизация (Dev)"
-5. **Backend генерирует** тестовый токен
-6. **Токен сохраняется** в localStorage
-7. **Перенаправление** на главную страницу
-
-### В prod режиме:
-
-1. **Пользователь нажимает** "Войти через Telegram"
-2. **Показывается Telegram Login Widget**
-3. **Пользователь авторизуется** через Telegram
-4. **Обработка данных** на backend
-5. **Сохранение токена** и перенаправление
-
-## Backend настройка
-
-### 1. Переменные окружения
-
-Добавьте в backend `.env`:
-
-```env
-# Telegram Bot Token (для продакшена)
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-
-# JWT Secret
-JWT_SECRET=your_jwt_secret_here
-```
-
-### 2. Инициализация Telegram
-
-В `backend/src/index.ts` добавьте:
-
-```typescript
-import { TelegramUtils } from './utils/telegram.js';
-
-// Инициализируем только если есть токен
-if (process.env.TELEGRAM_BOT_TOKEN) {
-  TelegramUtils.initialize(process.env.TELEGRAM_BOT_TOKEN);
-}
-```
-
-## Тестирование
-
-### 1. Dev режим
+Запустите скрипт настройки:
 
 ```bash
-# Frontend
-npm run dev
+chmod +x scripts/dev-setup.sh
+./scripts/dev-setup.sh
+```
 
-# Backend
+### 2. Ручное решение
+
+#### Шаг 1: Остановить Docker контейнеры
+
+```bash
+# Посмотреть запущенные контейнеры
+docker ps
+
+# Остановить все контейнеры
+docker stop $(docker ps -q)
+
+# Или остановить конкретный контейнер
+docker stop <container_id>
+```
+
+#### Шаг 2: Освободить порты
+
+```bash
+# Проверить, какие процессы занимают порты
+netstat -ano | findstr :3001
+netstat -ano | findstr :5432
+
+# Завершить процесс по PID
+taskkill /PID <PID> /F
+```
+
+#### Шаг 3: Запустить локальную разработку
+
+```bash
+# Терминал 1: База данных
+cd backend
+npm run db:studio
+
+# Терминал 2: Бэкенд
 cd backend
 npm run dev
+
+# Терминал 3: Фронтенд
+npm run dev
 ```
 
-1. Откройте `http://localhost:5173`
-2. Нажмите "Войти через Telegram"
-3. При ошибке виджета нажмите "Тестовая авторизация (Dev)"
-4. Проверьте, что токен сохранился в localStorage
+## Конфигурация
 
-### 2. Prod режим
+### Порт 3001 - Бэкенд
+
+- **Docker**: `3002:3001` (внешний:внутренний)
+- **Локально**: `3001`
+
+### Порт 5432 - PostgreSQL
+
+- **Docker**: `5432:5432`
+- **Локально**: `5432`
+
+### Порт 5173 - Фронтенд
+
+- **Docker**: `5174:5173`
+- **Локально**: `5173` (или следующий свободный)
+
+## Проверка работоспособности
 
 ```bash
-# Соберите проект
-npm run build
+# Проверить бэкенд
+curl http://localhost:3001/health
 
-# Запустите продакшен сервер
-npm run preview
+# Проверить фронтенд
+curl http://localhost:5173
+
+# Проверить базу данных
+psql -h localhost -p 5432 -U postgres -d supermock
 ```
 
-## Отладка
+## Переменные окружения
 
-### 1. Проверка переменных окружения
-
-```javascript
-// В консоли браузера
-console.log(import.meta.env.VITE_API_URL);
-console.log(import.meta.env.VITE_TELEGRAM_NAME);
-console.log(import.meta.env.DEV);
-```
-
-### 2. Проверка backend
-
-```bash
-# Проверьте endpoint тестового токена
-curl http://localhost:3001/api/auth/test-token
-```
-
-### 3. Логи backend
-
-Следите за логами backend для отладки:
-
-- Запросы к `/api/auth/test-token`
-- Ошибки инициализации Telegram
-- Проблемы с JWT токенами
-
-## Переход к продакшену
-
-### 1. Настройка бота
-
-1. Создайте бота через @BotFather
-2. Настройте домен командой `/setdomain`
-3. Добавьте токен в переменные окружения
-
-### 2. Обновление переменных
+### Backend (.env)
 
 ```env
-# Prod переменные
-VITE_API_URL=https://your-domain.com
-VITE_TELEGRAM_NAME=your_bot_username
-TELEGRAM_BOT_TOKEN=your_bot_token_here
+NODE_ENV=development
+PORT=3001
+DATABASE_URL=postgresql://postgres:password@localhost:5432/supermock
+JWT_SECRET=your-secret-key-change-in-production
+TELEGRAM_TOKEN=your-telegram-token
 ```
 
-### 3. HTTPS
+### Frontend (.env.local)
 
-Убедитесь, что в продакшене используется HTTPS:
-
-- Telegram требует HTTPS для Login Widget
-- Настройте SSL сертификат
-- Обновите домен в @BotFather
-
-## Структура файлов
-
-```
-├── src/
-│   ├── components/
-│   │   └── TelegramAuthButton.tsx  # Универсальная кнопка с dev fallback
-│   └── pages/
-│       └── Home.tsx                # Использует переменные окружения
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   │   └── authController.ts   # Тестовый токен endpoint
-│   │   └── services/
-│   │       └── authService.ts      # Генерация тестового токена
-│   └── .env                        # Backend переменные
-├── .env.example                    # Пример переменных
-└── DEV_SETUP.md                   # Эта инструкция
+```env
+VITE_API_URL=http://localhost:3001
 ```
 
-## Возможные проблемы
+## Устранение неполадок
 
-### 1. "Username invalid"
+### Ошибка "EADDRINUSE"
 
-**Причина:** Бот не настроен или неправильное имя
-**Решение:** Используйте тестовую авторизацию в dev режиме
+```bash
+# Найти процесс
+netstat -ano | findstr :3001
 
-### 2. "Widget not loading"
+# Завершить процесс
+taskkill /PID <PID> /F
+```
 
-**Причина:** Проблемы с доменом или HTTPS
-**Решение:** Проверьте настройки в @BotFather
+### Ошибка "Database connection failed"
 
-### 3. "Backend connection failed"
+```bash
+# Проверить, запущена ли база данных
+docker ps | grep postgres
 
-**Причина:** Backend не запущен или неправильный URL
-**Решение:** Проверьте `VITE_API_URL` и запуск backend
+# Или запустить локально
+cd backend
+npm run db:studio
+```
 
-### 4. "Test token failed"
+### Ошибка "CORS blocked"
 
-**Причина:** Проблемы с backend
-**Решение:** Проверьте логи backend и endpoint `/api/auth/test-token`
+Проверьте настройки CORS в `backend/src/index.ts`:
 
-## Заключение
-
-Эта система позволяет:
-
-- **Разрабатывать локально** без настройки Telegram бота
-- **Тестировать функциональность** с тестовыми токенами
-- **Плавно переходить к продакшену** с настоящим Telegram Login Widget
-- **Отлаживать проблемы** с подробными логами
+```typescript
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  // добавьте нужные порты
+];
+```

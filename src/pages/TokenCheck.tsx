@@ -1,204 +1,337 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const TokenCheck: React.FC = () => {
-  const navigate = useNavigate();
+const TokenCheck = () => {
   const [searchParams] = useSearchParams();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+  const [tokens, setTokens] = useState<{
+    telegram_token?: string;
+    authToken?: string;
+    userId?: string;
+    telegramUser?: any;
+  }>({});
+  const [testResult, setTestResult] = useState<any>(null);
 
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        console.log('🔍 Проверяем токен...');
+    console.log('TokenCheck component mounted');
 
-        // Получаем userId из URL параметров
-        const userId = searchParams.get('userId');
+    // Получаем userId из URL параметров
+    const urlUserId = searchParams.get('userId');
 
-        if (!userId) {
-          throw new Error('Не найден userId в параметрах');
-        }
+    const telegramToken = localStorage.getItem('telegram_token') || undefined;
+    const authToken = localStorage.getItem('authToken') || undefined;
+    const userId = localStorage.getItem('userId') || urlUserId || undefined;
+    const telegramUserStr = localStorage.getItem('telegramUser');
+    const telegramUser = telegramUserStr ? JSON.parse(telegramUserStr) : null;
 
-        console.log('👤 User ID:', userId);
+    setTokens({
+      telegram_token: telegramToken,
+      authToken,
+      userId,
+      telegramUser,
+    });
 
-        // Проверяем авторизацию пользователя
-        const response = await fetch(
-          `${API_URL}/api/telegram-bot/verify-user`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: parseInt(userId),
-            }),
-          }
-        );
+    // Если есть userId в URL, но нет токена, предлагаем создать токен
+    if (urlUserId && !telegramToken) {
+      console.log('Найден userId в URL:', urlUserId);
+    }
+  }, [searchParams]);
 
-        console.log('📡 Ответ сервера:', response.status, response.statusText);
+  const getTestToken = async () => {
+    try {
+      console.log('Getting test token...');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/auth/test-token`);
+      const data = await response.json();
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Ошибка ответа:', errorText);
-          throw new Error(`Ошибка проверки токена: ${response.status}`);
-        }
+      console.log('Token response:', data);
 
-        const data = await response.json();
-        console.log('📄 Данные ответа:', data);
+      if (data.success) {
+        // Сохраняем токен в обеих переменных для совместимости
+        localStorage.setItem('telegram_token', data.data.token);
+        localStorage.setItem('authToken', data.data.token);
+        localStorage.setItem('userId', data.data.user.id.toString());
 
-        if (data.success) {
-          console.log('✅ Токен проверен успешно');
-
-          // Сохраняем токен в localStorage
-          if (data.data?.token) {
-            localStorage.setItem('telegram_token', data.data.token);
-            console.log('💾 Токен сохранен в localStorage');
-          }
-
-          setUser(data.data?.user);
-          setSuccess(true);
-
-          // Перенаправляем на главную страницу через 2 секунды
-          setTimeout(() => {
-            navigate('/');
-          }, 2000);
-        } else {
-          throw new Error(data.error || 'Ошибка проверки токена');
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Неизвестная ошибка';
-        console.error('💥 Ошибка проверки токена:', errorMessage);
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
+        setTokens((prev) => ({
+          ...prev,
+          telegram_token: data.data.token,
+          authToken: data.data.token,
+          userId: data.data.user.id.toString(),
+        }));
+        alert('Тестовый токен получен!');
+      } else {
+        alert('Ошибка получения токена: ' + data.error);
       }
-    };
-
-    checkToken();
-  }, [searchParams, API_URL, navigate]);
-
-  const handleRetry = () => {
-    window.location.reload();
+    } catch (error) {
+      console.error('Ошибка получения токена:', error);
+      alert('Ошибка получения токена');
+    }
   };
 
-  const handleGoHome = () => {
-    navigate('/');
+  const createRealToken = async () => {
+    try {
+      const urlUserId = searchParams.get('userId');
+      if (!urlUserId) {
+        alert('Нет userId в URL!');
+        return;
+      }
+
+      console.log('Creating real token for userId:', urlUserId);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+      const response = await fetch(`${apiUrl}/api/auth/test-token-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: urlUserId }),
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Real token response:', data);
+
+      if (data.success) {
+        // Сохраняем расширенный токен
+        localStorage.setItem('extended_token', data.data.token);
+        localStorage.setItem('telegram_token', data.data.token);
+        localStorage.setItem('authToken', data.data.token);
+        localStorage.setItem('userId', data.data.user.id.toString());
+        localStorage.setItem('telegramUser', JSON.stringify(data.data.user));
+
+        setTokens((prev) => ({
+          ...prev,
+          telegram_token: data.data.token,
+          authToken: data.data.token,
+          userId: data.data.user.id.toString(),
+          telegramUser: data.data.user,
+        }));
+        alert('Реальный расширенный токен создан!');
+      } else {
+        console.error('Token creation failed:', data);
+        alert('Ошибка создания токена: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Ошибка создания реального токена:', error);
+      alert(
+        'Ошибка создания токена: ' +
+          (error instanceof Error ? error.message : 'Неизвестная ошибка')
+      );
+    }
   };
+
+  const testFormSubmission = async () => {
+    try {
+      const token =
+        localStorage.getItem('telegram_token') ||
+        localStorage.getItem('authToken');
+
+      if (!token) {
+        alert('Сначала получите токен!');
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const formData = {
+        profession: 'frontend-developer',
+        country: 'RU',
+        language: 'ru',
+        experience: '0-0',
+        email: 'test@example.com',
+        phone: '+79001234567',
+        linkedin: 'https://linkedin.com/in/test',
+        github: 'https://github.com/test',
+        portfolio: 'https://portfolio.test',
+        about: 'Тестовое описание',
+        skills: ['JavaScript', 'React', 'TypeScript'],
+        education: 'Высшее образование',
+        englishLevel: 'B2',
+        salary: '100000',
+        remoteWork: true,
+        relocation: false,
+        noticePeriod: '2 недели',
+        additionalInfo: 'Дополнительная информация',
+      };
+
+      const response = await fetch(`${apiUrl}/api/form`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      setTestResult({ status: response.status, data: result });
+
+      if (response.ok) {
+        alert('Форма успешно отправлена!');
+      } else {
+        alert(`Ошибка отправки формы: ${result.error || response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Ошибка тестирования формы:', error);
+      setTestResult({
+        error: error instanceof Error ? error.message : 'Неизвестная ошибка',
+      });
+      alert('Ошибка тестирования формы');
+    }
+  };
+
+  const clearTokens = () => {
+    localStorage.removeItem('telegram_token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('extended_token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('telegramUser');
+    setTokens({});
+    setTestResult(null);
+    alert('Токены очищены!');
+  };
+
+  const urlUserId = searchParams.get('userId');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-[#0088cc] rounded-full flex items-center justify-center">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-            </svg>
-          </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Проверка токена
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Проверяем авторизацию через Telegram...
-          </CardDescription>
+    <div className="container mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>🔐 Проверка токенов авторизации</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {loading && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0088cc] mx-auto mb-4"></div>
-              <p className="text-gray-600">Проверяем токен...</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+          {urlUserId && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                📱 Данные от Telegram бота:
+              </h3>
+              <div className="text-sm text-blue-700">
+                <div>
+                  <span className="font-medium">Telegram ID:</span> {urlUserId}
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Ошибка проверки токена
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                  </div>
+                <div>
+                  <span className="font-medium">Статус:</span>{' '}
+                  {tokens.telegram_token
+                    ? '✅ Токен создан'
+                    : '❌ Токен не создан'}
                 </div>
-              </div>
-              <div className="mt-4 space-y-2">
-                <Button onClick={handleRetry} className="w-full">
-                  Попробовать снова
-                </Button>
-                <Button
-                  onClick={handleGoHome}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Вернуться на главную
-                </Button>
               </div>
             </div>
           )}
 
-          {success && user && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-green-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold mb-2">Токены в localStorage:</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium">extended_token:</span>{' '}
+                  <span
+                    className={
+                      localStorage.getItem('extended_token')
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                    {localStorage.getItem('extended_token')
+                      ? '✅ Найден'
+                      : '❌ Не найден'}
+                  </span>
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">
-                    Токен проверен успешно!
-                  </h3>
-                  <div className="mt-2 text-sm text-green-700">
-                    <p>Добро пожаловать, {user.first_name}!</p>
-                    {user.username && (
-                      <p className="text-xs text-green-600">@{user.username}</p>
-                    )}
+                <div>
+                  <span className="font-medium">telegram_token:</span>{' '}
+                  <span
+                    className={
+                      tokens.telegram_token ? 'text-green-600' : 'text-red-600'
+                    }
+                  >
+                    {tokens.telegram_token ? '✅ Найден' : '❌ Не найден'}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium">authToken:</span>{' '}
+                  <span
+                    className={
+                      tokens.authToken ? 'text-green-600' : 'text-red-600'
+                    }
+                  >
+                    {tokens.authToken ? '✅ Найден' : '❌ Не найден'}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium">userId:</span>{' '}
+                  <span
+                    className={
+                      tokens.userId ? 'text-green-600' : 'text-red-600'
+                    }
+                  >
+                    {tokens.userId ? `✅ ${tokens.userId}` : '❌ Не найден'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {tokens.telegramUser && (
+              <div>
+                <h3 className="font-semibold mb-2">
+                  Данные пользователя Telegram:
+                </h3>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="font-medium">ID:</span>{' '}
+                    {tokens.telegramUser.id}
+                  </div>
+                  <div>
+                    <span className="font-medium">Имя:</span>{' '}
+                    {tokens.telegramUser.firstName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Фамилия:</span>{' '}
+                    {tokens.telegramUser.lastName || 'Не указана'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Username:</span>{' '}
+                    {tokens.telegramUser.username || 'Не указан'}
                   </div>
                 </div>
               </div>
-              <div className="mt-4">
-                <p className="text-sm text-green-600 text-center">
-                  Перенаправление на главную страницу...
-                </p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {urlUserId && (
+              <Button
+                onClick={createRealToken}
+                variant="default"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                🎯 Создать токен для {urlUserId}
+              </Button>
+            )}
+            <Button onClick={getTestToken} variant="outline">
+              Получить тестовый токен
+            </Button>
+            <Button onClick={testFormSubmission} variant="outline">
+              Протестировать отправку формы
+            </Button>
+            <Button onClick={clearTokens} variant="destructive">
+              Очистить токены
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {testResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle>📊 Результат тестирования</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+              {JSON.stringify(testResult, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

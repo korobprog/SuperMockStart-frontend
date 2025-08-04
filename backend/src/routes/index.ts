@@ -4,6 +4,8 @@ import professionRoutes from './professions.js';
 import userStatusRoutes from './userStatus.js';
 import telegramBotRoutes from './telegramBot.js';
 import formRoutes from './form.js';
+import calendarRoutes from './calendar.js';
+import feedbackRoutes from './feedback.js';
 import prisma from '../services/prisma.js';
 
 const router = Router();
@@ -14,6 +16,8 @@ router.use('/api/professions', professionRoutes);
 router.use('/api/user-status', userStatusRoutes);
 router.use('/api/telegram-bot', telegramBotRoutes);
 router.use('/api/form', formRoutes);
+router.use('/api/calendar', calendarRoutes);
+router.use('/api/feedback', feedbackRoutes);
 
 // API info endpoint
 router.get('/api', (req, res) => {
@@ -35,6 +39,8 @@ router.get('/api', (req, res) => {
       userStatus: '/api/user-status',
       telegramBot: '/api/telegram-bot',
       form: '/api/form',
+      calendar: '/api/calendar',
+      feedback: '/api/feedback',
       health: '/api/health',
     },
     authEndpoints: {

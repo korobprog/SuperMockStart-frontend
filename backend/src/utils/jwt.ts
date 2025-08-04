@@ -1,5 +1,11 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { JwtPayload, TelegramUser, User, ExtendedJwtPayload, UserRole } from '../types/index.js';
+import {
+  JwtPayload,
+  TelegramUser,
+  User,
+  ExtendedJwtPayload,
+  UserRole,
+} from '../types/index.js';
 
 export class JwtUtils {
   private static secret: string;
@@ -28,16 +34,20 @@ export class JwtUtils {
   /**
    * Создает расширенный JWT токен для пользователя
    */
-  static generateExtendedToken(user: User, authType: 'email' | 'telegram'): string {
+  static generateExtendedToken(
+    user: User,
+    authType: 'email' | 'telegram'
+  ): string {
     const payload: ExtendedJwtPayload = {
-      userId: authType === 'telegram' ? parseInt(user.telegramId || '0') : user.id,
+      userId:
+        authType === 'telegram' ? parseInt(user.telegramId || '0') : user.id,
       username: user.username,
       firstName: user.firstName || '',
       lastName: user.lastName,
       role: user.role,
       authType,
-      // Для email авторизации добавляем ID пользователя в отдельное поле
-      ...(authType === 'email' && { userDbId: user.id }),
+      // Добавляем ID пользователя из базы данных для всех типов авторизации
+      userDbId: user.id,
     };
 
     const options: SignOptions = { expiresIn: this.expiresIn };
@@ -47,7 +57,10 @@ export class JwtUtils {
   /**
    * Создает JWT токен для пользователя Telegram
    */
-  static generateTelegramToken(user: TelegramUser, role: UserRole = UserRole.USER): string {
+  static generateTelegramToken(
+    user: TelegramUser,
+    role: UserRole = UserRole.USER
+  ): string {
     const payload: ExtendedJwtPayload = {
       userId: user.id,
       username: user.username,
