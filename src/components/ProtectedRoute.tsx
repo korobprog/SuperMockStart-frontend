@@ -1,13 +1,13 @@
 import React from 'react';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
-import { Button } from '@/components/ui/button';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import { Button } from './ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from './ui/card';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

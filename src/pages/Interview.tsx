@@ -1,12 +1,12 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '../components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Loader2,
@@ -30,7 +30,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../components/ui/select';
 
 import {
   Dialog,
@@ -39,20 +39,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Calendar } from '@/components/ui/calendar';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+} from '../components/ui/dialog';
+import { Calendar } from '../components/ui/calendar';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Label } from '../components/ui/label';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   addSelectedProfession,
   clearError,
-} from '@/store/slices/professionSlice';
+} from '../store/slices/professionSlice';
 
-import { getLanguageName, getCountryFlag } from '@/utils/language';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { getLanguageName, getCountryFlag } from '../utils/language';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';

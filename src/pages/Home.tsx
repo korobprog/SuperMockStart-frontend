@@ -5,15 +5,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
-import TelegramAuth from '@/components/TelegramAuth';
-import TelegramBotAuth from '@/components/TelegramBotAuth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '../components/ui/card';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import TelegramAuth from '../components/TelegramAuth';
+import TelegramBotAuth from '../components/TelegramBotAuth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import HeroSection from '@/components/HeroSection';
-import BackgroundGradient from '@/components/BackgroundGradient';
-import Footer from '@/components/Footer';
+import HeroSection from '../components/HeroSection';
+import BackgroundGradient from '../components/BackgroundGradient';
+import Footer from '../components/Footer';
 import {
   Code,
   Users,

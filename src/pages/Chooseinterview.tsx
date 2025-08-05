@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
   fetchUserStatus,
   updateUserStatus,
@@ -7,10 +7,10 @@ import {
   fetchUserInterviews,
   UserStatus,
   clearError,
-} from '@/store/slices/userStatusSlice';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from '../store/slices/userStatusSlice';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 
 const ChooseInterview = () => {
   const dispatch = useAppDispatch();

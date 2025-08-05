@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { Button } from './ui/button';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 interface TelegramAuthStatusProps {
   onLogout?: () => void;

@@ -1,5 +1,5 @@
-import { CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
 import {
   Select,
   SelectContent,
@@ -7,22 +7,22 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../components/ui/select';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '../components/ui/popover';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandList,
-} from '@/components/ui/command';
+} from '../components/ui/command';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { itPositions, ItPosition } from '@/data/itPositions';
+import { cn } from '../lib/utils';
+import { itPositions, ItPosition } from '../data/itPositions';
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { countries } from 'countries-list';
 import { useForm, Controller } from 'react-hook-form';

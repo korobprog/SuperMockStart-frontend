@@ -1,4 +1,4 @@
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '../hooks/useTheme';
 
 export function ThemeDebug() {
   const { theme, getCurrentTheme, isDark, isLight, isSystem } = useTheme();
