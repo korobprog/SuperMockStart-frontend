@@ -12,6 +12,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Копируем исходный код
 COPY . .
+
+# Отладка - проверяем наличие tsconfig.json
+RUN ls -la && echo "=== Checking tsconfig.json ===" && cat tsconfig.json || echo "tsconfig.json not found"
+
 RUN pnpm run build
 
 # Этап продакшн
