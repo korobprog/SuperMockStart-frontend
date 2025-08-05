@@ -1,15 +1,31 @@
-import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { itPositions } from '@/data/itPositions';
+import { countries } from 'countries-list';
 import {
   User,
   Mail,
@@ -25,12 +41,134 @@ import {
   CheckCircle,
   BookOpen,
   Clock,
-  Target,
-  TrendingUp,
 } from 'lucide-react';
+
+// Схема валидации для редактирования профиля
+const editProfileSchema = z.object({
+  profession: z.string().min(1, 'Выберите профессию'),
+  country: z.string().min(1, 'Выберите страну'),
+  language: z.string().min(1, 'Выберите язык собеседования'),
+  experience: z.string().min(1, 'Выберите опыт работы'),
+  email: z.string().email('Неверный формат email').optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+});
+
+type EditProfileFormData = z.infer<typeof editProfileSchema>;
+
+const EXPERIENCE_OPTIONS = [
+  { value: '0-0', label: '0-0 study' },
+  { value: '0-1', label: '0-1 year' },
+  { value: '1-3', label: '1-3 years' },
+  { value: '3-5', label: '3-5 years' },
+  { value: '5-10', label: '5-10 years' },
+  { value: '10+', label: '10+ years' },
+] as const;
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated } = useTelegramAuth();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
+
+  // Настройка формы редактирования
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<EditProfileFormData>({
+    resolver: zodResolver(editProfileSchema),
+    defaultValues: {
+      profession: '',
+      country: '',
+      language: '',
+      experience: '',
+      email: '',
+      phone: '',
+    },
+  });
+
+  // Получение данных формы пользователя
+  useEffect(() => {
+    const loadFormData = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const token =
+          localStorage.getItem('extended_token') ||
+          localStorage.getItem('telegram_token');
+
+        if (!token) return;
+
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${apiUrl}/api/form`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setFormData(data.data);
+            // Заполняем форму существующими данными
+            reset({
+              profession: data.data.profession || '',
+              country: data.data.country || '',
+              language: data.data.language || '',
+              experience: data.data.experience || '',
+              email: data.data.email || '',
+              phone: data.data.phone || '',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки данных формы:', error);
+      }
+    };
+
+    loadFormData();
+  }, [isAuthenticated, reset]);
+
+  // Обновление данных формы
+  const onSubmit = async (data: EditProfileFormData) => {
+    try {
+      const token =
+        localStorage.getItem('extended_token') ||
+        localStorage.getItem('telegram_token');
+
+      if (!token) return;
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/form`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Данные профиля обновлены:', result);
+        setFormData(data);
+        setEditDialogOpen(false);
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Ошибка обновления профиля:', errorData);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка при обновлении профиля:', error);
+    }
+  };
+
+  // Получение списка стран
+  const countriesList = Object.entries(countries as Record<string, any>)
+    .map(([code, country]) => ({
+      value: code,
+      label: country.name.split(',')[0].split(';')[0].trim(),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   // Если пользователь не авторизован, показываем загрузку
   if (!isAuthenticated || !user) {
@@ -123,7 +261,12 @@ const Profile: React.FC = () => {
                 <h2 className="text-2xl font-bold mb-1 text-gradient">
                   {user.first_name || 'Пользователь'} {user.last_name || ''}
                 </h2>
-                <p className="text-muted-foreground">Frontend Developer</p>
+                <p className="text-muted-foreground">
+                  {formData?.profession
+                    ? itPositions.find((p) => p.value === formData.profession)
+                        ?.label || formData.profession
+                    : 'Frontend Developer'}
+                </p>
                 <div className="flex items-center justify-center gap-1 mt-2">
                   <Star className="w-4 h-4 text-warning fill-current" />
                   <span className="text-sm font-medium">4.8</span>
@@ -136,13 +279,16 @@ const Profile: React.FC = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="w-4 h-4 text-muted-foreground" />
-                  {user.username
-                    ? `${user.username}@telegram.org`
+                  {formData?.email || user.username
+                    ? formData?.email || `${user.username}@telegram.org`
                     : 'email@example.com'}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  Москва, Россия
+                  {formData?.country
+                    ? countriesList.find((c) => c.value === formData.country)
+                        ?.label || formData.country
+                    : 'Москва, Россия'}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -167,10 +313,213 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              <Button className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300">
-                <Edit className="w-4 h-4 mr-2" />
-                Редактировать профиль
-              </Button>
+              <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white hover:shadow-glow transition-all duration-300">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Редактировать профиль
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Редактирование профиля</DialogTitle>
+                    <DialogDescription>
+                      Измените ваши данные профиля. Эти данные используются для
+                      поиска собеседований.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    {/* Профессия */}
+                    <div className="space-y-2">
+                      <Label htmlFor="profession">Профессия *</Label>
+                      <Controller
+                        name="profession"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите профессию..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {itPositions.map((position) => (
+                                <SelectItem
+                                  key={position.value}
+                                  value={position.value}
+                                >
+                                  {position.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.profession && (
+                        <p className="text-xs text-red-500">
+                          {errors.profession.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Страна */}
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Страна *</Label>
+                      <Controller
+                        name="country"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите страну..." />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[200px]">
+                              {countriesList.map((country) => (
+                                <SelectItem
+                                  key={country.value}
+                                  value={country.value}
+                                >
+                                  {country.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.country && (
+                        <p className="text-xs text-red-500">
+                          {errors.country.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Язык */}
+                    <div className="space-y-2">
+                      <Label htmlFor="language">Язык собеседования *</Label>
+                      <Controller
+                        name="language"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите язык..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ru">Русский</SelectItem>
+                              <SelectItem value="en">English</SelectItem>
+                              <SelectItem value="de">Deutsch</SelectItem>
+                              <SelectItem value="fr">Français</SelectItem>
+                              <SelectItem value="es">Español</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.language && (
+                        <p className="text-xs text-red-500">
+                          {errors.language.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Опыт работы */}
+                    <div className="space-y-2">
+                      <Label htmlFor="experience">Опыт работы *</Label>
+                      <Controller
+                        name="experience"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите опыт..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {EXPERIENCE_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.experience && (
+                        <p className="text-xs text-red-500">
+                          {errors.experience.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Controller
+                        name="email"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="your@email.com"
+                          />
+                        )}
+                      />
+                      {errors.email && (
+                        <p className="text-xs text-red-500">
+                          {errors.email.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Телефон */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Телефон</Label>
+                      <Controller
+                        name="phone"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="+7 (999) 123-45-67"
+                          />
+                        )}
+                      />
+                      {errors.phone && (
+                        <p className="text-xs text-red-500">
+                          {errors.phone.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEditDialogOpen(false)}
+                      >
+                        Отмена
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </Card>
 
             {/* Achievements */}

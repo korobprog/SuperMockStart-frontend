@@ -7,10 +7,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  Check,
-  ChevronsUpDown,
   Loader2,
   Calendar as CalendarIcon,
   Clock,
@@ -20,18 +18,16 @@ import {
   AlertCircle,
   MessageSquare,
   Star,
-  LogOut,
   ChevronLeft,
   Users,
   Code,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -54,7 +50,7 @@ import {
   addSelectedProfession,
   clearError,
 } from '@/store/slices/professionSlice';
-import ProfessionHistory from '@/components/ProfessionHistory';
+
 import { getLanguageName, getCountryFlag } from '@/utils/language';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 
@@ -319,7 +315,8 @@ interface QueueStatus {
 }
 
 const Interview = () => {
-  const { logout } = useTelegramAuth();
+  const {} = useTelegramAuth();
+  const navigate = useNavigate();
   const [userStatus, setUserStatus] = useState<'CANDIDATE' | 'INTERVIEWER'>(
     'CANDIDATE' // Changed default value
   );
@@ -328,52 +325,11 @@ const Interview = () => {
   const [value, setValue] = useState<string>('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
-
-  // Функция для фильтрации слотов по дням (больше не используется, но оставляем для совместимости)
-  const getFilteredSlots = useCallback(() => {
-    const now = new Date();
-    const bufferTime = new Date(now);
-    bufferTime.setMinutes(bufferTime.getMinutes() - 5);
-
-    const filtered = availableSlots
-      .filter((slot) => slot.available)
-      .filter((slot) => {
-        const slotDateTime =
-          typeof slot.datetime === 'string'
-            ? new Date(slot.datetime)
-            : slot.datetime;
-        return slotDateTime > bufferTime; // Исключаем прошедшие слоты
-      });
-
-    return filtered;
-  }, [availableSlots]);
-
-  // Функция для получения слотов для выбранной даты
-  const getSlotsForSelectedDate = useCallback(() => {
-    if (!selectedDate) return [];
-
-    const selectedDateStart = new Date(selectedDate);
-    selectedDateStart.setHours(0, 0, 0, 0);
-    const selectedDateEnd = new Date(selectedDate);
-    selectedDateEnd.setHours(23, 59, 59, 999);
-
-    return availableSlots.filter((slot) => {
-      const slotDateTime =
-        typeof slot.datetime === 'string'
-          ? new Date(slot.datetime)
-          : slot.datetime;
-
-      return (
-        slotDateTime >= selectedDateStart &&
-        slotDateTime <= selectedDateEnd &&
-        slot.available
-      );
-    });
-  }, [availableSlots, selectedDate]);
 
   // Функция для получения всех слотов (доступных и недоступных) для выбранной даты
   const getAllSlotsForSelectedDate = useCallback(() => {
@@ -443,7 +399,7 @@ const Interview = () => {
     useState(false);
 
   // Состояние для времени пользователя
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [, setCurrentTime] = useState(new Date());
 
   // API URL - используем переменную окружения или fallback на продакшен
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
@@ -458,7 +414,7 @@ const Interview = () => {
   }, []);
 
   const dispatch = useAppDispatch();
-  const { loading: professionLoading, error } = useAppSelector(
+  const { loading: professionLoading } = useAppSelector(
     (state) => state.profession
   );
 
@@ -474,7 +430,7 @@ const Interview = () => {
     const token = localStorage.getItem('telegram_token');
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        JSON.parse(atob(token.split('.')[1]));
       } catch (error) {
         console.error('❌ Ошибка декодирования токена:', error);
       }
@@ -644,6 +600,79 @@ const Interview = () => {
       console.error('💥 Ошибка обновления статуса пользователя:', error);
     }
   }, [API_URL]);
+
+  // Check if user has completed registration form
+  useEffect(() => {
+    const checkUserRegistration = async () => {
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          console.log('❌ Токен не найден, перенаправляем на аутентификацию');
+          navigate('/auth');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/api/form`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            console.log('🔍 Данные формы пользователя:', data.data);
+
+            // Check if user has form data (registration completed)
+            // The backend checks for user.formData[0] existence, so we need to verify the user has actually submitted the form
+            // We check for both profession and country since country is only set when the form is actually submitted
+            if (!data.data.profession || !data.data.country) {
+              console.log(
+                '❌ Пользователь не завершил регистрацию, перенаправляем на форму'
+              );
+              navigate('/collectingcontacts');
+              return;
+            }
+
+            // Set user status based on form data
+            setCanBeCandidate(data.data.canBeCandidate || false);
+            if (data.data.profession) {
+              setValue(data.data.profession);
+            }
+          } else {
+            console.log('❌ Ошибка получения данных формы:', data.error);
+            showNotification(
+              'Требуется регистрация',
+              'Пожалуйста, заполните форму регистрации перед записью на собеседование',
+              'error'
+            );
+            navigate('/collectingcontacts');
+          }
+        } else {
+          console.log('❌ Ошибка запроса данных формы:', response.status);
+          showNotification(
+            'Ошибка проверки регистрации',
+            'Не удалось проверить статус регистрации. Пожалуйста, попробуйте снова.',
+            'error'
+          );
+          navigate('/collectingcontacts');
+        }
+      } catch (error) {
+        console.error('💥 Ошибка проверки регистрации:', error);
+        showNotification(
+          'Ошибка системы',
+          'Произошла ошибка при проверке регистрации. Пожалуйста, попробуйте позже.',
+          'error'
+        );
+        navigate('/collectingcontacts');
+      } finally {
+        setCheckingRegistration(false);
+      }
+    };
+
+    checkUserRegistration();
+  }, [navigate, API_URL]);
 
   // Загружаем последнюю выбранную профессию при монтировании только если есть токен
   useEffect(() => {
@@ -1034,7 +1063,7 @@ const Interview = () => {
   };
 
   // Подготавливаем события календаря для отображения доступных слотов
-  const calendarEvents = useMemo(() => {
+  useMemo(() => {
     const now = new Date();
     const events: Array<{
       id: string;
@@ -1271,6 +1300,18 @@ const Interview = () => {
               </div>
             </Card>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading screen while checking registration
+  if (checkingRegistration) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Проверяем регистрацию...</p>
         </div>
       </div>
     );
@@ -1731,11 +1772,6 @@ const Interview = () => {
             getAuthToken() &&
             completedSessions.length === 0 && (
               <div className="text-center mt-6">
-                <ProfessionHistory
-                  userId={JSON.parse(
-                    atob(getAuthToken()!.split('.')[1])
-                  ).userId.toString()}
-                />
                 <Button
                   onClick={() => {
                     setValue('');

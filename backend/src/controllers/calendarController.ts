@@ -47,6 +47,11 @@ export class CalendarController {
       const userId = req.extendedUser?.id;
       const { profession, preferredDateTime, queueType } = req.body;
 
+      console.log('🔍 joinQueue - userId:', userId);
+      console.log('🔍 joinQueue - profession:', profession);
+      console.log('🔍 joinQueue - preferredDateTime:', preferredDateTime);
+      console.log('🔍 joinQueue - queueType:', queueType);
+
       if (!userId) {
         return res.status(401).json({
           success: false,
@@ -72,7 +77,11 @@ export class CalendarController {
         },
       });
 
+      console.log('🔍 joinQueue - user found:', !!user);
+      console.log('🔍 joinQueue - user.formData:', user?.formData);
+
       if (!user || !user.formData[0]) {
+        console.log('❌ joinQueue - User or formData not found');
         return res.status(400).json({
           success: false,
           error:

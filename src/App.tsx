@@ -38,6 +38,7 @@ const ConditionalHeader = () => {
     '/profile',
     '/dashboard',
     '/test-complete-session',
+    '/auth',
   ].includes(location.pathname);
 
   return useModernHeader ? <ModernHeader /> : <Navigation />;

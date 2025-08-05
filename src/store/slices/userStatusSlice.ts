@@ -49,8 +49,8 @@ export const fetchUserStatus = createAsyncThunk(
       // Если токена нет, пробуем получить тестовый токен через authSlice
       try {
         const authResult = await dispatch({ type: 'auth/getTestToken' });
-        if (authResult.meta.requestStatus === 'fulfilled') {
-          token = authResult.payload.token;
+        if ((authResult as any).meta?.requestStatus === 'fulfilled') {
+          token = (authResult as any).payload?.token;
         }
       } catch (error) {
         console.error('Ошибка получения тестового токена:', error);

@@ -1,17 +1,10 @@
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import {
   Users,
-  Calendar,
   Trophy,
   BookOpen,
   Clock,
@@ -22,7 +15,6 @@ import {
   Coffee,
   Target,
   Zap,
-  CheckCircle,
   ArrowRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -177,9 +169,10 @@ const Dashboard: React.FC = () => {
                         {queue.time}
                       </div>
                     </div>
+
                     <Button
                       size="sm"
-                      className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                      className=" hover:shadow-glow transition-all duration-300"
                       onClick={() => navigate('/interview')}
                     >
                       <Play className="w-4 h-4 mr-1" />
@@ -207,7 +200,7 @@ const Dashboard: React.FC = () => {
               <h3 className="font-semibold mb-4">Быстрые действия</h3>
               <div className="space-y-3">
                 <Button
-                  className="w-full justify-start bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                  className="w-full justify-start hover:shadow-glow transition-all duration-300"
                   onClick={() => navigate('/interview')}
                 >
                   <Play className="w-4 h-4 mr-2" />
@@ -274,9 +267,11 @@ const Dashboard: React.FC = () => {
             <Card className="p-6 bg-gradient-primary text-white shadow-elegant">
               <div className="flex items-center gap-3 mb-3">
                 <Coffee className="w-6 h-6" />
-                <h3 className="font-semibold">Время кофе-брейка!</h3>
+                <h3 className="font-semibold text-zinc-500">
+                  Время кофе-брейка!
+                </h3>
               </div>
-              <p className="text-sm opacity-90 mb-4">
+              <p className="text-sm opacity-90 mb-4 text-zinc-500">
                 Отдохните и пообщайтесь с коллегами в нашем чате
               </p>
               <Button

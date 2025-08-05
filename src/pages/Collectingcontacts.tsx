@@ -5,14 +5,25 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandList,
+} from '@/components/ui/command';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { itPositions, ItPosition } from '@/data/itPositions';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { countries } from 'countries-list';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,10 +42,37 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const CollectingContacts = () => {
-  const [countryOpen, setCountryOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
+// Константы для оптимизации
+const EXPERIENCE_OPTIONS = [
+  { value: '0-0', label: '0-0 study' },
+  { value: '0-1', label: '0-1 year' },
+  { value: '1-3', label: '1-3 years' },
+  { value: '3-5', label: '3-5 years' },
+  { value: '5-10', label: '5-10 years' },
+  { value: '10+', label: '10+ years' },
+] as const;
+
+// Языки с приоритетом
+const PRIORITY_LANGUAGES = {
+  ru: 'Русский',
+  en: 'English',
+  de: 'Deutsch',
+  fr: 'Français',
+  es: 'Español',
+  pt: 'Português',
+  it: 'Italiano',
+  zh: '中文',
+  ja: '日本語',
+  ko: '한국어',
+  ar: 'العربية',
+} as const;
+
+const CollectingContacts = memo(() => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [isCheckingExistingData, setIsCheckingExistingData] = useState(true);
   const navigate = useNavigate();
 
   const {
@@ -56,49 +94,31 @@ const CollectingContacts = () => {
     mode: 'onChange', // Показывать ошибки при изменении полей
   });
 
-  // Автоматическая аутентификация в режиме разработки
+  // Автоматическая аутентификация в режиме разработки (оптимизированная)
   useEffect(() => {
     const authenticateInDev = async () => {
-      const token = localStorage.getItem('telegram_token');
+      const token =
+        localStorage.getItem('extended_token') ||
+        localStorage.getItem('telegram_token');
 
-      // Если токена нет и мы в режиме разработки, получаем тестовый токен
       if (!token && import.meta.env.DEV) {
         setIsAuthenticating(true);
         try {
-          // Принудительно очищаем кэш в режиме разработки
-          if ('caches' in window) {
-            const cacheNames = await caches.keys();
-            await Promise.all(cacheNames.map((name) => caches.delete(name)));
-          }
-
-          // Удаляем service workers если они есть
-          if ('serviceWorker' in navigator) {
-            const registrations =
-              await navigator.serviceWorker.getRegistrations();
-            await Promise.all(
-              registrations.map((registration) => registration.unregister())
-            );
-          }
-
           const apiUrl =
             import.meta.env.VITE_API_URL || 'http://localhost:3001';
           const response = await fetch(`${apiUrl}/api/auth/test-token`, {
             cache: 'no-cache',
-            headers: {
-              'Cache-Control': 'no-cache',
-            },
           });
           if (response.ok) {
             const data = await response.json();
             if (data.success) {
-              localStorage.setItem('telegram_token', data.data.token);
-              console.log(
-                '✅ Автоматически получен тестовый токен в режиме разработки'
-              );
+              localStorage.setItem('extended_token', data.data.token);
             }
           }
         } catch (error) {
-          console.error('Ошибка получения тестового токена:', error);
+          setError(
+            'Ошибка аутентификации. Пожалуйста, попробуйте обновить страницу.'
+          );
         } finally {
           setIsAuthenticating(false);
         }
@@ -108,106 +128,188 @@ const CollectingContacts = () => {
     authenticateInDev();
   }, []);
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      console.log('Form data:', data);
+  // Проверка существующих данных формы пользователя
+  useEffect(() => {
+    const checkExistingFormData = async () => {
+      try {
+        const token =
+          localStorage.getItem('extended_token') ||
+          localStorage.getItem('telegram_token');
 
-      // Получаем токен из localStorage
-      const token = localStorage.getItem('telegram_token');
+        if (!token) {
+          setIsCheckingExistingData(false);
+          return;
+        }
 
-      if (!token) {
-        alert('Ошибка авторизации. Пожалуйста, войдите через Telegram.');
-        return;
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${apiUrl}/api/form`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🔍 Проверка существующих данных формы:', data);
+
+          // Если у пользователя уже есть данные формы (профессия и страна), перенаправляем
+          if (data.success && data.data.profession && data.data.country) {
+            console.log(
+              '✅ У пользователя уже есть данные формы, перенаправляем на /interview'
+            );
+            navigate('/interview');
+            return;
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Ошибка при проверке данных формы:', error);
+        // Продолжаем показывать форму в случае ошибки
+      } finally {
+        setIsCheckingExistingData(false);
       }
+    };
 
-      // Отправляем данные на сервер
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/form`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-        cache: 'no-cache',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка при отправке данных');
-      }
-
-      const result = await response.json();
-      console.log('Server response:', result);
-
-      // Перенаправляем на страницу интервью
-      navigate('/interview');
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert(
-        error instanceof Error ? error.message : 'Ошибка при отправке данных'
-      );
+    // Проверяем только после того, как аутентификация завершена
+    if (!isAuthenticating) {
+      checkExistingFormData();
     }
-  };
+  }, [isAuthenticating, navigate]);
 
-  // Преобразуем данные из countries-list в удобный формат
-  const countriesList = Object.entries(countries)
-    .map(([code, country]) => ({
-      value: code,
-      label: country.name,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const onSubmit = useCallback(
+    async (data: FormData) => {
+      try {
+        console.log('📝 Отправка данных формы:', data);
 
-  // Получаем языки из countries-list
-  const getLanguagesFromCountry = (countryCode: string) => {
-    const country = countries[countryCode as keyof typeof countries];
+        const token =
+          localStorage.getItem('extended_token') ||
+          localStorage.getItem('telegram_token');
+
+        console.log('🔑 Токен найден:', !!token);
+
+        if (!token) {
+          setError('Ошибка авторизации. Пожалуйста, войдите через Telegram.');
+          return;
+        }
+
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        console.log('🌐 API URL:', apiUrl);
+
+        const response = await fetch(`${apiUrl}/api/form`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        });
+
+        console.log('📤 Ответ сервера:', response.status, response.statusText);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('❌ Ошибка от сервера:', errorData);
+          throw new Error(errorData.error || 'Ошибка при отправке данных');
+        }
+
+        const result = await response.json();
+        console.log('✅ Данные успешно сохранены в базу данных:', result);
+
+        navigate('/interview');
+      } catch (error) {
+        console.error('❌ Ошибка при отправке формы:', error);
+        setError(
+          error instanceof Error ? error.message : 'Ошибка при отправке данных'
+        );
+      }
+    },
+    [navigate]
+  );
+
+  // Мемоизированный список стран
+  const countriesList = useMemo(() => {
+    return Object.entries(countries as Record<string, any>)
+      .map(([code, country]) => {
+        // Берем только первое название (до запятой или точки с запятой)
+        let countryName = country.name;
+        if (typeof countryName === 'string') {
+          countryName = countryName.split(',')[0].split(';')[0].trim();
+        }
+        return {
+          value: code,
+          label: countryName,
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
+  // Фильтрация стран по поисковому запросу
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return countriesList;
+    const search = countrySearch.toLowerCase().trim();
+    const filtered = countriesList.filter((country) =>
+      country.label.toLowerCase().includes(search)
+    );
+    console.log(`🔍 Поиск: "${search}", найдено: ${filtered.length} стран`);
+    return filtered;
+  }, [countriesList, countrySearch]);
+
+  // Оптимизированное получение языков
+  const getLanguagesFromCountry = useCallback((countryCode: string) => {
+    const country = (countries as Record<string, any>)[countryCode];
     if (!country || !country.languages) return [];
 
-    return country.languages.map((lang: string) => ({
-      value: lang,
-      label: getLanguageName(lang),
-    }));
-  };
+    return country.languages
+      .map((lang: string) => ({
+        value: lang,
+        label:
+          PRIORITY_LANGUAGES[lang as keyof typeof PRIORITY_LANGUAGES] || lang,
+      }))
+      .sort(
+        (
+          a: { value: string; label: string },
+          b: { value: string; label: string }
+        ) => {
+          // Приоритетные языки сначала
+          const aIsPriority = a.value in PRIORITY_LANGUAGES;
+          const bIsPriority = b.value in PRIORITY_LANGUAGES;
+          if (aIsPriority && !bIsPriority) return -1;
+          if (!aIsPriority && bIsPriority) return 1;
+          return a.label.localeCompare(b.label);
+        }
+      );
+  }, []);
 
-  // Названия языков
-  const getLanguageName = (code: string) => {
-    const languageNames: Record<string, string> = {
-      ru: 'Русский',
-      en: 'English',
-      de: 'Deutsch',
-      fr: 'Français',
-      es: 'Español',
-      pt: 'Português',
-      it: 'Italiano',
-      nl: 'Nederlands',
-      pl: 'Polski',
-      cs: 'Čeština',
-      tr: 'Türkçe',
-      ja: '日本語',
-      ko: '한국어',
-      zh: '中文',
-      ar: 'العربية',
-      he: 'עברית',
-    };
-    return languageNames[code] || code;
-  };
-
-  const experienceOptions = [
-    { value: '0-0', label: '0-0 study' },
-    { value: '0-1', label: '0-1 year' },
-    { value: '1-3', label: '1-3 years' },
-    { value: '3-5', label: '3-5 years' },
-    { value: '5-10', label: '5-10 years' },
-    { value: '10+', label: '10+ years' },
-  ];
-
-  // Показываем загрузку во время аутентификации
-  if (isAuthenticating) {
+  // Показываем загрузку во время аутентификации или проверки данных
+  if (isAuthenticating || isCheckingExistingData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Настройка аутентификации...</p>
+          <p className="text-gray-600">
+            {isAuthenticating
+              ? 'Настройка аутентификации...'
+              : 'Проверка данных пользователя...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Показываем ошибку если есть
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+            <h2 className="text-lg font-semibold text-red-800 mb-2">Ошибка</h2>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              Обновить страницу
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -277,69 +379,91 @@ const CollectingContacts = () => {
               <Controller
                 name="country"
                 control={control}
-                render={({ field }) => (
-                  <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={countryOpen}
-                        className={cn(
-                          'w-full justify-between',
-                          errors.country && 'border-red-400'
-                        )}
-                        disabled={isSubmitting}
+                render={({ field }) => {
+                  const selectedCountry = countriesList.find(
+                    (country) => country.value === field.value
+                  );
+
+                  return (
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={countryOpen}
+                          className={cn(
+                            'w-full justify-between',
+                            errors.country && 'border-red-400'
+                          )}
+                          disabled={isSubmitting}
+                        >
+                          {selectedCountry?.label || 'Выберите страну...'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[var(--radix-popover-trigger-width)] p-0"
+                        align="start"
                       >
-                        {field.value
-                          ? countriesList.find(
-                              (item) => item.value === field.value
-                            )?.label
-                          : 'Выберите страну...'}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Поиск страны..."
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>Страна не найдена.</CommandEmpty>
-                          <CommandGroup>
-                            {countriesList.map((item) => (
-                              <CommandItem
-                                key={item.value}
-                                value={item.value}
-                                onSelect={() => {
-                                  setValue('country', item.value);
-                                  // Автоматически устанавливаем первый язык страны
-                                  const languages = getLanguagesFromCountry(
-                                    item.value
-                                  );
-                                  if (languages.length > 0) {
-                                    setValue('language', languages[0].value);
-                                  }
-                                  setCountryOpen(false);
-                                }}
-                              >
-                                {item.label}
-                                <Check
-                                  className={cn(
-                                    'ml-auto h-4 w-4',
-                                    field.value === item.value
-                                      ? 'opacity-100'
-                                      : 'opacity-0'
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                )}
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder="Поиск страны..."
+                            value={countrySearch}
+                            onValueChange={setCountrySearch}
+                          />
+                          <CommandList className="max-h-[300px]">
+                            {filteredCountries.length === 0 &&
+                              countrySearch.trim() && (
+                                <CommandEmpty>Страна не найдена.</CommandEmpty>
+                              )}
+                            <CommandGroup>
+                              {(countrySearch.trim()
+                                ? filteredCountries
+                                : countriesList
+                              )
+                                .slice(0, 100) // Ограничиваем до 100 результатов для производительности
+                                .map((country) => (
+                                  <div
+                                    key={country.value}
+                                    className={cn(
+                                      'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                                      field.value === country.value &&
+                                        'bg-accent'
+                                    )}
+                                    onClick={() => {
+                                      field.onChange(country.value);
+                                      // Автоматически устанавливаем первый язык страны
+                                      const languages = getLanguagesFromCountry(
+                                        country.value
+                                      );
+                                      if (languages.length > 0) {
+                                        setValue(
+                                          'language',
+                                          languages[0].value
+                                        );
+                                      }
+                                      setCountryOpen(false);
+                                      setCountrySearch('');
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        'mr-2 h-4 w-4',
+                                        field.value === country.value
+                                          ? 'opacity-100'
+                                          : 'opacity-0'
+                                      )}
+                                    />
+                                    {country.label}
+                                  </div>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  );
+                }}
               />
               {errors.country && (
                 <p className="text-xs text-red-500 mt-1">
@@ -358,67 +482,52 @@ const CollectingContacts = () => {
                 control={control}
                 render={({ field }) => {
                   const selectedCountry = watch('country');
-                  const availableLanguages = selectedCountry
-                    ? getLanguagesFromCountry(selectedCountry)
-                    : [];
+                  const availableLanguages = useMemo(
+                    () =>
+                      selectedCountry
+                        ? getLanguagesFromCountry(selectedCountry)
+                        : [],
+                    [selectedCountry, getLanguagesFromCountry]
+                  );
 
                   return (
-                    <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={languageOpen}
-                          className={cn(
-                            'w-full justify-between',
-                            errors.language && 'border-red-400'
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isSubmitting || !selectedCountry}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          'w-full',
+                          errors.language && 'border-red-400'
+                        )}
+                      >
+                        <SelectValue
+                          placeholder={
+                            selectedCountry
+                              ? 'Выберите язык...'
+                              : 'Сначала выберите страну'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[200px]">
+                        <SelectGroup>
+                          {availableLanguages.length > 0 ? (
+                            availableLanguages.map(
+                              (lang: { value: string; label: string }) => (
+                                <SelectItem key={lang.value} value={lang.value}>
+                                  {lang.label}
+                                </SelectItem>
+                              )
+                            )
+                          ) : (
+                            <div className="px-2 py-1.5 text-sm text-gray-500">
+                              Сначала выберите страну
+                            </div>
                           )}
-                          disabled={isSubmitting || !selectedCountry}
-                        >
-                          {field.value
-                            ? availableLanguages.find(
-                                (item) => item.value === field.value
-                              )?.label || field.value
-                            : selectedCountry
-                            ? 'Выберите язык...'
-                            : 'Сначала выберите страну'}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Поиск языка..."
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>Язык не найден.</CommandEmpty>
-                            <CommandGroup>
-                              {availableLanguages.map((item) => (
-                                <CommandItem
-                                  key={item.value}
-                                  value={item.value}
-                                  onSelect={() => {
-                                    setValue('language', item.value);
-                                    setLanguageOpen(false);
-                                  }}
-                                >
-                                  {item.label}
-                                  <Check
-                                    className={cn(
-                                      'ml-auto h-4 w-4',
-                                      field.value === item.value
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   );
                 }}
               />
@@ -452,7 +561,7 @@ const CollectingContacts = () => {
                     <option value="" disabled>
                       Выберите опыт работы
                     </option>
-                    {experienceOptions.map((option) => (
+                    {EXPERIENCE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -527,6 +636,8 @@ const CollectingContacts = () => {
       </div>
     </div>
   );
-};
+});
+
+CollectingContacts.displayName = 'CollectingContacts';
 
 export default CollectingContacts;

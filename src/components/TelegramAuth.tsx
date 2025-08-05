@@ -49,11 +49,12 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
         // Аутентифицируемся с нашим бэкендом через auth slice
         const result = await login(initData);
 
-        if (result.meta.requestStatus === 'fulfilled') {
-          const { user: userData, token: authToken } = result.payload;
+        if ((result as any).meta?.requestStatus === 'fulfilled') {
+          const { user: userData, token: authToken } = (result as any).payload;
           onAuthSuccess?.(userData, authToken);
         } else {
-          const errorMessage = result.error?.message || 'Ошибка аутентификации';
+          const errorMessage =
+            (result as any).error?.message || 'Ошибка аутентификации';
           onAuthError?.(errorMessage);
         }
       } catch (err) {

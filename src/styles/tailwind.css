@@ -43,8 +43,8 @@
   --color-warning-foreground: hsl(0 0% 98%);
 
   /* Borders and inputs */
-  --color-border: hsl(220 13% 91%);
-  --color-input: hsl(220 13% 91%);
+  --color-border: hsl(0 0% 80%); /* Светло-серый для светлой темы */
+  --color-input: hsl(0 0% 80%);
   --color-ring: hsl(258 90% 66%);
 
   /* Gradients for beautiful backgrounds */
@@ -320,4 +320,96 @@ html {
   font-size: 12px;
   z-index: 9999;
   border: 1px solid hsl(var(--color-border));
+}
+
+/* Fixes for Popover and Command components */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+[data-radix-popper-content-wrapper] [data-radix-popper-content] {
+  z-index: 9999 !important;
+}
+
+/* Ensure Command components are visible */
+[cmdk-root] {
+  z-index: 9999 !important;
+}
+
+[cmdk-list] {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+}
+
+[cmdk-item] {
+  cursor: pointer !important;
+  padding: 8px 12px !important;
+}
+
+[cmdk-item][data-selected='true'] {
+  background-color: hsl(var(--color-primary) / 0.1) !important;
+}
+
+/* Fix for Popover positioning */
+[data-radix-popper-content-wrapper] {
+  position: fixed !important;
+}
+
+/* Ensure proper stacking context */
+.popover-fix {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Command input styling */
+[cmdk-input] {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+}
+
+[cmdk-input]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Command list styling */
+[cmdk-list] {
+  border-top: 1px solid hsl(var(--color-border)) !important;
+}
+
+/* Command empty state */
+[cmdk-empty] {
+  padding: 20px !important;
+  text-align: center !important;
+  color: hsl(var(--color-muted-foreground)) !important;
+}
+
+/* Ensure proper button styling in Command */
+[cmdk-item] button {
+  width: 100% !important;
+  text-align: left !important;
+  background: none !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+}
+
+[cmdk-item] button:hover {
+  background-color: hsl(var(--color-muted)) !important;
+}
+
+/* Fix for mobile touch targets */
+@media (max-width: 768px) {
+  [cmdk-item] {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  [cmdk-input] {
+    min-height: 44px !important;
+  }
 }

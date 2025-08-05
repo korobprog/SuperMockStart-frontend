@@ -25,12 +25,23 @@ const ModernHeader: React.FC = () => {
   };
 
   const menuItems = [
-    { href: '/', label: 'Главная' },
-    { href: '/dashboard', label: 'Дашборд' },
-    { href: '/interview', label: 'Интервью' },
-    { href: '/profile', label: 'Профиль' },
-    { href: '/about', label: 'О нас' },
+    { href: '/', label: 'Главная', showWhenAuth: false },
+    { href: '/dashboard', label: 'Дашборд', showWhenAuth: true },
+    { href: '/interview', label: 'Интервью', showWhenAuth: true },
+    { href: '/profile', label: 'Профиль', showWhenAuth: true },
+    { href: '/about', label: 'О проекте', showWhenAuth: false },
   ];
+
+  // Фильтруем элементы меню в зависимости от статуса авторизации
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (isAuthenticated) {
+      // Если пользователь авторизован, показываем только элементы с showWhenAuth: true
+      return item.showWhenAuth === true;
+    } else {
+      // Если пользователь не авторизован, показываем все элементы
+      return true;
+    }
+  });
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -39,18 +50,13 @@ const ModernHeader: React.FC = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">SM</span>
-          </div>
-          <span className="font-bold text-xl text-gradient">
-            SuperMockStart
-          </span>
+          <span className="font-bold text-xl text-gradient">SuperMock</span>
         </Link>
 
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {menuItems.map((item) => (
+            {filteredMenuItems.map((item) => (
               <NavigationMenuItem key={item.href}>
                 <Link
                   to={item.href}
@@ -150,7 +156,7 @@ const ModernHeader: React.FC = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
               <div className="flex flex-col space-y-4 mt-8">
-                {menuItems.map((item) => (
+                {filteredMenuItems.map((item) => (
                   <Link
                     key={item.href}
                     to={item.href}

@@ -15,7 +15,7 @@ export const useAuth = () => {
   const auth = useSelector((state: RootState) => state.auth);
 
   const login = async (initData: string) => {
-    return await dispatch(loginWithTelegram(initData));
+    return await dispatch(loginWithTelegram(initData) as any);
   };
 
   const logout = () => {
@@ -24,12 +24,12 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     if (auth.token) {
-      return await dispatch(verifyToken());
+      return await dispatch(verifyToken() as any);
     }
   };
 
   const getTestAuth = async () => {
-    return await dispatch(getTestToken());
+    return await dispatch(getTestToken() as any);
   };
 
   const updateToken = (token: string) => {

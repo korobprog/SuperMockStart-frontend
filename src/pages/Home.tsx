@@ -12,7 +12,19 @@ import TelegramBotAuth from '@/components/TelegramBotAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import HeroSection from '@/components/HeroSection';
-import { Code, Users, Zap, Shield, BookOpen, Target } from 'lucide-react';
+import BackgroundGradient from '@/components/BackgroundGradient';
+import Footer from '@/components/Footer';
+import {
+  Code,
+  Users,
+  Zap,
+  Shield,
+  BookOpen,
+  Target,
+  Star,
+  Clock,
+  Award,
+} from 'lucide-react';
 
 const Home: React.FC = () => {
   const { user, loading, isAuthenticated } = useTelegramAuth();
@@ -42,21 +54,21 @@ const Home: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <BackgroundGradient className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
             <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
           </div>
           <p className="text-muted-foreground">Загрузка...</p>
         </div>
-      </div>
+      </BackgroundGradient>
     );
   }
 
   // Если пользователь авторизован, показываем загрузку во время перенаправления
   if (isAuthenticated && user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <BackgroundGradient className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
             <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
@@ -65,7 +77,7 @@ const Home: React.FC = () => {
             Перенаправление на страницу интервью...
           </p>
         </div>
-      </div>
+      </BackgroundGradient>
     );
   }
 
@@ -107,20 +119,30 @@ const Home: React.FC = () => {
 
   // Неавторизованный пользователь - показываем новый красивый дизайн
   return (
-    <div className="min-h-screen bg-background">
+    <BackgroundGradient className="min-h-screen">
       {/* Hero Section */}
       <HeroSection />
 
       {/* Features Section */}
-      <section className="py-20 bg-gradient-secondary">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-gradient-secondary relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 left-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <Star className="w-4 h-4" />
+              Почему SuperMock?
+            </div>
             <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-gradient">
-              Почему SuperMockStart?
+              Современная платформа для подготовки
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Современная платформа для подготовки к IT-собеседованиям с
-              реальными интервьюерами
+              К IT-собеседованиям с реальными интервьюерами и актуальными
+              задачами
             </p>
           </div>
 
@@ -128,7 +150,7 @@ const Home: React.FC = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="p-6 card-hover border-0 bg-white/50 backdrop-blur"
+                className="p-6 card-hover border-0 bg-white/50 backdrop-blur hover-lift"
               >
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -149,10 +171,68 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Auth Section */}
-      <section id="auth-section" className="py-20">
+      {/* Stats Section */}
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
-          <Card className="max-w-2xl mx-auto shadow-elegant">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="p-6 bg-gradient-secondary border-0 card-hover">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-2xl font-bold">15,000+</div>
+                <div className="text-sm text-muted-foreground">Участников</div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 bg-gradient-secondary border-0 card-hover">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Zap className="w-6 h-6 text-accent" />
+                </div>
+                <div className="text-2xl font-bold">50,000+</div>
+                <div className="text-sm text-muted-foreground">
+                  Собеседований
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 bg-gradient-secondary border-0 card-hover">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-6 h-6 text-success" />
+                </div>
+                <div className="text-2xl font-bold">24/7</div>
+                <div className="text-sm text-muted-foreground">Доступность</div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 bg-gradient-secondary border-0 card-hover">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-6 h-6 text-warning" />
+                </div>
+                <div className="text-2xl font-bold">95%</div>
+                <div className="text-sm text-muted-foreground">Успешных</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Auth Section */}
+      <section
+        id="auth-section"
+        className="py-20 bg-gradient-secondary relative overflow-hidden"
+      >
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <Card className="max-w-2xl mx-auto shadow-elegant bg-white/80 backdrop-blur">
             <CardHeader className="text-center px-4 sm:px-6">
               <CardTitle className="text-2xl sm:text-3xl font-bold text-gradient">
                 Начните прямо сейчас
@@ -235,7 +315,10 @@ const Home: React.FC = () => {
           </Card>
         </div>
       </section>
-    </div>
+
+      {/* Footer */}
+      <Footer />
+    </BackgroundGradient>
   );
 };
 

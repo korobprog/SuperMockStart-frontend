@@ -23,12 +23,12 @@ export const saveFormData = async (req: Request, res: Response) => {
       email,
       phone,
     }: FormData = req.body;
-    const telegramId = req.user?.id?.toString();
+    const userId = req.extendedUser?.id;
 
-    if (!telegramId) {
+    if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized - Telegram ID not found',
+        error: 'Unauthorized - User ID not found',
       });
     }
 
@@ -41,9 +41,9 @@ export const saveFormData = async (req: Request, res: Response) => {
       });
     }
 
-    // Находим пользователя по telegramId
+    // Находим пользователя по userId (database ID)
     const user = await prisma.user.findUnique({
-      where: { telegramId },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -97,19 +97,121 @@ export const saveFormData = async (req: Request, res: Response) => {
   }
 };
 
-export const getFormData = async (req: Request, res: Response) => {
+export const updateFormData = async (req: Request, res: Response) => {
   try {
-    const telegramId = req.user?.id?.toString();
+    const {
+      profession,
+      country,
+      language,
+      experience,
+      email,
+      phone,
+    }: FormData = req.body;
+    const userId = req.extendedUser?.id;
 
-    if (!telegramId) {
+    if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized - Telegram ID not found',
+        error: 'Unauthorized - User ID not found',
+      });
+    }
+
+    // Валидация обязательных полей
+    if (!profession || !country || !language || !experience) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'Missing required fields: profession, country, language, experience',
+      });
+    }
+
+    // Находим пользователя по userId
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    }
+
+    // Создаем новую запись профессии (история выбора)
+    await prisma.selectedProfession.create({
+      data: {
+        userId: user.id,
+        profession,
+      },
+    });
+
+    // Обновляем или создаем данные формы
+    const existingFormData = await prisma.userFormData.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existingFormData) {
+      await prisma.userFormData.update({
+        where: { id: existingFormData.id },
+        data: {
+          profession,
+          country,
+          language,
+          experience,
+          email,
+          phone,
+        },
+      });
+    } else {
+      await prisma.userFormData.create({
+        data: {
+          userId: user.id,
+          profession,
+          country,
+          language,
+          experience,
+          email,
+          phone,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Form data updated successfully',
+      data: {
+        profession,
+        country,
+        language,
+        experience,
+        email,
+        phone,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating form data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+};
+
+export const getFormData = async (req: Request, res: Response) => {
+  try {
+    const userId = req.extendedUser?.id;
+    console.log('🔍 getFormData - userId:', userId);
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized - User ID not found',
       });
     }
 
     const user = await prisma.user.findUnique({
-      where: { telegramId },
+      where: { id: userId },
       include: {
         selectedProfessions: {
           orderBy: { createdAt: 'desc' },
@@ -121,6 +223,13 @@ export const getFormData = async (req: Request, res: Response) => {
         },
       },
     });
+
+    console.log('🔍 getFormData - user found:', !!user);
+    console.log('🔍 getFormData - user.formData:', user?.formData);
+    console.log(
+      '🔍 getFormData - user.selectedProfessions:',
+      user?.selectedProfessions
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -147,6 +256,9 @@ export const getFormData = async (req: Request, res: Response) => {
         profession: latestProfession?.profession || null,
         language: latestFormData?.language || 'en',
         country: latestFormData?.country || null,
+        experience: latestFormData?.experience || null,
+        email: latestFormData?.email || null,
+        phone: latestFormData?.phone || null,
         status: user.status || 'INTERVIEWER', // По умолчанию INTERVIEWER
         canBeCandidate,
       },

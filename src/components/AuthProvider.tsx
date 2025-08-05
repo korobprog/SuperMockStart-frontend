@@ -26,7 +26,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const authResult = await checkAuth();
 
         // Если токена нет или он невалиден, пробуем получить тестовый токен
-        if (!authResult || authResult.meta.requestStatus === 'rejected') {
+        if (
+          !authResult ||
+          (authResult as any).meta?.requestStatus === 'rejected'
+        ) {
           console.log(
             '🔑 Токен не найден или невалиден, получаем тестовый токен'
           );

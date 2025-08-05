@@ -46,7 +46,7 @@ export function useTheme() {
       root.style.display = '';
 
       // Force update of CSS custom properties
-      const computedStyle = getComputedStyle(root);
+      getComputedStyle(root);
       root.style.setProperty('--force-update', Date.now().toString());
     });
   }, [theme, mounted]);
