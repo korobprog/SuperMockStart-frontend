@@ -37,23 +37,6 @@ else
     fi
 fi
 
-# Verify all required tables exist
-echo "🔍 Verifying required tables..."
-required_tables="users interview_queue notifications interview_sessions interviews feedback selected_professions user_form_data"
-
-for table in $required_tables; do
-    table_exists=$(npx prisma db execute --url "$DATABASE_URL" --stdin << EOF
-SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table';
-EOF
-    )
-    if echo "$table_exists" | grep -q "1"; then
-        echo "✅ Table '$table' exists"
-    else
-        echo "❌ Table '$table' is missing"
-        exit 1
-    fi
-done
-
 # Generate Prisma client
 echo "🔧 Generating Prisma client..."
 npx prisma generate
