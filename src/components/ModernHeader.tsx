@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+} from './ui/navigation-menu';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Menu, User, LogOut, BookOpen, Calendar } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import { ThemeToggle } from './ThemeToggle';
 
 const ModernHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
