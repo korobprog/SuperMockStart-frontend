@@ -1,35 +1,32 @@
-#!/bin/bash
+#!/bin/sh
 
-# Скрипт для инициализации базы данных SuperMock
-# Используется при первом развертывании
+echo "🚀 Initializing SuperMock Database..."
 
-set -e
-
-echo "🗄️  Инициализация базы данных SuperMock..."
-
-# Ждем запуска PostgreSQL
-echo "⏳ Ждем запуска PostgreSQL..."
-until pg_isready -h postgres -p 5432 -U postgres; do
-  echo "PostgreSQL еще не готов, ждем..."
-  sleep 2
+# Wait for database to be ready
+echo "⏳ Waiting for database connection..."
+until npx prisma db push --accept-data-loss > /dev/null 2>&1; do
+    echo "⏳ Database not ready, retrying in 3 seconds..."
+    sleep 3
 done
 
-echo "✅ PostgreSQL готов!"
+echo "✅ Database connection established"
 
-# Генерируем Prisma клиент
-echo "🔧 Генерируем Prisma клиент..."
+# Push the schema
+echo "📝 Pushing database schema..."
+if npx prisma db push --accept-data-loss; then
+    echo "✅ Schema pushed successfully"
+else
+    echo "⚠️  Schema push failed, trying migrations..."
+    if npx prisma migrate deploy; then
+        echo "✅ Migrations deployed successfully"
+    else
+        echo "❌ Database initialization failed"
+        exit 1
+    fi
+fi
+
+# Generate Prisma client
+echo "🔧 Generating Prisma client..."
 npx prisma generate
 
-# Применяем миграции
-echo "📦 Применяем миграции базы данных..."
-npx prisma migrate deploy
-
-# Проверяем статус базы данных
-echo "🔍 Проверяем статус базы данных..."
-npx prisma db push --accept-data-loss
-
-echo "✅ База данных успешно инициализирована!"
-
-# Запускаем приложение
-echo "🚀 Запускаем приложение..."
-npm start 
+echo "✅ Database initialization completed successfully!" 

@@ -54,6 +54,10 @@ COPY --from=build /app/package.json ./package.json
 COPY scripts/setup-db.sh ./scripts/setup-db.sh
 RUN chmod +x ./scripts/setup-db.sh
 
+# Копируем скрипт инициализации базы данных
+COPY scripts/init-db.sh ./scripts/init-db.sh
+RUN chmod +x ./scripts/init-db.sh
+
 # Копируем и делаем исполняемым startup скрипт
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh

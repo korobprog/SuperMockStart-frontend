@@ -16,12 +16,23 @@ fi
 
 echo "✅ Prisma client check completed"
 
-# Wait for database to be ready
-echo "🔄 Waiting for database to be ready..."
-until npx prisma db push --accept-data-loss; do
-    echo "⏳ Database not ready, retrying in 5 seconds..."
-    sleep 5
-done
+# Wait for database to be ready and set up schema
+echo "🔄 Setting up database schema..."
+
+# Try to push the schema first (for fresh databases)
+echo "📝 Pushing database schema..."
+if npx prisma db push --accept-data-loss; then
+    echo "✅ Database schema pushed successfully"
+else
+    echo "⚠️  Schema push failed, trying migrations..."
+    # If push fails, try to run migrations
+    if npx prisma migrate deploy; then
+        echo "✅ Database migrations deployed successfully"
+    else
+        echo "❌ Database setup failed. Exiting..."
+        exit 1
+    fi
+fi
 
 echo "✅ Database is ready and schema is up to date"
 
