@@ -475,6 +475,64 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
   }
 }
 
+// Стили для кнопок слотов времени в компоненте Interview
+.interview-time-slot {
+  &.available {
+    border-color: rgb(34 197 94) !important;
+    background-color: rgb(240 253 244) !important;
+    color: rgb(22 163 74) !important;
+    cursor: pointer !important;
+
+    &:hover {
+      background-color: rgb(220 252 231) !important;
+      border-color: rgb(22 163 74) !important;
+      color: rgb(21 128 61) !important;
+    }
+
+    &:disabled {
+      opacity: 1 !important;
+    }
+  }
+
+  &.unavailable {
+    border-color: rgb(239 68 68) !important;
+    background-color: rgb(254 242 242) !important;
+    color: rgb(153 27 27) !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+
+    &:hover {
+      background-color: rgb(254 242 242) !important;
+      border-color: rgb(239 68 68) !important;
+      color: rgb(153 27 27) !important;
+      cursor: not-allowed !important;
+    }
+
+    &:disabled {
+      opacity: 0.8 !important;
+    }
+  }
+
+  &.past {
+    border-color: rgb(156 163 175) !important;
+    background-color: rgb(243 244 246) !important;
+    color: rgb(107 114 128) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+
+    &:hover {
+      background-color: rgb(243 244 246) !important;
+      border-color: rgb(156 163 175) !important;
+      color: rgb(107 114 128) !important;
+      cursor: not-allowed !important;
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+    }
+  }
+}
+
 // Мобильные стили для экранов от 360px
 @media (max-width: 640px) {
   .rbc-toolbar {
@@ -807,7 +865,8 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

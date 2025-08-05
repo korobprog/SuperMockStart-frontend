@@ -31,6 +31,11 @@ function Navigation() {
       label: '🔧 Тест',
       className: 'text-blue-600 hover:text-blue-700',
     },
+    {
+      path: '/auth-fix',
+      label: '🔧 Исправить авторизацию',
+      className: 'text-red-600 hover:text-red-700',
+    },
   ];
 
   return (

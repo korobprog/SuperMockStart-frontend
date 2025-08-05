@@ -78,23 +78,28 @@ app.use(
   })
 );
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // максимум 100 запросов
-  message: {
-    success: false,
-    error: 'Too many requests from this IP, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Правильная обработка IP адресов за прокси
-  keyGenerator: (req: express.Request) => {
-    return req.ip || req.connection.remoteAddress || 'unknown';
-  },
-});
+// Rate limiting - только в продакшене
+if (process.env.NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // максимум 100 запросов
+    message: {
+      success: false,
+      error: 'Too many requests from this IP, please try again later.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Правильная обработка IP адресов за прокси
+    keyGenerator: (req: express.Request) => {
+      return req.ip || req.connection.remoteAddress || 'unknown';
+    },
+  });
 
-app.use(limiter);
+  app.use(limiter);
+  console.log('🔒 Rate limiting enabled (production mode)');
+} else {
+  console.log('🚀 Rate limiting disabled (development mode)');
+}
 
 // Парсинг JSON
 app.use(express.json({ limit: '10mb' }));

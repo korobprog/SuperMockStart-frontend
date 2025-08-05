@@ -370,6 +370,46 @@ const Interview = () => {
     });
   }, [availableSlots, selectedDate]);
 
+  // Функция для получения всех слотов (доступных и недоступных) для выбранной даты
+  const getAllSlotsForSelectedDate = useCallback(() => {
+    if (!selectedDate) return [];
+
+    const selectedDateStart = new Date(selectedDate);
+    selectedDateStart.setHours(0, 0, 0, 0);
+    const selectedDateEnd = new Date(selectedDate);
+    selectedDateEnd.setHours(23, 59, 59, 999);
+
+    // Создаем все возможные слоты для выбранной даты (каждый час)
+    const allSlots: TimeSlot[] = [];
+    const current = new Date(selectedDateStart);
+
+    while (current <= selectedDateEnd) {
+      for (let hour = 0; hour < 24; hour++) {
+        current.setHours(hour, 0, 0, 0);
+
+        // Проверяем, есть ли этот слот в availableSlots и доступен ли он
+        const existingSlot = availableSlots.find((slot) => {
+          const slotDateTime =
+            typeof slot.datetime === 'string'
+              ? new Date(slot.datetime)
+              : slot.datetime;
+          return (
+            Math.abs(slotDateTime.getTime() - current.getTime()) <
+            60 * 60 * 1000
+          ); // В пределах часа
+        });
+
+        allSlots.push({
+          datetime: new Date(current),
+          available: existingSlot ? existingSlot.available : false,
+        });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return allSlots;
+  }, [availableSlots, selectedDate]);
+
   const [pendingTimeSlot, setPendingTimeSlot] = useState<Date | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<Date | null>(null);
@@ -1430,9 +1470,8 @@ const Interview = () => {
                 </CardTitle>
                 <CardDescription className="text-sm">
                   Нажмите на доступный временной слот (зеленые блоки) для выбора
-                  времени. Серые слоты - прошедшее время, красные - недоступные,
-                  пунктирные - пустые слоты. События группируются по дням для
-                  лучшей видимости.
+                  времени. Серые слоты - прошедшее время, красные - недоступные
+                  слоты. Недоступные слоты не кликабельны.
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-4 sm:px-6 pb-6">
@@ -1463,17 +1502,10 @@ const Interview = () => {
                       </span>
                       <span className="xs:hidden">Недоступно</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-50 border border-gray-200 rounded border-dashed opacity-30"></div>
-                      <span className="hidden xs:inline">
-                        Пустые слоты (пунктир)
-                      </span>
-                      <span className="xs:hidden">Пустые</span>
-                    </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
                     💡 Нажмите на зеленые блоки для выбора времени. Серые блоки
-                    показывают прошедшее время.
+                    показывают прошедшее время, красные - недоступные слоты.
                   </p>
                 </div>
 
@@ -1550,46 +1582,62 @@ const Interview = () => {
                               :
                             </h4>
                             <div className="grid grid-cols-2 gap-2">
-                              {getSlotsForSelectedDate().map((slot, index) => {
-                                const slotDateTime =
-                                  typeof slot.datetime === 'string'
-                                    ? new Date(slot.datetime)
-                                    : slot.datetime;
+                              {getAllSlotsForSelectedDate().map(
+                                (slot, index) => {
+                                  const slotDateTime =
+                                    typeof slot.datetime === 'string'
+                                      ? new Date(slot.datetime)
+                                      : slot.datetime;
 
-                                return (
-                                  <Button
-                                    key={index}
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs border-green-300 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 transition-colors cursor-pointer"
-                                    onClick={() => {
-                                      const slotInfo = {
-                                        start: slotDateTime,
-                                        end: new Date(
-                                          slotDateTime.getTime() +
-                                            60 * 60 * 1000
-                                        ),
-                                        slots: [
-                                          slotDateTime,
-                                          new Date(
-                                            slotDateTime.getTime() +
-                                              60 * 60 * 1000
-                                          ),
-                                        ],
-                                        action: 'select' as const,
-                                      };
-                                      handleTimeSlotSelect(slotInfo);
-                                    }}
-                                  >
-                                    {format(slotDateTime, 'HH:mm', {
-                                      locale: ru,
-                                    })}
-                                  </Button>
-                                );
-                              })}
+                                  const isAvailable = slot.available;
+                                  const isPast = slotDateTime < new Date();
+
+                                  return (
+                                    <Button
+                                      key={index}
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={!isAvailable || isPast}
+                                      className={`text-xs transition-colors interview-time-slot ${
+                                        isAvailable && !isPast
+                                          ? 'available'
+                                          : isPast
+                                          ? 'past'
+                                          : 'unavailable'
+                                      }`}
+                                      onClick={() => {
+                                        if (isAvailable && !isPast) {
+                                          const slotInfo = {
+                                            start: slotDateTime,
+                                            end: new Date(
+                                              slotDateTime.getTime() +
+                                                60 * 60 * 1000
+                                            ),
+                                            slots: [
+                                              slotDateTime,
+                                              new Date(
+                                                slotDateTime.getTime() +
+                                                  60 * 60 * 1000
+                                              ),
+                                            ],
+                                            action: 'select' as const,
+                                          };
+                                          handleTimeSlotSelect(slotInfo);
+                                        }
+                                      }}
+                                    >
+                                      {format(slotDateTime, 'HH:mm', {
+                                        locale: ru,
+                                      })}
+                                    </Button>
+                                  );
+                                }
+                              )}
                             </div>
 
-                            {getSlotsForSelectedDate().length === 0 && (
+                            {getAllSlotsForSelectedDate().filter(
+                              (slot) => slot.available
+                            ).length === 0 && (
                               <div className="text-center p-4 bg-gray-50 rounded-lg">
                                 <p className="text-sm text-gray-500">
                                   На выбранную дату нет доступных слотов

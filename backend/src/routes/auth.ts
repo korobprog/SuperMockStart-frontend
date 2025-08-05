@@ -114,6 +114,13 @@ router.post('/verify', AuthController.verifyToken);
 router.post('/verify-extended-token', AuthController.verifyExtendedToken);
 
 /**
+ * @route POST /api/auth/validate-token
+ * @desc Валидация JWT токена
+ * @access Public
+ */
+router.post('/validate-token', AuthController.validateToken);
+
+/**
  * @route GET /api/auth/profile
  * @desc Получение профиля текущего пользователя
  * @access Private

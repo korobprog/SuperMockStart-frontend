@@ -460,4 +460,42 @@ export class AuthController {
       });
     }
   }
+
+  /**
+   * Валидация JWT токена
+   */
+  static async validateToken(req: Request, res: Response) {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          error: 'No token provided',
+        });
+      }
+
+      // Проверяем валидность токена
+      const isValid = AuthService.isTokenValid(token);
+
+      if (isValid) {
+        return res.status(200).json({
+          success: true,
+          message: 'Token is valid',
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          error: 'Token is invalid or expired',
+        });
+      }
+    } catch (error) {
+      console.error('Token validation error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      });
+    }
+  }
 }

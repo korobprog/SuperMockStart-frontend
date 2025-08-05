@@ -1,28 +1,235 @@
 @import 'tailwindcss';
 
+/* SuperMockStart Design System - Modern IT Interview Platform */
+
 @theme {
-  --color-primary: #3b82f6;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-muted: #f1f5f9;
+  /* Light mode colors - Beautiful purple-blue gradient theme */
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #fafafa;
+  --color-primary-glow: #a855f7;
+
+  --color-secondary: #f5f3ff;
+  --color-secondary-foreground: #8b5cf6;
+
+  --color-accent: #0ea5e9;
+  --color-accent-foreground: #fafafa;
+
+  --color-muted: #f8fafc;
   --color-muted-foreground: #64748b;
-  --color-accent: #f1f5f9;
-  --color-accent-foreground: #0f172a;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+
+  --color-success: #059669;
+  --color-success-foreground: #fafafa;
+
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #fafafa;
+
   --color-popover: #ffffff;
   --color-popover-foreground: #0f172a;
+
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
+
   --color-border: #e2e8f0;
   --color-input: #e2e8f0;
-  --color-ring: #3b82f6;
+  --color-ring: #8b5cf6;
+
   --color-background: #ffffff;
   --color-foreground: #0f172a;
 
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   --font-sans: 'Inter', 'system-ui', 'sans-serif';
   --font-mono: 'JetBrains Mono', 'monospace';
+
+  /* Beautiful gradients */
+  --gradient-primary: linear-gradient(135deg, #8b5cf6, #0ea5e9);
+  --gradient-secondary: linear-gradient(135deg, #f5f3ff, #f8fafc);
+  --gradient-dark: linear-gradient(135deg, #1e293b, rgba(139, 92, 246, 0.1));
+
+  /* Elegant shadows */
+  --shadow-elegant: 0 10px 30px -10px rgba(139, 92, 246, 0.3);
+  --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.4);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: #1e293b;
+    --color-foreground: #fafafa;
+
+    --color-card: #1e293b;
+    --color-card-foreground: #fafafa;
+
+    --color-popover: #1e293b;
+    --color-popover-foreground: #fafafa;
+
+    --color-primary: #8b5cf6;
+    --color-primary-foreground: #0f172a;
+    --color-primary-glow: #a855f7;
+
+    --color-secondary: #334155;
+    --color-secondary-foreground: #fafafa;
+
+    --color-muted: #334155;
+    --color-muted-foreground: #94a3b8;
+
+    --color-accent: #0ea5e9;
+    --color-accent-foreground: #0f172a;
+
+    --color-border: #475569;
+    --color-input: #475569;
+
+    --gradient-primary: linear-gradient(135deg, #8b5cf6, #0ea5e9);
+    --gradient-secondary: linear-gradient(135deg, #334155, #475569);
+    --gradient-dark: linear-gradient(135deg, #1e293b, rgba(139, 92, 246, 0.2));
+
+    --shadow-elegant: 0 10px 30px -10px rgba(139, 92, 246, 0.5);
+    --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.6);
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  /* Hover effects for interactive elements */
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105;
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .hover-lift:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Text gradient utilities */
+  .text-gradient {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Card hover animations */
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .card-hover:hover {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .bg-gradient-dark {
+    background: var(--gradient-dark);
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-muted);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-muted);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-glow);
+  }
+}
+
+/* Mobile optimizations for Telegram Mini Apps */
+@media (max-width: 768px) {
+  .container {
+    @apply px-3;
+  }
+
+  /* Touch-friendly button sizes */
+  .mobile-touch {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Optimize for mobile viewport */
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  /* Hide scrollbars on mobile for cleaner look */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+}
+
+/* Telegram WebApp specific styles */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* PWA and mobile app optimizations */
+.mobile-optimized {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Enhanced mobile animations */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-card {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .mobile-card:active {
+    @apply scale-95;
+  }
+}
+
+/* Global styles */
+body {
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Beautiful focus rings */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

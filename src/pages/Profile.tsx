@@ -1,0 +1,377 @@
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import {
+  User,
+  Mail,
+  MapPin,
+  Calendar,
+  Star,
+  Trophy,
+  Code,
+  Edit,
+  Github,
+  Linkedin,
+  ExternalLink,
+  CheckCircle,
+  BookOpen,
+  Clock,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
+
+const Profile: React.FC = () => {
+  const { user, isAuthenticated } = useTelegramAuth();
+
+  // Если пользователь не авторизован, показываем загрузку
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
+            <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
+          </div>
+          <p className="text-muted-foreground">Загрузка профиля...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const skills = [
+    { name: 'JavaScript', level: 85, category: 'Frontend' },
+    { name: 'React', level: 90, category: 'Frontend' },
+    { name: 'Node.js', level: 75, category: 'Backend' },
+    { name: 'Python', level: 70, category: 'Backend' },
+    { name: 'Docker', level: 60, category: 'DevOps' },
+    { name: 'AWS', level: 55, category: 'DevOps' },
+  ];
+
+  const achievements = [
+    {
+      title: 'Первое собеседование',
+      icon: <Star className="w-4 h-4" />,
+      completed: true,
+    },
+    {
+      title: '10 собеседований',
+      icon: <Trophy className="w-4 h-4" />,
+      completed: true,
+    },
+    {
+      title: 'Хакатон победитель',
+      icon: <Trophy className="w-4 h-4" />,
+      completed: false,
+    },
+    {
+      title: 'Ментор года',
+      icon: <Star className="w-4 h-4" />,
+      completed: false,
+    },
+  ];
+
+  const interviewHistory = [
+    {
+      role: 'Frontend React',
+      company: 'Яндекс',
+      date: '15 янв 2024',
+      rating: 4.5,
+      status: 'success',
+    },
+    {
+      role: 'Fullstack',
+      company: 'Сбер',
+      date: '10 янв 2024',
+      rating: 4.2,
+      status: 'success',
+    },
+    {
+      role: 'JavaScript',
+      company: 'VK',
+      date: '05 янв 2024',
+      rating: 3.8,
+      status: 'pending',
+    },
+    {
+      role: 'React Native',
+      company: 'Авито',
+      date: '28 дек 2023',
+      rating: 4.0,
+      status: 'success',
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Info */}
+          <div className="lg:col-span-1">
+            <Card className="p-6 shadow-elegant">
+              <div className="text-center mb-6">
+                <div className="w-24 h-24 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <User className="w-12 h-12 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold mb-1 text-gradient">
+                  {user.first_name || 'Пользователь'} {user.last_name || ''}
+                </h2>
+                <p className="text-muted-foreground">Frontend Developer</p>
+                <div className="flex items-center justify-center gap-1 mt-2">
+                  <Star className="w-4 h-4 text-warning fill-current" />
+                  <span className="text-sm font-medium">4.8</span>
+                  <span className="text-sm text-muted-foreground">
+                    (24 отзыва)
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  {user.username
+                    ? `${user.username}@telegram.org`
+                    : 'email@example.com'}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  Москва, Россия
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  На платформе с января 2024
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2">
+                  <Github className="w-4 h-4" />
+                  <span className="text-sm">
+                    github.com/{user.username || 'user'}
+                  </span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Linkedin className="w-4 h-4" />
+                  <span className="text-sm">
+                    linkedin.com/in/{user.username || 'user'}
+                  </span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </div>
+              </div>
+
+              <Button className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300">
+                <Edit className="w-4 h-4 mr-2" />
+                Редактировать профиль
+              </Button>
+            </Card>
+
+            {/* Achievements */}
+            <Card className="p-6 mt-6 shadow-elegant">
+              <h3 className="font-semibold mb-4">Достижения</h3>
+              <div className="space-y-3">
+                {achievements.map((achievement, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                      achievement.completed ? 'bg-success/10' : 'bg-muted/50'
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        achievement.completed
+                          ? 'bg-success text-success-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {achievement.completed ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        achievement.icon
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm font-medium ${
+                        achievement.completed
+                          ? 'text-foreground'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {achievement.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Skills */}
+            <Card className="p-6 shadow-elegant">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Навыки и технологии</h3>
+                <Button variant="outline" size="sm" className="hover-lift">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Редактировать
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {skills.map((skill, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{skill.name}</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {skill.category}
+                        </Badge>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {skill.level}%
+                      </span>
+                    </div>
+                    <Progress value={skill.level} className="h-2" />
+                  </div>
+                ))}
+              </div>
+
+              <Button variant="outline" className="w-full mt-6 hover-lift">
+                <Code className="w-4 h-4 mr-2" />
+                Добавить навык
+              </Button>
+            </Card>
+
+            {/* Interview History */}
+            <Card className="p-6 shadow-elegant">
+              <h3 className="text-xl font-semibold mb-6">
+                История собеседований
+              </h3>
+              <div className="space-y-4">
+                {interviewHistory.map((interview, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 rounded-lg bg-gradient-secondary card-hover"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Code className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{interview.role}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {interview.company} • {interview.date}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-warning fill-current" />
+                        <span className="text-sm font-medium">
+                          {interview.rating}
+                        </span>
+                      </div>
+                      <Badge
+                        variant={
+                          interview.status === 'success'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                        className={
+                          interview.status === 'success' ? 'bg-success' : ''
+                        }
+                      >
+                        {interview.status === 'success'
+                          ? 'Завершено'
+                          : 'В процессе'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 text-center card-hover">
+                <div className="text-3xl font-bold text-primary mb-2">24</div>
+                <div className="text-sm text-muted-foreground">
+                  Собеседований
+                </div>
+              </Card>
+              <Card className="p-6 text-center card-hover">
+                <div className="text-3xl font-bold text-success mb-2">87%</div>
+                <div className="text-sm text-muted-foreground">Успешность</div>
+              </Card>
+              <Card className="p-6 text-center card-hover">
+                <div className="text-3xl font-bold text-accent mb-2">156</div>
+                <div className="text-sm text-muted-foreground">
+                  Часов практики
+                </div>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <Card className="p-6 shadow-elegant">
+              <h3 className="text-xl font-semibold mb-6">
+                Последняя активность
+              </h3>
+              <div className="space-y-4">
+                {[
+                  {
+                    action: 'Завершил собеседование',
+                    company: 'Яндекс',
+                    time: '2 часа назад',
+                    icon: <CheckCircle className="w-4 h-4 text-success" />,
+                  },
+                  {
+                    action: 'Начал подготовку',
+                    company: 'React Interview',
+                    time: '1 день назад',
+                    icon: <BookOpen className="w-4 h-4 text-primary" />,
+                  },
+                  {
+                    action: 'Получил фидбек',
+                    company: 'Сбер',
+                    time: '3 дня назад',
+                    icon: <Star className="w-4 h-4 text-warning" />,
+                  },
+                  {
+                    action: 'Запланировал сессию',
+                    company: 'VK',
+                    time: '1 неделю назад',
+                    icon: <Clock className="w-4 h-4 text-accent" />,
+                  },
+                ].map((activity, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gradient-secondary"
+                  >
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{activity.action}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {activity.company} • {activity.time}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Profile;
