@@ -162,7 +162,6 @@ telegram-switch.sh
 .eslintrc*
 .prettierrc*
 .babelrc*
-tsconfig.json
 tsconfig.node.json
 vite.config*.ts
 tailwind.config*.js
