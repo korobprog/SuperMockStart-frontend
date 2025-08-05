@@ -39,7 +39,7 @@ fi
 
 # Verify all required tables exist
 echo "🔍 Verifying required tables..."
-required_tables="users interview_queue notifications interview_sessions interviews feedbacks selected_professions user_form_data"
+required_tables="users interview_queue notifications interview_sessions interviews feedback selected_professions user_form_data"
 
 for table in $required_tables; do
     table_exists=$(npx prisma db execute --url "$DATABASE_URL" --stdin << EOF
