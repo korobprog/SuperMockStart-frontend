@@ -13,14 +13,14 @@ export default defineConfig({
       config: './tailwind.config.js',
     }),
   ],
-  resolve: {
-    alias: [
-      {
-        find: '@',
-        replacement: path.resolve(__dirname, 'src')
-      }
-    ]
-  },
+  // resolve: {
+  //   alias: [
+  //     {
+  //       find: '@',
+  //       replacement: path.resolve(__dirname, 'src'),
+  //     },
+  //   ],
+  // },
   server: {
     host: '0.0.0.0',
     port: 5173,

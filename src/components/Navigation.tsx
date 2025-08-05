@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { ThemeToggle } from './ThemeToggle';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 function Navigation() {
   const location = useLocation();
