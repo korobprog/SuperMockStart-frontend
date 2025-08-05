@@ -62,6 +62,18 @@ RUN chmod +x ./scripts/init-db.sh
 COPY scripts/fix-db.sh ./scripts/fix-db.sh
 RUN chmod +x ./scripts/fix-db.sh
 
+# Копируем скрипт диагностики базы данных
+COPY scripts/check-db.sh ./scripts/check-db.sh
+RUN chmod +x ./scripts/check-db.sh
+
+# Копируем скрипт сброса базы данных
+COPY scripts/reset-db.sh ./scripts/reset-db.sh
+RUN chmod +x ./scripts/reset-db.sh
+
+# Копируем простой скрипт проверки базы данных
+COPY scripts/simple-check.sh ./scripts/simple-check.sh
+RUN chmod +x ./scripts/simple-check.sh
+
 # Копируем и делаем исполняемым startup скрипт
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh

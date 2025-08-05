@@ -11,19 +11,48 @@ done
 
 echo "✅ Database connection established"
 
-# Push the schema
-echo "📝 Pushing database schema..."
-if npx prisma db push --accept-data-loss; then
-    echo "✅ Schema pushed successfully"
+# Check if database is empty
+echo "🔍 Checking if database is empty..."
+table_count=$(npx prisma db execute --stdin << EOF
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
+EOF
+)
+table_count=$(echo "$table_count" | tail -n 1 | tr -d ' ')
+
+if [ "$table_count" = "0" ]; then
+    echo "📝 Database is empty, pushing schema..."
+    if npx prisma db push --accept-data-loss; then
+        echo "✅ Schema pushed successfully"
+    else
+        echo "❌ Schema push failed"
+        exit 1
+    fi
 else
-    echo "⚠️  Schema push failed, trying migrations..."
+    echo "📦 Database has existing tables, deploying migrations..."
     if npx prisma migrate deploy; then
         echo "✅ Migrations deployed successfully"
     else
-        echo "❌ Database initialization failed"
+        echo "❌ Migration deployment failed"
         exit 1
     fi
 fi
+
+# Verify all required tables exist
+echo "🔍 Verifying required tables..."
+required_tables="users interview_queue notifications interview_sessions interviews feedbacks selected_professions user_form_data"
+
+for table in $required_tables; do
+    table_exists=$(npx prisma db execute --stdin << EOF
+SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table';
+EOF
+    )
+    if echo "$table_exists" | grep -q "1"; then
+        echo "✅ Table '$table' exists"
+    else
+        echo "❌ Table '$table' is missing"
+        exit 1
+    fi
+done
 
 # Generate Prisma client
 echo "🔧 Generating Prisma client..."
