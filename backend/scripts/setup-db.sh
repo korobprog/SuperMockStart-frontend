@@ -1,21 +1,18 @@
-#!/bin/bash
+#!/bin/sh
 
-# Скрипт для настройки базы данных в продакшене
-echo "Настройка базы данных..."
+echo "Setting up database..."
 
-# Ждем, пока база данных будет готова
-echo "Ожидание готовности базы данных..."
+# Wait for database to be ready
+echo "Waiting for database connection..."
 until npx prisma db push --accept-data-loss; do
-  echo "База данных недоступна, ожидание..."
-  sleep 2
+    echo "Database not ready, retrying in 5 seconds..."
+    sleep 5
 done
 
-# Генерируем Prisma клиент
-echo "Генерация Prisma клиента..."
-npx prisma generate
+echo "Database schema is up to date"
 
-# Выполняем миграции
-echo "Выполнение миграций..."
+# Run migrations if needed
+echo "Running database migrations..."
 npx prisma migrate deploy
 
-echo "База данных настроена успешно!" 
+echo "Database setup completed" 

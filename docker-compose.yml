@@ -41,7 +41,8 @@ services:
     networks:
       - dokploy-network
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'

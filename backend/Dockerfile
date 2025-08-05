@@ -62,6 +62,9 @@ RUN chmod +x ./start.sh
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001
 
+# Меняем владельца директории приложения
+RUN chown -R nodejs:nodejs /app
+
 # Открываем порт 3001
 EXPOSE 3001
 
