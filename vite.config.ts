@@ -14,9 +14,12 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: {
-      '@': '/app/src',
-    },
+    alias: [
+      {
+        find: '@',
+        replacement: path.resolve(__dirname, 'src')
+      }
+    ]
   },
   server: {
     host: '0.0.0.0',

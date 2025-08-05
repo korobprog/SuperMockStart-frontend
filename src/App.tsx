@@ -4,13 +4,13 @@ import {
   Route,
   useLocation,
 } from 'react-router-dom';
-import Navigation from '@/components/Navigation';
-import ModernHeader from '@/components/ModernHeader';
-import Home from '@/pages/Home';
-import Interview from '@/pages/Interview';
-import About from '@/pages/About';
-import Profile from '@/pages/Profile';
-import Dashboard from '@/pages/Dashboard';
+import Navigation from './components/Navigation';
+import ModernHeader from './components/ModernHeader';
+import Home from './pages/Home';
+import Interview from './pages/Interview';
+import About from './pages/About';
+import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
 import ChooseInterview from './pages/Chooseinterview';
 import CollectingContacts from './pages/Collectingcontacts';
 import Auth from './pages/Auth';
