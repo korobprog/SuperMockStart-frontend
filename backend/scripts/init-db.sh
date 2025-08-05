@@ -13,7 +13,7 @@ echo "✅ Database connection established"
 
 # Check if database is empty
 echo "🔍 Checking if database is empty..."
-table_count=$(npx prisma db execute --stdin << EOF
+table_count=$(npx prisma db execute --url "$DATABASE_URL" --stdin << EOF
 SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
 EOF
 )
@@ -28,11 +28,11 @@ if [ "$table_count" = "0" ]; then
         exit 1
     fi
 else
-    echo "📦 Database has existing tables, deploying migrations..."
-    if npx prisma migrate deploy; then
-        echo "✅ Migrations deployed successfully"
+    echo "📦 Database has existing tables, pushing schema..."
+    if npx prisma db push --accept-data-loss; then
+        echo "✅ Schema pushed successfully"
     else
-        echo "❌ Migration deployment failed"
+        echo "❌ Schema push failed"
         exit 1
     fi
 fi
@@ -42,7 +42,7 @@ echo "🔍 Verifying required tables..."
 required_tables="users interview_queue notifications interview_sessions interviews feedbacks selected_professions user_form_data"
 
 for table in $required_tables; do
-    table_exists=$(npx prisma db execute --stdin << EOF
+    table_exists=$(npx prisma db execute --url "$DATABASE_URL" --stdin << EOF
 SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table';
 EOF
     )
