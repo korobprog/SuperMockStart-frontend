@@ -60,10 +60,7 @@ export class UserStatusController {
         });
       } else {
         // Если не найден по Telegram ID, пробуем обновить по ID из базы данных
-        updatedUser = await UserService.updateUserStatus({
-          userId,
-          status,
-        });
+        updatedUser = await UserService.updateUserStatus(userId, status);
       }
 
       res.json({
@@ -103,10 +100,10 @@ export class UserStatusController {
         } as ApiResponse);
       }
 
-      const interview = await UserService.createInterview({
-        interviewerId: interviewer.id,
-        candidateId,
-      });
+      const interview = await UserService.createInterview(
+        interviewer.data?.id || '',
+        candidateId
+      );
 
       res.json({
         success: true,
@@ -163,10 +160,10 @@ export class UserStatusController {
         } as ApiResponse);
       }
 
-      const interview = await UserService.addInterviewFeedback({
+      const interview = await UserService.addInterviewFeedback(
         interviewId,
-        feedback,
-      });
+        feedback
+      );
 
       res.json({
         success: true,
@@ -191,14 +188,12 @@ export class UserStatusController {
         const currentUser = await UserService.getUserByTelegramId(
           currentUserTelegramId
         );
-        if (currentUser) {
-          excludeUserId = currentUser.id;
+        if (currentUser.success && currentUser.data) {
+          excludeUserId = currentUser.data.id;
         }
       }
 
-      const candidates = await UserService.getAvailableCandidates(
-        excludeUserId
-      );
+      const candidates = await UserService.getAvailableCandidates();
 
       res.json({
         success: true,
@@ -232,7 +227,9 @@ export class UserStatusController {
         } as ApiResponse);
       }
 
-      const interviews = await UserService.getUserInterviews(user.id);
+      const interviews = await UserService.getUserInterviews(
+        user.data?.id || ''
+      );
 
       res.json({
         success: true,

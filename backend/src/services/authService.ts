@@ -65,10 +65,7 @@ export class AuthService {
     credentials: LoginCredentials
   ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
-      const userResult = await UserService.authenticateUser(
-        credentials.email,
-        credentials.password
-      );
+      const userResult = await UserService.authenticateUser(credentials);
 
       if (!userResult.success || !userResult.data) {
         return {

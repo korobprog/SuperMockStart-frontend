@@ -8,7 +8,7 @@ import calendarRoutes from './calendar.js';
 import feedbackRoutes from './feedback.js';
 import prisma from '../services/prisma.js';
 
-const router = Router();
+const router: Router = Router();
 
 // API маршруты
 router.use('/api/auth', authRoutes);

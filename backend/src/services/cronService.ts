@@ -1,4 +1,4 @@
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 import { NotificationService } from './notificationService.js';
 import { MatchingService } from './matchingService.js';
 import { CalendarService } from './calendarService.js';
@@ -43,7 +43,6 @@ export class CronService {
         }
       },
       {
-        scheduled: true,
         timezone: 'Europe/Moscow',
       }
     );

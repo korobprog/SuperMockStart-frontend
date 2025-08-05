@@ -40,7 +40,9 @@ export class JwtUtils {
   ): string {
     const payload: ExtendedJwtPayload = {
       userId:
-        authType === 'telegram' ? parseInt(user.telegramId || '0') : user.id,
+        authType === 'telegram'
+          ? parseInt(user.telegramId || '0')
+          : parseInt(user.id),
       username: user.username,
       firstName: user.firstName || '',
       lastName: user.lastName,

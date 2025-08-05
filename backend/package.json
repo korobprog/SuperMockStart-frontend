@@ -4,6 +4,7 @@
   "description": "Backend for SuperMock application with Telegram bot authentication",
   "main": "dist/index.js",
   "type": "module",
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "nodemon --exec tsx src/index.ts",
     "dev:bot": "nodemon --exec tsx src/bot.ts",

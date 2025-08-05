@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "cd backend && npm run dev",
-    "dev:full": "concurrently \"pnpm run dev\" \"npm run dev:backend\"",
+    "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:backend\"",
     "dev:db": "docker-compose -f docker-compose.dev.yml up -d postgres",
     "dev:db:down": "docker-compose -f docker-compose.dev.yml down",
     "dev:db:local": "echo 'PostgreSQL должен быть запущен локально на порту 5432'",

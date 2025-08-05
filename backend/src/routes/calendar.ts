@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { CalendarController } from '../controllers/calendarController.js';
 import { authenticateExtendedToken } from '../middleware/auth.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Все роуты календаря требуют расширенной аутентификации
 router.use(authenticateExtendedToken);

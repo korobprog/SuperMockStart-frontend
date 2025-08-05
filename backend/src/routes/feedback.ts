@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { FeedbackController } from '../controllers/feedbackController.js';
 import { authenticateExtendedToken } from '../middleware/auth.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Все роуты фидбека требуют аутентификации
 router.use(authenticateExtendedToken);

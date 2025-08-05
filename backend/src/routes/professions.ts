@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ProfessionController } from '../controllers/professionController.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Добавление выбранной профессии
 router.post('/selected', ProfessionController.addSelectedProfession);

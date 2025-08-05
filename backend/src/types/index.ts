@@ -2,8 +2,8 @@ export interface TelegramUser {
   id: number;
   is_bot: boolean;
   first_name: string;
-  last_name?: string;
-  username?: string;
+  last_name?: string | null;
+  username?: string | null;
   language_code?: string;
   photo_url?: string;
 }
@@ -16,9 +16,9 @@ export interface AuthRequest {
 
 export interface JwtPayload {
   userId: number;
-  username?: string;
+  username?: string | null;
   firstName: string;
-  lastName?: string;
+  lastName?: string | null;
   iat?: number;
   exp?: number;
 }
@@ -65,6 +65,20 @@ export interface TelegramWebAppData {
   chat_instance?: string;
 }
 
+// Authentication types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName?: string;
+  username?: string;
+}
+
 // Новые типы для системы статусов
 export enum UserStatus {
   INTERVIEWER = 'INTERVIEWER',
@@ -81,9 +95,9 @@ export enum InterviewStatus {
 export interface User {
   id: string;
   telegramId: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  username?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   status: UserStatus;
   role: UserRole;
   createdAt: Date;

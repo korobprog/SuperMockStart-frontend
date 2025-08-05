@@ -41,8 +41,6 @@ RUN pnpm install --frozen-lockfile --prod --silent
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/prisma ./prisma
 
 # Убеждаемся, что package.json скопирован для pnpm start

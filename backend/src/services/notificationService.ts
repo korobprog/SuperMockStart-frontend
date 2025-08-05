@@ -247,9 +247,8 @@ export class NotificationService {
 
       if (user?.telegramId) {
         await TelegramBotService.sendMessage(
-          user.telegramId,
-          `🔔 *${title}*\n\n${message}`,
-          { parse_mode: 'Markdown' }
+          parseInt(user.telegramId),
+          `🔔 *${title}*\n\n${message}`
         );
       }
     } catch (error) {

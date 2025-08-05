@@ -373,7 +373,9 @@ export class AuthController {
         });
       }
 
-      const result = await AuthService.refreshUserInfo(req.user.id);
+      const result = await AuthService.refreshUserInfo(
+        parseInt(req.user.id.toString())
+      );
       return res.status(result.success ? 200 : 400).json(result);
     } catch (error) {
       console.error('User info refresh controller error:', error);

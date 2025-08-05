@@ -6,7 +6,7 @@ import {
 } from '../controllers/formController.js';
 import { authenticateExtendedToken } from '../middleware/auth.js';
 
-const router = Router();
+const router: Router = Router();
 
 // POST /api/form - Сохранение данных формы
 router.post('/', authenticateExtendedToken, saveFormData);

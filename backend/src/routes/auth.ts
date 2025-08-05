@@ -8,7 +8,7 @@ import {
 } from '../middleware/auth.js';
 import { validateTelegramData } from '../middleware/auth.js';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Специальный rate limiter для test-token с более строгими ограничениями
 const testTokenLimiter = rateLimit({
