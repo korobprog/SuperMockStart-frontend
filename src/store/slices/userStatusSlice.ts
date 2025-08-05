@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../index';
 
 // Типы
 export enum UserStatus {
@@ -32,38 +33,30 @@ const initialState: UserStatusState = {
 // Базовый URL для API
 const API_BASE_URL = 'http://localhost:3001';
 
-// Получение токена из localStorage или генерация тестового
-const getAuthToken = async () => {
-  let token = localStorage.getItem('authToken') || '';
-
-  if (!token) {
-    try {
-      // Получаем тестовый токен
-      const response = await fetch(`${API_BASE_URL}/api/auth/test-token`);
-      if (response.ok) {
-        const data = await response.json();
-        token = data.data.token;
-        localStorage.setItem('authToken', token);
-        if (data.data.user.id) {
-          localStorage.setItem('userId', data.data.user.id.toString());
-        } else {
-          localStorage.setItem('userId', '');
-        }
-        console.log('Тестовый токен получен:', token);
-      }
-    } catch (error) {
-      console.error('Ошибка получения тестового токена:', error);
-    }
-  }
-
-  return token;
+// Получение токена из auth slice
+const getAuthToken = (state: RootState) => {
+  return state.auth.token;
 };
 
 // Async thunks
 export const fetchUserStatus = createAsyncThunk(
   'userStatus/fetchUserStatus',
-  async () => {
-    const token = await getAuthToken();
+  async (_, { getState, dispatch }) => {
+    const state = getState() as RootState;
+    let token = getAuthToken(state);
+
+    if (!token) {
+      // Если токена нет, пробуем получить тестовый токен через authSlice
+      try {
+        const authResult = await dispatch({ type: 'auth/getTestToken' });
+        if (authResult.meta.requestStatus === 'fulfilled') {
+          token = authResult.payload.token;
+        }
+      } catch (error) {
+        console.error('Ошибка получения тестового токена:', error);
+      }
+    }
+
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -88,8 +81,13 @@ export const fetchUserStatus = createAsyncThunk(
 
 export const updateUserStatus = createAsyncThunk(
   'userStatus/updateUserStatus',
-  async ({ userId, status }: { userId: string; status: UserStatus }) => {
-    const token = await getAuthToken();
+  async (
+    { userId, status }: { userId: string; status: UserStatus },
+    { getState }
+  ) => {
+    const state = getState() as RootState;
+    const token = getAuthToken(state);
+
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -117,8 +115,10 @@ export const updateUserStatus = createAsyncThunk(
 
 export const fetchAvailableCandidates = createAsyncThunk(
   'userStatus/fetchAvailableCandidates',
-  async () => {
-    const token = await getAuthToken();
+  async (_, { getState }) => {
+    const state = getState() as RootState;
+    const token = getAuthToken(state);
+
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -143,8 +143,10 @@ export const fetchAvailableCandidates = createAsyncThunk(
 
 export const fetchUserInterviews = createAsyncThunk(
   'userStatus/fetchUserInterviews',
-  async () => {
-    const token = await getAuthToken();
+  async (_, { getState }) => {
+    const state = getState() as RootState;
+    const token = getAuthToken(state);
+
     if (!token) {
       throw new Error('No auth token found');
     }

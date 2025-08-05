@@ -217,9 +217,64 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
   min-height: 20px;
   @include flex-center;
   text-align: center;
+  position: relative;
 
   &.rbc-selected {
     box-shadow: 0 0 0 2px $calendar-primary-color;
+  }
+
+  // Стили для прошедших событий
+  &.rbc-event-past {
+    background-color: rgb(156, 163, 175) !important;
+    color: white !important;
+    opacity: 0.8;
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: rgb(156, 163, 175) !important;
+      cursor: not-allowed;
+    }
+
+    &::before {
+      content: '⏰';
+      margin-right: 0.25rem;
+      font-size: 0.625rem;
+    }
+  }
+
+  // Стили для доступных событий
+  &.rbc-event-available {
+    background-color: $calendar-success-color !important;
+    color: white !important;
+    border-color: rgb(22, 163, 74) !important;
+
+    &:hover {
+      background-color: rgb(22, 163, 74) !important;
+    }
+
+    &::before {
+      content: '✓';
+      margin-right: 0.25rem;
+      font-size: 0.625rem;
+    }
+  }
+
+  // Стили для недоступных событий
+  &.rbc-event-unavailable {
+    background-color: $calendar-error-color !important;
+    color: white !important;
+    border-color: rgb(220, 38, 38) !important;
+    opacity: 0.8;
+
+    &:hover {
+      background-color: rgb(220, 38, 38) !important;
+    }
+
+    &::before {
+      content: '✕';
+      margin-right: 0.25rem;
+      font-size: 0.625rem;
+    }
   }
 }
 
@@ -299,12 +354,13 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
   border-color: rgb(220 38 38);
 }
 
-// Стили для прошедших временных слотов
+// Стили для прошедших временных слотов (улучшенные)
 .rbc-time-slot.rbc-past {
   background-color: $calendar-past-color;
   color: $calendar-past-text-color;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.8;
+  position: relative;
 
   &:hover {
     background-color: $calendar-past-color;
@@ -314,6 +370,45 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
   .rbc-label {
     color: $calendar-past-text-color !important;
   }
+
+  // Добавляем визуальный индикатор прошедшего времени
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(156, 163, 175, 0.15) 2px,
+      rgba(156, 163, 175, 0.15) 4px
+    );
+    pointer-events: none;
+  }
+
+  // Добавляем иконку "прошедшее время"
+  &::before {
+    content: '⏰';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgb(156, 163, 175);
+    font-size: 0.75rem;
+    opacity: 0.6;
+    z-index: 1;
+  }
+}
+
+// Дополнительные стили для улучшения видимости прошедшего времени
+.rbc-time-slot.rbc-past .rbc-label {
+  position: relative;
+  z-index: 2;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 // Стили для недоступных слотов
@@ -333,20 +428,50 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
   }
 }
 
-// Стили для доступных слотов (улучшенные)
+// Стили для доступных слотов (упрощенные)
 .rbc-time-slot.rbc-available {
   background-color: rgb(240 253 244);
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+  border: 1px solid transparent;
 
   &:hover {
     background-color: rgb(220 252 231);
-    transform: scale(1.02);
+    border-color: rgb(34 197 94);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus {
+    outline: 2px solid rgba(34, 197, 94, 0.5);
+    outline-offset: 1px;
   }
 
   .rbc-label {
     color: rgb(22 163 74) !important;
     font-weight: 600 !important;
+  }
+}
+
+// Стили для пустых слотов
+.rbc-time-slot.rbc-empty {
+  background-color: rgb(250 250 250);
+  border: 1px dashed rgb(229 231 235);
+  opacity: 0.3;
+  cursor: default;
+
+  &:hover {
+    background-color: rgb(250 250 250);
+    cursor: default;
+  }
+
+  .rbc-label {
+    color: rgb(156 163 175) !important;
+    font-weight: 400 !important;
   }
 }
 
@@ -543,28 +668,6 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
 
 // Дополнительные стили для улучшения юзабилити
 .rbc-calendar {
-  // Улучшенная доступность для прошедших слотов
-  .rbc-time-slot.rbc-past {
-    position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 2px,
-        rgba(156, 163, 175, 0.1) 2px,
-        rgba(156, 163, 175, 0.1) 4px
-      );
-      pointer-events: none;
-    }
-  }
-
   // Улучшенная визуализация недоступных слотов
   .rbc-time-slot.rbc-unavailable {
     position: relative;
@@ -597,6 +700,156 @@ $calendar-past-text-color: rgb(156 163 175); // Цвет текста для п�
       font-weight: bold;
       opacity: 0.7;
       z-index: 1;
+    }
+  }
+
+  // Упрощенное перекрестие времени и даты
+  .rbc-time-view {
+    position: relative;
+
+    // Простая вертикальная линия времени (центральная)
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: rgba(59, 130, 246, 0.3);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    // Простая горизонтальная линия даты (центральная)
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(59, 130, 246, 0.3);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    // Упрощенный эффект перекрестия при наведении на ячейку
+    .rbc-time-slot {
+      position: relative;
+
+      &:hover {
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          width: 2px;
+          background: rgba(59, 130, 246, 0.8);
+          transform: translateX(-50%);
+          pointer-events: none;
+          z-index: 15;
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 50%;
+          height: 2px;
+          background: rgba(59, 130, 246, 0.8);
+          transform: translateY(-50%);
+          pointer-events: none;
+          z-index: 15;
+        }
+      }
+    }
+  }
+}
+
+// Стили для часов над календарем
+.clock-widget {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.75rem;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .clock-icon {
+    font-size: 1.25rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .time-display {
+    font-size: 1.125rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .date-display {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Мобильные стили для часов
+@media (max-width: 640px) {
+  .clock-widget {
+    padding: 0.5rem 0.75rem;
+    gap: 0.375rem;
+
+    .clock-icon {
+      font-size: 1rem;
+    }
+
+    .time-display {
+      font-size: 1rem;
+    }
+
+    .date-display {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .clock-widget {
+    padding: 0.375rem 0.5rem;
+    gap: 0.25rem;
+
+    .clock-icon {
+      font-size: 0.875rem;
+    }
+
+    .time-display {
+      font-size: 0.875rem;
+    }
+
+    .date-display {
+      font-size: 0.625rem;
     }
   }
 }

@@ -299,10 +299,6 @@ export class CalendarService {
    * Завершить сессию
    */
   static async completeSession(sessionId: string, userId: string) {
-    console.log('🔍 CalendarService.completeSession вызван с параметрами:');
-    console.log('🔍 sessionId:', sessionId);
-    console.log('🔍 userId:', userId);
-
     const session = await prisma.interviewSession.findFirst({
       where: {
         id: sessionId,
@@ -310,21 +306,14 @@ export class CalendarService {
       },
     });
 
-    console.log('🔍 Найденная сессия:', session);
-
     if (!session) {
-      console.log('❌ Сессия не найдена или доступ запрещен');
       throw new Error('Session not found or access denied');
     }
-
-    console.log('✅ Сессия найдена, обновляем статус на COMPLETED');
 
     await prisma.interviewSession.update({
       where: { id: sessionId },
       data: { status: SessionStatus.COMPLETED },
     });
-
-    console.log('✅ Статус сессии обновлен');
 
     // Очищаем статус очереди для обоих участников
     await prisma.interviewQueue.updateMany({
@@ -342,11 +331,8 @@ export class CalendarService {
       },
     });
 
-    console.log('✅ Статус очереди очищен для участников');
-
     // Создаем запрос на обратную связь для обеих сторон
     await this.createFeedbackRequest(sessionId);
-    console.log('✅ Запрос на обратную связь создан');
   }
 
   /**

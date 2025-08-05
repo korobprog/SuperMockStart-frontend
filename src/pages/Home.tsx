@@ -17,6 +17,13 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState('webapp');
   const navigate = useNavigate();
 
+  // Перемещаем useEffect в начало компонента
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate('/interview');
+    }
+  }, [navigate, isAuthenticated, user]);
+
   const handleAuthSuccess = (_user: any, token: string) => {
     // Сохраняем токен в правильном ключе
     localStorage.setItem('telegram_token', token);
@@ -41,14 +48,8 @@ const Home: React.FC = () => {
     );
   }
 
-  // Если пользователь авторизован, перенаправляем на страницу интервью
+  // Если пользователь авторизован, показываем загрузку во время перенаправления
   if (isAuthenticated && user) {
-    // Используем useEffect для перенаправления, чтобы избежать ошибок рендеринга
-    React.useEffect(() => {
-      navigate('/interview');
-    }, [navigate, isAuthenticated]);
-
-    // Показываем загрузку во время перенаправления
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center min-h-[400px]">

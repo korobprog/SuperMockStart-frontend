@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 interface TelegramUser {
   id: number;
@@ -17,10 +18,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
   onAuthSuccess,
   onAuthError,
 }) => {
-  const [user, setUser] = useState<TelegramUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user, loading, error, token, login, checkAuth } = useAuth();
 
   // API URL - используем переменную окружения или fallback на продакшен
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
@@ -30,8 +28,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
       try {
         // Проверяем, что мы в Telegram Web App
         if (!window.Telegram?.WebApp) {
-          setError('Telegram Web App не доступен');
-          setLoading(false);
+          onAuthError?.('Telegram Web App не доступен');
           return;
         }
 
@@ -45,87 +42,42 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({
         const initData = tg.initData;
 
         if (!initData) {
-          setError('Данные инициализации Telegram не найдены');
-          setLoading(false);
+          onAuthError?.('Данные инициализации Telegram не найдены');
           return;
         }
 
-        // Аутентифицируемся с нашим бэкендом
-        const response = await fetch(`${API_URL}/api/auth/telegram`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            initData,
-          }),
-        });
+        // Аутентифицируемся с нашим бэкендом через auth slice
+        const result = await login(initData);
 
-        if (!response.ok) {
-          throw new Error(`Ошибка аутентификации: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          const { user: userData, token: authToken } = data.data;
-
-          setUser(userData);
-          setToken(authToken);
-
-          // Сохраняем токен в localStorage с правильным ключом
-          localStorage.setItem('telegram_token', authToken);
-
-          // Вызываем callback
+        if (result.meta.requestStatus === 'fulfilled') {
+          const { user: userData, token: authToken } = result.payload;
           onAuthSuccess?.(userData, authToken);
         } else {
-          throw new Error(data.error || 'Ошибка аутентификации');
+          const errorMessage = result.error?.message || 'Ошибка аутентификации';
+          onAuthError?.(errorMessage);
         }
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Неизвестная ошибка';
-        setError(errorMessage);
         onAuthError?.(errorMessage);
-      } finally {
-        setLoading(false);
       }
     };
 
-    initTelegramAuth();
-  }, [API_URL, onAuthSuccess, onAuthError]);
+    // Если токена нет, инициализируем аутентификацию
+    if (!token) {
+      initTelegramAuth();
+    } else {
+      // Если токен есть, проверяем его валидность
+      checkAuth();
+    }
+  }, [API_URL, onAuthSuccess, onAuthError, login, checkAuth, token]);
 
   // Проверяем сохраненный токен при загрузке
   useEffect(() => {
-    const savedToken = localStorage.getItem('telegram_token');
-
-    if (savedToken && !token) {
-      // Проверяем валидность токена
-      fetch(`${API_URL}/api/auth/verify`, {
-        headers: {
-          Authorization: `Bearer ${savedToken}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            setToken(savedToken);
-            setUser(data.data);
-            onAuthSuccess?.(data.data, savedToken);
-          } else {
-            localStorage.removeItem('telegram_token');
-          }
-        })
-        .catch((error) => {
-          console.error('Error checking token:', error);
-          localStorage.removeItem('telegram_token');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else if (!savedToken) {
-      setLoading(false);
+    if (token && !user) {
+      checkAuth();
     }
-  }, [API_URL, token, onAuthSuccess]);
+  }, [token, user, checkAuth]);
 
   if (loading) {
     return (

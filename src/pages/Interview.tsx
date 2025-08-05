@@ -24,18 +24,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
 import {
   Dialog,
   DialogContent,
@@ -44,10 +41,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Calendar, momentLocalizer, SlotInfo } from 'react-big-calendar';
-import moment from 'moment';
-import 'moment/locale/ru'; // Русская локализация
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { Calendar } from '@/components/ui/calendar';
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -58,78 +53,8 @@ import ProfessionHistory from '@/components/ProfessionHistory';
 import { getLanguageName, getCountryFlag } from '@/utils/language';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 
-// Настройка локализации
-moment.locale('ru', {
-  months:
-    'январь_февраль_март_апрель_май_июнь_июль_август_сентябрь_октябрь_ноябрь_декабрь'.split(
-      '_'
-    ),
-  monthsShort:
-    'янв._февр._март_апр._май_июнь_июль_авг._сент._окт._нояб._дек.'.split('_'),
-  monthsParseExact: true,
-  weekdays:
-    'воскресенье_понедельник_вторник_среда_четверг_пятница_суббота'.split('_'),
-  weekdaysShort: 'вс_пн_вт_ср_чт_пт_сб'.split('_'),
-  weekdaysMin: 'вс_пн_вт_ср_чт_пт_сб'.split('_'),
-  weekdaysParseExact: true,
-  longDateFormat: {
-    LT: 'H:mm',
-    LTS: 'H:mm:ss',
-    L: 'DD.MM.YYYY',
-    LL: 'D MMMM YYYY г.',
-    LLL: 'D MMMM YYYY г., H:mm',
-    LLLL: 'dddd, D MMMM YYYY г., H:mm',
-  },
-  calendar: {
-    sameDay: '[сегодня в] LT',
-    nextDay: '[завтра в] LT',
-    nextWeek: 'dddd [в] LT',
-    lastDay: '[вчера в] LT',
-    lastWeek: 'dddd [в] LT',
-    sameElse: 'L',
-  },
-  relativeTime: {
-    future: 'через %s',
-    past: '%s назад',
-    s: 'несколько секунд',
-    ss: '%d секунд',
-    m: 'минута',
-    mm: '%d минут',
-    h: 'час',
-    hh: '%d часов',
-    d: 'день',
-    dd: '%d дней',
-    w: 'неделя',
-    ww: '%d недель',
-    M: 'месяц',
-    MM: '%d месяцев',
-    y: 'год',
-    yy: '%d лет',
-  },
-  dayOfMonthOrdinalParse: /\d{1,2}-(й|го|я)/,
-  ordinal: function (number) {
-    if (
-      number % 10 >= 2 &&
-      number % 10 <= 4 &&
-      (number % 100 < 12 || number % 100 > 14)
-    ) {
-      return number + '-й';
-    }
-    if (
-      number % 10 === 0 ||
-      (number % 10 >= 5 && number % 10 <= 9) ||
-      (number % 100 >= 11 && number % 100 <= 14)
-    ) {
-      return number + '-й';
-    }
-    return number + '-го';
-  },
-  week: {
-    dow: 1, // Monday is the first day of the week
-    doy: 7, // The week that contains Jan 7th is the first week of the year
-  },
-});
-const localizer = momentLocalizer(moment);
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const itPositions = [
   // Frontend разработка
@@ -363,6 +288,13 @@ interface TimeSlot {
   available: boolean;
 }
 
+interface SlotInfo {
+  start: Date;
+  end: Date;
+  slots: Date[];
+  action: 'select';
+}
+
 interface QueueStatus {
   id: string;
   status: 'WAITING' | 'MATCHED' | 'CANCELLED' | 'EXPIRED';
@@ -386,18 +318,64 @@ const Interview = () => {
   const [userStatus, setUserStatus] = useState<'CANDIDATE' | 'INTERVIEWER'>(
     'CANDIDATE' // Changed default value
   );
-  console.log('🚀 ~ Interview ~ userStatus:', userStatus);
+
   const [canBeCandidate, setCanBeCandidate] = useState(false);
   const [value, setValue] = useState<string>('');
-  const [open, setOpen] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
+
+  // Функция для фильтрации слотов по дням (больше не используется, но оставляем для совместимости)
+  const getFilteredSlots = useCallback(() => {
+    const now = new Date();
+    const bufferTime = new Date(now);
+    bufferTime.setMinutes(bufferTime.getMinutes() - 5);
+
+    const filtered = availableSlots
+      .filter((slot) => slot.available)
+      .filter((slot) => {
+        const slotDateTime =
+          typeof slot.datetime === 'string'
+            ? new Date(slot.datetime)
+            : slot.datetime;
+        return slotDateTime > bufferTime; // Исключаем прошедшие слоты
+      });
+
+    return filtered;
+  }, [availableSlots]);
+
+  // Функция для получения слотов для выбранной даты
+  const getSlotsForSelectedDate = useCallback(() => {
+    if (!selectedDate) return [];
+
+    const selectedDateStart = new Date(selectedDate);
+    selectedDateStart.setHours(0, 0, 0, 0);
+    const selectedDateEnd = new Date(selectedDate);
+    selectedDateEnd.setHours(23, 59, 59, 999);
+
+    return availableSlots.filter((slot) => {
+      const slotDateTime =
+        typeof slot.datetime === 'string'
+          ? new Date(slot.datetime)
+          : slot.datetime;
+
+      return (
+        slotDateTime >= selectedDateStart &&
+        slotDateTime <= selectedDateEnd &&
+        slot.available
+      );
+    });
+  }, [availableSlots, selectedDate]);
+
   const [pendingTimeSlot, setPendingTimeSlot] = useState<Date | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<Date | null>(null);
-  const [currentView, setCurrentView] = useState<'week' | 'day'>('week');
+
   const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
+
   const [completedSessions, setCompletedSessions] = useState<any[]>([]);
   const [loadingCompletedSessions, setLoadingCompletedSessions] =
     useState(false);
@@ -416,30 +394,23 @@ const Interview = () => {
     message: '',
     type: 'info',
   });
+  const [professionNotificationShown, setProfessionNotificationShown] =
+    useState(false);
+
+  // Состояние для времени пользователя
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // API URL - используем переменную окружения или fallback на продакшен
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-  // Debug: Проверяем состояние аутентификации
+  // Обновление времени каждую секунду
   useEffect(() => {
-    console.log('🔍 Debug Interview component:');
-    console.log('🌐 API_URL:', API_URL);
-    console.log(
-      '🔑 telegram_token:',
-      localStorage.getItem('telegram_token') ? 'найден' : 'не найден'
-    );
-    console.log(
-      '🔑 extended_token:',
-      localStorage.getItem('extended_token') ? 'найден' : 'не найден'
-    );
-    console.log('👤 userStatus:', userStatus);
-    console.log('✅ canBeCandidate:', canBeCandidate);
-  }, [API_URL, userStatus, canBeCandidate]);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
 
-  // Отслеживаем изменения состояния модального окна
-  useEffect(() => {
-    // Логирование состояния модального окна для отладки
-  }, [showConfirmModal, pendingTimeSlot]);
+    return () => clearInterval(timer);
+  }, []);
 
   const dispatch = useAppDispatch();
   const { loading: professionLoading, error } = useAppSelector(
@@ -451,17 +422,14 @@ const Interview = () => {
     // Сначала пробуем расширенный токен
     const extendedToken = localStorage.getItem('extended_token');
     if (extendedToken) {
-      console.log('🔑 Используем extended_token');
       return extendedToken;
     }
 
     // Fallback на обычный токен
     const token = localStorage.getItem('telegram_token');
-    console.log('🔑 Токен из localStorage:', token ? 'найден' : 'не найден');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('🔍 Декодированный токен:', payload);
       } catch (error) {
         console.error('❌ Ошибка декодирования токена:', error);
       }
@@ -480,7 +448,6 @@ const Interview = () => {
           return;
         }
 
-        console.log('🔍 Загружаем слоты для профессии:', profession);
         const response = await fetch(
           `${API_URL}/api/calendar/slots/${profession}`,
           {
@@ -491,17 +458,10 @@ const Interview = () => {
           }
         );
 
-        console.log(
-          '📡 Ответ загрузки слотов:',
-          response.status,
-          response.statusText
-        );
-
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
             setAvailableSlots(data.data || []);
-            console.log('✅ Слоты загружены успешно');
           } else {
             console.error('❌ Ошибка загрузки слотов:', data.error);
           }
@@ -543,12 +503,6 @@ const Interview = () => {
         const data = await response.json();
         if (data.success) {
           setQueueStatus(data.data);
-          console.log('🔍 Debug queueStatus:', data.data);
-          console.log('🔍 queueStatus?.status:', data.data?.status);
-          console.log(
-            '🔍 queueStatus?.matchedSession:',
-            data.data?.matchedSession
-          );
         }
       } else {
         console.error('❌ Ошибка проверки статуса очереди:', response.status);
@@ -629,6 +583,7 @@ const Interview = () => {
           // Обновляем статус пользователя и возможность быть кандидатом
           setUserStatus(data.data.status || 'INTERVIEWER');
           setCanBeCandidate(data.data.canBeCandidate || false);
+          setProfessionNotificationShown(false);
           console.log('✅ Статус пользователя обновлен:', {
             status: data.data.status,
             canBeCandidate: data.data.canBeCandidate,
@@ -666,6 +621,7 @@ const Interview = () => {
             // Устанавливаем статус пользователя и возможность быть кандидатом
             setUserStatus(data.data.status || 'INTERVIEWER');
             setCanBeCandidate(data.data.canBeCandidate || false);
+            setProfessionNotificationShown(false);
             setUserLanguage(data.data.language || 'en');
             setUserCountry(data.data.country || null);
 
@@ -747,19 +703,23 @@ const Interview = () => {
   const handleProfessionSelect = async (selectedValue: string) => {
     if (selectedValue && selectedValue !== value) {
       setValue(selectedValue);
-      setOpen(false);
       setShowCalendar(true);
+
+      // Сбрасываем флаг уведомления при смене профессии
+      setProfessionNotificationShown(false);
 
       // Находим выбранную профессию
       const selectedProfession = itPositions.find(
         (pos) => pos.value === selectedValue
       );
+
       if (selectedProfession) {
         try {
           // Получаем токен и извлекаем userId из него
           const token = getAuthToken();
           if (!token) {
-            console.error('Токен не найден');
+            console.error('❌ Токен не найден');
+            showNotification('Ошибка', 'Токен авторизации не найден', 'error');
             return;
           }
 
@@ -776,9 +736,38 @@ const Interview = () => {
 
           // Загружаем доступные слоты для выбранной профессии
           await loadAvailableSlots(selectedValue);
+
+          // Показываем уведомление только один раз при выборе профессии
+          if (!professionNotificationShown) {
+            const userRoleText =
+              userStatus === 'CANDIDATE' ? 'кандидата' : 'интервьюера';
+            const nextStepText =
+              userStatus === 'CANDIDATE'
+                ? 'Теперь вы можете выбрать время для прохождения собеседования.'
+                : 'Теперь вы можете выбрать время для проведения собеседования.';
+
+            showNotification(
+              'Профессия выбрана',
+              `Выбрана профессия: ${selectedProfession.label}\n\nВаша роль: ${userRoleText}\n\n${nextStepText}`,
+              'success'
+            );
+            setProfessionNotificationShown(true);
+          }
         } catch (error) {
-          console.error('Failed to add profession:', error);
+          console.error('❌ Failed to add profession:', error);
+          showNotification(
+            'Ошибка',
+            'Не удалось сохранить выбранную профессию',
+            'error'
+          );
         }
+      } else {
+        console.error('❌ Профессия не найдена в списке:', selectedValue);
+        showNotification(
+          'Ошибка',
+          'Выбранная профессия не найдена в списке',
+          'error'
+        );
       }
     }
   };
@@ -789,11 +778,7 @@ const Interview = () => {
 
     // Проверяем, не прошло ли уже время
     if (selectedTime <= now) {
-      showNotification(
-        'Время прошло',
-        'Этот временной слот уже прошел. Пожалуйста, выберите другое время.',
-        'error'
-      );
+      // Просто игнорируем прошедшее время без уведомления
       return;
     }
 
@@ -817,6 +802,11 @@ const Interview = () => {
         'error'
       );
     }
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    // Убираем автоматический выбор первого слота при выборе даты
   };
 
   const joinQueue = async () => {
@@ -974,7 +964,6 @@ const Interview = () => {
     message: string,
     type: 'success' | 'error' | 'info' = 'info'
   ) => {
-    console.log('🔔 Показываем уведомление:', { title, message, type });
     setNotificationModal({
       isOpen: true,
       title,
@@ -991,7 +980,6 @@ const Interview = () => {
   };
 
   const closeNotification = () => {
-    console.log('🔔 Закрываем уведомление');
     setNotificationModal({
       isOpen: false,
       title: '',
@@ -1003,73 +991,123 @@ const Interview = () => {
   // Подготавливаем события календаря для отображения доступных слотов
   const calendarEvents = useMemo(() => {
     const now = new Date();
-    const events = availableSlots
-      .filter((slot) => {
-        // Проверяем, что слот доступен и время еще не прошло
-        const slotDateTime =
-          typeof slot.datetime === 'string'
-            ? new Date(slot.datetime)
-            : slot.datetime;
+    const events: Array<{
+      id: string;
+      title: string;
+      start: Date;
+      end: Date;
+      resource: {
+        available: boolean;
+        past: boolean;
+        unavailable: boolean;
+      };
+    }> = [];
 
-        // Показываем только будущие доступные слоты
-        return slot.available && slotDateTime > now;
-      })
-      .map((slot) => {
-        // Преобразуем datetime в объект Date, если это строка
-        const slotDateTime =
-          typeof slot.datetime === 'string'
-            ? new Date(slot.datetime)
-            : slot.datetime;
+    // Группируем слоты по дням, чтобы избежать наложения
+    const slotsByDay = new Map<string, typeof availableSlots>();
 
-        return {
-          id: slotDateTime.getTime(),
-          title: 'Доступно',
-          start: slotDateTime,
-          end: new Date(slotDateTime.getTime() + 60 * 60 * 1000), // +1 час
-          resource: { available: true },
-        };
+    availableSlots.forEach((slot) => {
+      const slotDateTime =
+        typeof slot.datetime === 'string'
+          ? new Date(slot.datetime)
+          : slot.datetime;
+
+      const dayKey = slotDateTime.toDateString();
+      if (!slotsByDay.has(dayKey)) {
+        slotsByDay.set(dayKey, []);
+      }
+      slotsByDay.get(dayKey)!.push(slot);
+    });
+
+    // Создаем события для каждого дня
+    slotsByDay.forEach((daySlots, dayKey) => {
+      // Сортируем слоты по времени
+      daySlots.sort((a, b) => {
+        const aTime =
+          typeof a.datetime === 'string' ? new Date(a.datetime) : a.datetime;
+        const bTime =
+          typeof b.datetime === 'string' ? new Date(b.datetime) : b.datetime;
+        return aTime.getTime() - bTime.getTime();
       });
+
+      // Создаем отдельные события для прошедшего и будущего времени
+      const pastSlots = daySlots.filter((slot) => {
+        const slotTime =
+          typeof slot.datetime === 'string'
+            ? new Date(slot.datetime)
+            : slot.datetime;
+        return slotTime <= now;
+      });
+
+      const futureSlots = daySlots.filter((slot) => {
+        const slotTime =
+          typeof slot.datetime === 'string'
+            ? new Date(slot.datetime)
+            : slot.datetime;
+        return slotTime > now;
+      });
+
+      // Создаем событие для прошедшего времени
+      if (pastSlots.length > 0) {
+        const firstPastSlot = pastSlots[0];
+        const lastPastSlot = pastSlots[pastSlots.length - 1];
+
+        const firstPastTime =
+          typeof firstPastSlot.datetime === 'string'
+            ? new Date(firstPastSlot.datetime)
+            : firstPastSlot.datetime;
+        const lastPastTime =
+          typeof lastPastSlot.datetime === 'string'
+            ? new Date(lastPastSlot.datetime)
+            : lastPastSlot.datetime;
+
+        events.push({
+          id: `past-${dayKey}`,
+          title: 'Прошедшее время',
+          start: firstPastTime,
+          end: new Date(lastPastTime.getTime() + 60 * 60 * 1000),
+          resource: {
+            available: false,
+            past: true,
+            unavailable: false,
+          },
+        });
+      }
+
+      // Создаем событие для будущего времени
+      if (futureSlots.length > 0) {
+        const firstFutureSlot = futureSlots[0];
+        const lastFutureSlot = futureSlots[futureSlots.length - 1];
+
+        const firstFutureTime =
+          typeof firstFutureSlot.datetime === 'string'
+            ? new Date(firstFutureSlot.datetime)
+            : firstFutureSlot.datetime;
+        const lastFutureTime =
+          typeof lastFutureSlot.datetime === 'string'
+            ? new Date(lastFutureSlot.datetime)
+            : lastFutureSlot.datetime;
+
+        const hasAvailableSlots = futureSlots.some((slot) => slot.available);
+        const isAvailable = hasAvailableSlots;
+        const isUnavailable = !hasAvailableSlots;
+
+        events.push({
+          id: `future-${dayKey}`,
+          title: isAvailable ? 'Доступно' : 'Недоступно',
+          start: firstFutureTime,
+          end: new Date(lastFutureTime.getTime() + 60 * 60 * 1000),
+          resource: {
+            available: isAvailable,
+            past: false,
+            unavailable: isUnavailable,
+          },
+        });
+      }
+    });
 
     return events;
   }, [availableSlots]);
-
-  // Сообщения для календаря на русском
-  const messages = {
-    date: 'Дата',
-    time: 'Время',
-    event: 'Событие',
-    allDay: 'Весь день',
-    week: 'Неделя',
-    work_week: 'Рабочая неделя',
-    day: 'День',
-    month: 'Месяц',
-    previous: 'Назад',
-    next: 'Вперед',
-    yesterday: 'Вчера',
-    tomorrow: 'Завтра',
-    today: 'Сегодня',
-    agenda: 'Повестка дня',
-    noEventsInRange: 'Нет доступных слотов в этом диапазоне.',
-    showMore: (total: number) => `+${total} еще`,
-  };
-
-  // Добавляем отладочную информацию
-  console.log('🔍 Debug queueStatus:', queueStatus);
-  console.log('🔍 queueStatus?.status:', queueStatus?.status);
-  console.log('🔍 queueStatus?.matchedSession:', queueStatus?.matchedSession);
-  console.log('🔍 Current calendar view:', currentView);
-
-  // Debug calendar component
-  useEffect(() => {
-    console.log('🔍 Calendar component mounted with view:', currentView);
-
-    // Test view switching after a short delay
-    setTimeout(() => {
-      console.log('🔍 Testing calendar view switching...');
-      console.log('🔍 Available views:', ['week', 'day']);
-      console.log('🔍 Current view:', currentView);
-    }, 1000);
-  }, [currentView]);
 
   // Если есть подтвержденная встреча
   if (queueStatus?.status === 'MATCHED' && queueStatus.matchedSession) {
@@ -1120,9 +1158,11 @@ const Interview = () => {
                       Дата и время
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                      {moment(
-                        queueStatus.matchedSession.scheduledDateTime
-                      ).format('DD MMMM YYYY, HH:mm')}
+                      {format(
+                        queueStatus.matchedSession.scheduledDateTime,
+                        'dd MMMM yyyy, HH:mm',
+                        { locale: ru }
+                      )}
                     </p>
                   </div>
                 </div>
@@ -1250,69 +1290,36 @@ const Interview = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between text-xs sm:text-sm"
-                    disabled={professionLoading || loadingProfession}
-                  >
-                    {professionLoading || loadingProfession ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                        <span className="text-xs sm:text-sm">
-                          {loadingProfession
-                            ? 'Загрузка профессии...'
-                            : 'Сохранение...'}
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="truncate">
-                          {value
-                            ? itPositions.find((pos) => pos.value === value)
-                                ?.label
-                            : 'Выберите профессию...'}
-                        </span>
-                        <ChevronsUpDown className="opacity-50 h-3 w-3 sm:h-4 sm:w-4" />
-                      </>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0 max-h-60 overflow-y-auto">
-                  <Command>
-                    <CommandInput
-                      placeholder="Поиск профессии..."
-                      className="h-9 text-xs sm:text-sm"
-                    />
-                    <CommandList>
-                      <CommandEmpty>Профессия не найдена.</CommandEmpty>
-                      <CommandGroup>
-                        {itPositions.map((pos) => (
-                          <CommandItem
-                            key={pos.value}
-                            value={pos.value}
-                            onSelect={handleProfessionSelect}
-                            className="text-xs sm:text-sm"
-                          >
-                            <span className="truncate">{pos.label}</span>
-                            <Check
-                              className={cn(
-                                'ml-auto h-3 w-3 sm:h-4 sm:w-4',
-                                value === pos.value
-                                  ? 'opacity-100'
-                                  : 'opacity-0'
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              {/* Radix UI Select компонент */}
+              <Select
+                value={value}
+                onValueChange={handleProfessionSelect}
+                disabled={professionLoading || loadingProfession}
+              >
+                <SelectTrigger className="w-full text-xs sm:text-sm">
+                  {professionLoading || loadingProfession ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <span className="text-xs sm:text-sm">
+                        {loadingProfession
+                          ? 'Загрузка профессии...'
+                          : 'Сохранение...'}
+                      </span>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Выберите профессию..." />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {itPositions.map((pos) => (
+                      <SelectItem key={pos.value} value={pos.value}>
+                        {pos.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
 
               {value && (
                 <div className="space-y-3">
@@ -1340,9 +1347,12 @@ const Interview = () => {
                       }
                       size="sm"
                       disabled={!canBeCandidate && userStatus !== 'CANDIDATE'}
-                      onClick={() =>
-                        canBeCandidate && setUserStatus('CANDIDATE')
-                      }
+                      onClick={() => {
+                        if (canBeCandidate) {
+                          setUserStatus('CANDIDATE');
+                          setProfessionNotificationShown(false);
+                        }
+                      }}
                       className={`text-xs sm:text-sm ${
                         !canBeCandidate && userStatus !== 'CANDIDATE'
                           ? 'opacity-50 cursor-not-allowed'
@@ -1361,10 +1371,12 @@ const Interview = () => {
                       }
                       size="sm"
                       disabled={userStatus !== 'INTERVIEWER'}
-                      onClick={() =>
-                        userStatus === 'INTERVIEWER' &&
-                        setUserStatus('INTERVIEWER')
-                      }
+                      onClick={() => {
+                        if (userStatus === 'INTERVIEWER') {
+                          setUserStatus('INTERVIEWER');
+                          setProfessionNotificationShown(false);
+                        }
+                      }}
                       className={`text-xs sm:text-sm ${
                         userStatus !== 'INTERVIEWER'
                           ? 'opacity-50 cursor-not-allowed'
@@ -1418,8 +1430,9 @@ const Interview = () => {
                 </CardTitle>
                 <CardDescription className="text-sm">
                   Нажмите на доступный временной слот (зеленые блоки) для выбора
-                  времени. Серые слоты - прошедшее время, красные - недоступные.
-                  Показываются только будущие доступные слоты.
+                  времени. Серые слоты - прошедшее время, красные - недоступные,
+                  пунктирные - пустые слоты. События группируются по дням для
+                  лучшей видимости.
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-4 sm:px-6 pb-6">
@@ -1431,20 +1444,37 @@ const Interview = () => {
                   <div className="flex flex-wrap gap-2 sm:gap-3 text-xs sm:text-sm">
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-                      <span className="hidden xs:inline">Доступно</span>
+                      <span className="hidden xs:inline">
+                        Доступно (зеленые)
+                      </span>
                       <span className="xs:hidden">Доступно</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 bg-gray-200 border border-gray-300 rounded opacity-60"></div>
-                      <span className="hidden xs:inline">Прошедшее время</span>
+                      <span className="hidden xs:inline">
+                        Прошедшее время (серые)
+                      </span>
                       <span className="xs:hidden">Прошедшее</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 bg-red-100 border border-red-300 rounded opacity-80"></div>
-                      <span className="hidden xs:inline">Недоступно</span>
+                      <span className="hidden xs:inline">
+                        Недоступно (красные)
+                      </span>
                       <span className="xs:hidden">Недоступно</span>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-gray-50 border border-gray-200 rounded border-dashed opacity-30"></div>
+                      <span className="hidden xs:inline">
+                        Пустые слоты (пунктир)
+                      </span>
+                      <span className="xs:hidden">Пустые</span>
+                    </div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Нажмите на зеленые блоки для выбора времени. Серые блоки
+                    показывают прошедшее время.
+                  </p>
                 </div>
 
                 {loading ? (
@@ -1455,172 +1485,144 @@ const Interview = () => {
                     </span>
                   </div>
                 ) : (
-                  <div className="h-[400px] sm:h-[500px] lg:h-[600px] overflow-x-auto">
-                    {/* Debug buttons for testing calendar view switching */}
-                    <div className="mb-4 flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          console.log('🔍 Manually switching to week view');
-                          setCurrentView('week');
-                        }}
-                      >
-                        Тест: Неделя
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          console.log('🔍 Manually switching to day view');
-                          setCurrentView('day');
-                        }}
-                      >
-                        Тест: День
-                      </Button>
+                  <div
+                    className="flex-1 min-h-0 overflow-x-auto"
+                    style={{ height: '100%' }}
+                  >
+                    {/* Часы пользователя */}
+                    <div className="clock-widget mb-4">
+                      <Clock className="clock-icon" />
+                      <div className="flex flex-col items-center">
+                        <div className="time-display">
+                          {currentTime.toLocaleTimeString('ru-RU', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false,
+                          })}
+                        </div>
+                        <div className="date-display">
+                          {currentTime.toLocaleDateString('ru-RU', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </div>
+                      </div>
                     </div>
 
-                    <Calendar
-                      localizer={localizer}
-                      events={calendarEvents}
-                      startAccessor="start"
-                      endAccessor="end"
-                      messages={messages}
-                      selectable="ignoreEvents"
-                      onSelectSlot={(slotInfo) => {
-                        // Проверяем, не прошло ли время слота
-                        const now = new Date();
-                        if (slotInfo.start <= now) {
-                          showNotification(
-                            'Время прошло',
-                            'Этот временной слот уже прошел. Пожалуйста, выберите другое время.',
-                            'error'
-                          );
-                          return;
-                        }
+                    {/* Debug buttons for testing calendar view switching */}
+                    <div className="mb-4 flex gap-2"></div>
 
-                        handleTimeSlotSelect(slotInfo);
-                      }}
-                      onSelectEvent={(event) => {
-                        // Проверяем, не прошло ли время события
-                        const now = new Date();
-                        if (event.start <= now) {
-                          showNotification(
-                            'Время прошло',
-                            'Этот временной слот уже прошел. Пожалуйста, выберите другое время.',
-                            'error'
-                          );
-                          return;
-                        }
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold mb-2">
+                          Выберите удобную дату для интервью
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Выберите дату, затем выберите время из доступных
+                          слотов
+                        </p>
+                      </div>
 
-                        // Обрабатываем клик по событию как выбор слота
-                        const slotInfo = {
-                          start: event.start,
-                          end: event.end,
-                          slots: [event.start, event.end],
-                          action: 'select' as const,
-                        };
-                        handleTimeSlotSelect(slotInfo);
-                      }}
-                      onNavigate={(newDate) => {
-                        // Навигация по календарю
-                        console.log('🔍 Calendar navigation:', newDate);
-                      }}
-                      view={currentView}
-                      onView={(newView) => {
-                        console.log('🔍 Calendar view changed:', newView);
-                        setCurrentView(newView as 'week' | 'day');
-                      }}
-                      views={{
-                        week: true,
-                        day: true,
-                      }}
-                      defaultView="week"
-                      min={new Date(2024, 0, 1, 0, 0)} // 0:00 (полночь)
-                      max={new Date(2024, 0, 1, 23, 59)} // 23:59 (конец дня)
-                      step={60}
-                      timeslots={1}
-                      className="calendar-container"
-                      popup
-                      eventPropGetter={(event) => ({
-                        style: {
-                          backgroundColor: event.resource?.available
-                            ? '#22c55e'
-                            : '#ef4444',
-                          borderColor: event.resource?.available
-                            ? '#16a34a'
-                            : '#dc2626',
-                          color: 'white',
-                          fontSize: '12px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          textAlign: 'center',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        },
-                      })}
-                      slotPropGetter={(date) => {
-                        const now = new Date();
-                        const slot = availableSlots.find((s) => {
-                          const slotDateTime =
-                            typeof s.datetime === 'string'
-                              ? new Date(s.datetime)
-                              : s.datetime;
-                          return (
-                            Math.abs(slotDateTime.getTime() - date.getTime()) <
-                            60 * 60 * 1000
-                          );
-                        });
+                      <div className="flex flex-col items-center space-y-4">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={handleDateSelect}
+                          className="rounded-md border"
+                          disabled={(date) => {
+                            // Отключаем прошедшие даты
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            return date < today;
+                          }}
+                        />
 
-                        // Проверяем, что слот доступен и время еще не прошло
-                        const isAvailable =
-                          slot?.available && slot.datetime > now;
-                        const isPast = date < now;
-                        const isUnavailable = slot && !slot.available;
+                        {selectedDate && (
+                          <div className="w-full max-w-md">
+                            <h4 className="text-sm font-medium mb-3 text-center">
+                              Доступные слоты на{' '}
+                              {format(selectedDate, 'dd MMMM yyyy', {
+                                locale: ru,
+                              })}
+                              :
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {getSlotsForSelectedDate().map((slot, index) => {
+                                const slotDateTime =
+                                  typeof slot.datetime === 'string'
+                                    ? new Date(slot.datetime)
+                                    : slot.datetime;
 
-                        // Определяем классы для разных состояний
-                        let className = '';
-                        if (isPast) {
-                          className = 'rbc-past';
-                        } else if (isUnavailable) {
-                          className = 'rbc-unavailable';
-                        } else if (isAvailable) {
-                          className = 'rbc-available';
-                        }
+                                return (
+                                  <Button
+                                    key={index}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs border-green-300 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 transition-colors cursor-pointer"
+                                    onClick={() => {
+                                      const slotInfo = {
+                                        start: slotDateTime,
+                                        end: new Date(
+                                          slotDateTime.getTime() +
+                                            60 * 60 * 1000
+                                        ),
+                                        slots: [
+                                          slotDateTime,
+                                          new Date(
+                                            slotDateTime.getTime() +
+                                              60 * 60 * 1000
+                                          ),
+                                        ],
+                                        action: 'select' as const,
+                                      };
+                                      handleTimeSlotSelect(slotInfo);
+                                    }}
+                                  >
+                                    {format(slotDateTime, 'HH:mm', {
+                                      locale: ru,
+                                    })}
+                                  </Button>
+                                );
+                              })}
+                            </div>
 
-                        return {
-                          className,
-                          style: {
-                            backgroundColor: isAvailable
-                              ? '#f0fdf4'
-                              : isPast
-                              ? '#f3f4f6'
-                              : isUnavailable
-                              ? '#fef2f2'
-                              : undefined,
-                            cursor: isAvailable ? 'pointer' : 'not-allowed',
-                            minHeight: '60px',
-                            padding: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            opacity: isPast ? 0.6 : isUnavailable ? 0.8 : 1,
-                            transition: 'all 0.2s ease',
-                          },
-                        };
-                      }}
-                    />
+                            {getSlotsForSelectedDate().length === 0 && (
+                              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-500">
+                                  На выбранную дату нет доступных слотов
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Сообщение, если нет доступных слотов */}
+                      {availableSlots.filter((slot) => slot.available)
+                        .length === 0 && (
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm text-blue-700">
+                            Нет доступных слотов для записи на собеседование.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {selectedTimeSlot && (
-                  <div className="mt-4 p-3 sm:p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base">
+                  <div className="mt-4 p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base flex items-center gap-2">
+                      <span className="text-green-600">✅</span>
                       Выбранное время:
                     </h4>
                     <p className="text-green-700 text-sm sm:text-base">
-                      {moment(selectedTimeSlot).format('DD MMMM YYYY, HH:mm')}
+                      {format(selectedTimeSlot, 'dd MMMM yyyy, HH:mm', {
+                        locale: ru,
+                      })}
                     </p>
                   </div>
                 )}
@@ -1665,9 +1667,9 @@ const Interview = () => {
                   </Badge>
                   <Badge variant="outline">
                     Время:{' '}
-                    {moment(queueStatus.preferredDateTime).format(
-                      'DD.MM.YYYY HH:mm'
-                    )}
+                    {format(queueStatus.preferredDateTime, 'dd.MM.yyyy HH:mm', {
+                      locale: ru,
+                    })}
                   </Badge>
                 </div>
 
@@ -1789,8 +1791,10 @@ const Interview = () => {
                               {session.profession}
                             </p>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              {moment(session.scheduledDateTime).format(
-                                'DD MMMM YYYY, HH:mm'
+                              {format(
+                                session.scheduledDateTime,
+                                'dd MMMM yyyy, HH:mm',
+                                { locale: ru }
                               )}
                             </p>
                           </div>
@@ -1873,7 +1877,9 @@ const Interview = () => {
               <p className="text-xs sm:text-sm font-medium">
                 <strong>Выбранное время:</strong>{' '}
                 {pendingTimeSlot &&
-                  moment(pendingTimeSlot).format('DD MMMM YYYY, HH:mm')}
+                  format(pendingTimeSlot, 'dd MMMM yyyy, HH:mm', {
+                    locale: ru,
+                  })}
               </p>
               <p className="text-xs sm:text-sm font-medium">
                 <strong>Профессия:</strong>{' '}
@@ -1932,7 +1938,7 @@ const Interview = () => {
               )}
               {notificationModal.title}
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-sm whitespace-pre-line">
               {notificationModal.message}
             </DialogDescription>
           </DialogHeader>

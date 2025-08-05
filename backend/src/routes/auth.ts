@@ -1,15 +1,26 @@
-import { Router } from 'express';
+import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { AuthController } from '../controllers/authController.js';
 import {
   authenticateToken,
   authenticateExtendedToken,
-  validateTelegramData,
-  optionalAuth,
   optionalExtendedAuth,
-  requireAdmin,
 } from '../middleware/auth.js';
+import { validateTelegramData } from '../middleware/auth.js';
 
-const router = Router();
+const router = express.Router();
+
+// Специальный rate limiter для test-token с более строгими ограничениями
+const testTokenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 10, // максимум 10 запросов за 15 минут
+  message: {
+    success: false,
+    error: 'Too many test token requests. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /**
  * @route GET /api/auth/test
@@ -79,7 +90,7 @@ router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
  * @desc Получение тестового токена для разработки
  * @access Public
  */
-router.get('/test-token', AuthController.getTestToken);
+router.get('/test-token', testTokenLimiter, AuthController.getTestToken);
 
 /**
  * @route POST /api/auth/test-token-user

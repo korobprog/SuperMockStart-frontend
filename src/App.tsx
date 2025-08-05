@@ -14,32 +14,38 @@ import Feedback from './pages/Feedback';
 import FeedbackHistory from './pages/FeedbackHistory';
 import TestFeedback from './pages/TestFeedback';
 import TestCompleteSession from './pages/TestCompleteSession';
+import AuthProvider from './components/AuthProvider';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-white">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/interview" element={<Interview />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/chooseinterview" element={<ChooseInterview />} />
-          <Route path="/collectingcontacts" element={<CollectingContacts />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/debug-auth" element={<DebugAuth />} />
-          <Route path="/auth-demo" element={<AuthDemo />} />
-          <Route path="/auth-callback" element={<TelegramAuthCallback />} />
-          <Route path="/token-check" element={<TokenCheck />} />
-          <Route path="/feedback/:sessionId" element={<Feedback />} />
-          <Route path="/feedback-history" element={<FeedbackHistory />} />
-          <Route path="/test-feedback" element={<TestFeedback />} />
-          <Route
-            path="/test-complete-session"
-            element={<TestCompleteSession />}
-          />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen bg-white">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/interview" element={<Interview />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/chooseinterview" element={<ChooseInterview />} />
+            <Route
+              path="/collectingcontacts"
+              element={<CollectingContacts />}
+            />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/debug-auth" element={<DebugAuth />} />
+            <Route path="/auth-demo" element={<AuthDemo />} />
+            <Route path="/auth-callback" element={<TelegramAuthCallback />} />
+            <Route path="/token-check" element={<TokenCheck />} />
+            <Route path="/feedback/:sessionId" element={<Feedback />} />
+            <Route path="/feedback-history" element={<FeedbackHistory />} />
+            <Route path="/test-feedback" element={<TestFeedback />} />
+            <Route
+              path="/test-complete-session"
+              element={<TestCompleteSession />}
+            />
+          </Routes>
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

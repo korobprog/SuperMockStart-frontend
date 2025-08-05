@@ -1,18 +1,14 @@
 import { CardContent } from '@/components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from '@/components/ui/command';
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { itPositions, ItPosition } from '@/data/itPositions';
@@ -36,7 +32,6 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const CollectingContacts = () => {
-  const [professionOpen, setProfessionOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -235,70 +230,36 @@ const CollectingContacts = () => {
                 name="profession"
                 control={control}
                 render={({ field }) => (
-                  <Popover
-                    open={professionOpen}
-                    onOpenChange={setProfessionOpen}
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isSubmitting}
                   >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={professionOpen}
-                        className={cn(
-                          'w-full justify-between',
-                          errors.profession && 'border-red-400'
-                        )}
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? (
+                    <SelectTrigger
+                      className={cn(
+                        'w-full justify-between',
+                        errors.profession && 'border-red-400'
+                      )}
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            {field.value
-                              ? itPositions.find(
-                                  (item: ItPosition) =>
-                                    item.value === field.value
-                                )?.label
-                              : 'Выберите профессию...'}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Поиск профессии..."
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>Профессия не найдена.</CommandEmpty>
-                          <CommandGroup>
-                            {itPositions.map((item: ItPosition) => (
-                              <CommandItem
-                                key={item.value}
-                                value={item.value}
-                                onSelect={() => {
-                                  setValue('profession', item.value);
-                                  setProfessionOpen(false);
-                                }}
-                              >
-                                {item.label}
-                                <Check
-                                  className={cn(
-                                    'ml-auto h-4 w-4',
-                                    field.value === item.value
-                                      ? 'opacity-100'
-                                      : 'opacity-0'
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                          <span>Загрузка...</span>
+                        </div>
+                      ) : (
+                        <SelectValue placeholder="Выберите профессию..." />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {itPositions.map((item: ItPosition) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 )}
               />
               {errors.profession && (
