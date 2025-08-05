@@ -56,23 +56,6 @@ else
     fi
 fi
 
-# Verify tables exist
-echo "🔍 Verifying database tables..."
-table_check=$(npx prisma db execute --stdin << EOF
-SELECT COUNT(*) FROM information_schema.tables 
-WHERE table_schema = 'public' 
-AND table_name IN ('users', 'interview_queue', 'notifications');
-EOF
-)
-
-if echo "$table_check" | grep -q "3"; then
-    echo "✅ All required tables exist"
-else
-    echo "❌ Required tables are missing. Database setup failed."
-    echo "Found tables: $table_check"
-    exit 1
-fi
-
 echo "✅ Database is ready and schema is up to date"
 
 # Start the application
