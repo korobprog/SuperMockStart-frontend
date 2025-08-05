@@ -13,9 +13,11 @@ services:
       - backend
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`supermock.ru`)'
-      - 'traefik.http.routers.frontend.entrypoints=websecure'
-      - 'traefik.http.routers.frontend.tls.certResolver=letsencrypt'
+      - 'traefik.http.routers.frontend-http.rule=Host(`supermock.ru`)'
+      - 'traefik.http.routers.frontend-http.entrypoints=web'
+      - 'traefik.http.routers.frontend-https.rule=Host(`supermock.ru`)'
+      - 'traefik.http.routers.frontend-https.entrypoints=websecure'
+      - 'traefik.http.routers.frontend-https.tls.certResolver=letsencrypt'
       - 'traefik.http.services.frontend.loadbalancer.server.port=80'
 
   # Бэкенд
@@ -47,9 +49,11 @@ services:
         condition: service_completed_successfully
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'
-      - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls.certResolver=letsencrypt'
+      - 'traefik.http.routers.backend-http.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend-http.entrypoints=web'
+      - 'traefik.http.routers.backend-https.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend-https.entrypoints=websecure'
+      - 'traefik.http.routers.backend-https.tls.certResolver=letsencrypt'
       - 'traefik.http.services.backend.loadbalancer.server.port=3001'
       # Настройка health check для zero downtime deployment
       - 'traefik.http.services.backend.loadbalancer.healthcheck.path=/api/health'
