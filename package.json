@@ -15,6 +15,7 @@
     "db:setup": "npm run dev:db && sleep 5 && cd backend && npm run db:generate && npm run db:push",
     "db:setup:local": "cd backend && npm run db:generate && npm run db:push",
     "build": "tsc -b && vite build",
+    "build:vite": "vite build",
     "build:prod": "tsc -b && vite build --config vite.config.prod.ts",
     "lint": "eslint .",
     "preview": "vite preview"
