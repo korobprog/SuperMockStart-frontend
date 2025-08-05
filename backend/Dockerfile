@@ -15,11 +15,14 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --silent
 
-# Копируем исходный код
-COPY . .
+# Копируем Prisma схему
+COPY prisma ./prisma
 
 # Генерируем Prisma клиент
 RUN npx prisma generate
+
+# Копируем исходный код
+COPY . .
 
 # Собираем TypeScript
 RUN pnpm run build
@@ -43,12 +46,20 @@ RUN pnpm install --frozen-lockfile --prod --silent
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 
+# Копируем сгенерированный Prisma клиент
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
+
 # Убеждаемся, что package.json скопирован для pnpm start
 COPY --from=build /app/package.json ./package.json
 
 # Копируем скрипт настройки базы данных
 COPY scripts/setup-db.sh ./scripts/setup-db.sh
 RUN chmod +x ./scripts/setup-db.sh
+
+# Копируем и делаем исполняемым startup скрипт
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
 
 # Создаем пользователя для безопасности
 RUN addgroup -g 1001 -S nodejs
@@ -61,4 +72,4 @@ EXPOSE 3001
 USER nodejs
 
 # Запускаем приложение
-CMD ["pnpm", "start"] 
+CMD ["./start.sh"] 
