@@ -13,6 +13,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Копируем исходный код
 COPY . .
 
+# Отладка - проверяем наличие компонентов
+RUN ls -la src/components/ || echo "components directory not found"
+RUN echo "=== Navigation file check ===" && ls -la src/components/Navigation* || echo "Navigation file not found"
+
 # Запускаем сборку только с Vite (без TypeScript проверки)
 RUN pnpm run build:vite
 
