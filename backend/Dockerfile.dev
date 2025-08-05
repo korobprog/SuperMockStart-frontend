@@ -1,13 +1,21 @@
 # Dockerfile для разработки бэкенда
 FROM node:20-alpine
 
+# Настраиваем pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+# Suppress deprecation warnings during build
+ENV NPM_CONFIG_LOGLEVEL=error
+ENV PNPM_LOG_LEVEL=error
+RUN corepack enable
+
 WORKDIR /app
 
 # Копируем файлы зависимостей
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Устанавливаем зависимости
-RUN npm ci
+RUN pnpm install --frozen-lockfile --silent
 
 # Копируем исходный код
 COPY . .
@@ -19,4 +27,4 @@ RUN npx prisma generate
 EXPOSE 3001
 
 # Запускаем в режиме разработки
-CMD ["npm", "run", "dev"] 
+CMD ["pnpm", "run", "dev"] 
