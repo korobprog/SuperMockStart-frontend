@@ -14,14 +14,14 @@ WORKDIR /app
 # Копируем файлы зависимостей
 COPY package.json pnpm-lock.yaml ./
 
-# Устанавливаем зависимости
+# Копируем Prisma схему до установки зависимостей
+COPY prisma ./prisma
+
+# Устанавливаем зависимости (postinstall скрипт теперь найдет schema.prisma)
 RUN pnpm install --frozen-lockfile --silent
 
 # Копируем исходный код
 COPY . .
-
-# Генерируем Prisma клиент
-RUN npx prisma generate
 
 # Открываем порт для разработки
 EXPOSE 3001

@@ -13,13 +13,12 @@ WORKDIR /app
 
 # Копируем файлы зависимостей
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --silent
 
-# Копируем Prisma схему
+# Копируем Prisma схему до установки зависимостей
 COPY prisma ./prisma
 
-# Генерируем Prisma клиент
-RUN npx prisma generate
+# Устанавливаем зависимости (postinstall скрипт теперь найдет schema.prisma)
+RUN pnpm install --frozen-lockfile --silent
 
 # Копируем исходный код
 COPY . .
@@ -38,13 +37,15 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Устанавливаем только production зависимости
+# Копируем файлы зависимостей и Prisma схему
 COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
+
+# Устанавливаем только production зависимости
 RUN pnpm install --frozen-lockfile --prod --silent
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/prisma ./prisma
 
 # Копируем сгенерированный Prisma клиент
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
