@@ -9,7 +9,9 @@ export default defineConfig({
     react({
       jsxRuntime: 'automatic', // Используем современный JSX transform
     }),
-    tailwindcss(),
+    tailwindcss({
+      config: './tailwind.config.js',
+    }),
   ],
   resolve: {
     alias: {

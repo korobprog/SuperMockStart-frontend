@@ -21,6 +21,9 @@ import {
   MessageSquare,
   Star,
   LogOut,
+  ChevronLeft,
+  Users,
+  Code,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -42,6 +45,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -1153,142 +1158,119 @@ const Interview = () => {
   if (queueStatus?.status === 'MATCHED' && queueStatus.matchedSession) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-4 sm:py-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-            <Link to="/">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
               <Button
-                variant="outline"
-                size="sm"
-                className="text-xs sm:text-sm"
+                variant="ghost"
+                className="mb-4"
+                onClick={() => window.history.back()}
               >
-                ← Назад
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Назад
               </Button>
-            </Link>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground text-center sm:text-left">
-              Собеседование подтверждено!
-            </h1>
-            <Button
-              variant="outline"
-              onClick={logout}
-              className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
-              size="sm"
-            >
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">Выйти</span>
-              <span className="xs:hidden">Выход</span>
-            </Button>
-          </div>
 
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
-                Встреча запланирована
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
-                Ваше собеседование успешно запланировано
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm sm:text-base">
-                      Дата и время
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                      {format(
-                        queueStatus.matchedSession.scheduledDateTime,
-                        'dd MMMM yyyy, HH:mm',
-                        { locale: ru }
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm sm:text-base">
-                      Профессия
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                      {queueStatus.matchedSession.profession}
-                    </p>
-                  </div>
-                </div>
+              <div className="text-center">
+                <h1 className="text-2xl font-bold mb-2">
+                  Собеседование подтверждено!
+                </h1>
+                <p className="text-muted-foreground mb-6">
+                  Ваше собеседование успешно запланировано
+                </p>
               </div>
+            </div>
 
-              <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Video className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
-                  <p className="font-medium text-blue-900 text-sm sm:text-base">
-                    Ссылка на видеоконференцию
+            <Card className="p-6">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold mb-2">
+                    Встреча запланирована
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Ваше собеседование успешно запланировано
                   </p>
                 </div>
-                <a
-                  href={queueStatus.matchedSession.meetingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline break-all text-xs sm:text-sm"
-                >
-                  {queueStatus.matchedSession.meetingLink}
-                </a>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4">
-                <Button asChild className="flex-1 text-xs sm:text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                    <CalendarIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm">Дата и время</p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(
+                          queueStatus.matchedSession.scheduledDateTime,
+                          'dd MMMM yyyy, HH:mm',
+                          { locale: ru }
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <Code className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm">Профессия</p>
+                      <p className="text-sm text-muted-foreground">
+                        {queueStatus.matchedSession.profession}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Video className="h-5 w-5 text-blue-600" />
+                    <p className="font-medium text-blue-900">
+                      Ссылка на видеоконференцию
+                    </p>
+                  </div>
                   <a
                     href={queueStatus.matchedSession.meetingLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline break-all text-sm"
                   >
-                    <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    <span className="hidden xs:inline">
-                      Присоединиться к встрече
-                    </span>
-                    <span className="xs:hidden">Присоединиться</span>
+                    {queueStatus.matchedSession.meetingLink}
                   </a>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    console.log('🔍 Клик по кнопке "Завершить собеседование"');
-                    console.log(
-                      '🔍 queueStatus.matchedSession:',
-                      queueStatus.matchedSession
-                    );
-                    if (queueStatus.matchedSession) {
-                      console.log(
-                        '🔍 Вызываем completeSession с ID:',
-                        queueStatus.matchedSession.id
-                      );
-                      completeSession(queueStatus.matchedSession.id);
-                    } else {
-                      console.log(
-                        '❌ queueStatus.matchedSession не существует'
-                      );
-                    }
-                  }}
-                  className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 text-xs sm:text-sm"
-                >
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden xs:inline">
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button asChild className="flex-1">
+                    <a
+                      href={queueStatus.matchedSession.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Video className="w-4 h-4 mr-2" />
+                      Присоединиться к встрече
+                    </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (queueStatus.matchedSession) {
+                        completeSession(queueStatus.matchedSession.id);
+                      }
+                    }}
+                    className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
                     Завершить и оставить отзыв
-                  </span>
-                  <span className="xs:hidden">Завершить</span>
-                </Button>
+                  </Button>
+                </div>
+
                 <Button
                   variant="outline"
                   onClick={leaveQueue}
-                  size="sm"
-                  className="text-xs sm:text-sm"
+                  className="w-full"
                 >
                   Отменить встречу
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -1296,618 +1278,484 @@ const Interview = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4 sm:py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-          <Link to="/">
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-              ← Назад
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              className="mb-4"
+              onClick={() => window.history.back()}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Назад
             </Button>
-          </Link>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground text-center sm:text-left">
-            Записаться на собеседование
-          </h1>
-          <Button
-            variant="outline"
-            onClick={logout}
-            className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
-            size="sm"
-          >
-            <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden xs:inline">Выйти</span>
-            <span className="xs:hidden">Выход</span>
-          </Button>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-          {/* Выбор профессии и роли */}
-          <Card className="w-full">
-            <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="text-base sm:text-lg">
-                Шаг 1: Выберите профессию
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Выберите профессию для собеседования
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
-              {/* Radix UI Select компонент */}
-              <Select
-                value={value}
-                onValueChange={handleProfessionSelect}
-                disabled={professionLoading || loadingProfession}
-              >
-                <SelectTrigger className="w-full text-xs sm:text-sm">
-                  {professionLoading || loadingProfession ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                      <span className="text-xs sm:text-sm">
-                        {loadingProfession
-                          ? 'Загрузка профессии...'
-                          : 'Сохранение...'}
-                      </span>
-                    </div>
-                  ) : (
-                    <SelectValue placeholder="Выберите профессию..." />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {itPositions.map((pos) => (
-                      <SelectItem key={pos.value} value={pos.value}>
-                        {pos.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-2">
+                Записаться на собеседование
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                Выберите профессию и время для собеседования
+              </p>
+            </div>
+          </div>
+
+          {/* Step 1: Profession Selection */}
+          <Card className="p-6 mb-6">
+            <div className="space-y-6">
+              <div>
+                <Label
+                  htmlFor="profession"
+                  className="text-base font-medium mb-3 block"
+                >
+                  Выберите профессию:
+                </Label>
+                <Select
+                  value={value}
+                  onValueChange={handleProfessionSelect}
+                  disabled={professionLoading || loadingProfession}
+                >
+                  <SelectTrigger className="w-full h-12 text-base bg-background border-border">
+                    {professionLoading || loadingProfession ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">
+                          {loadingProfession
+                            ? 'Загрузка профессии...'
+                            : 'Сохранение...'}
+                        </span>
+                      </div>
+                    ) : (
+                      <SelectValue placeholder="Выберите профессию" />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-border z-50">
+                    <SelectGroup>
+                      {itPositions.map((pos) => (
+                        <SelectItem
+                          key={pos.value}
+                          value={pos.value}
+                          className="hover:bg-accent"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Code className="w-4 h-4 text-primary" />
+                            {pos.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {value && (
-                <div className="space-y-3">
-                  {userCountry && (
-                    <div className="flex items-center gap-2 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                      <span className="text-base sm:text-lg flex-shrink-0">
-                        {getCountryFlag(userCountry)}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-gray-700">
-                          Язык собеседования: {getLanguageName(userLanguage)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Вы будете участвовать в собеседованиях на{' '}
-                          {getLanguageName(userLanguage).toLowerCase()} языке
-                        </p>
-                      </div>
+                <div>
+                  <Label className="text-base font-medium mb-3 block">
+                    Ваша роль:
+                  </Label>
+                  <RadioGroup
+                    value={userStatus}
+                    onValueChange={(value: string) =>
+                      setUserStatus(value as 'CANDIDATE' | 'INTERVIEWER')
+                    }
+                    className="flex gap-6"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value="CANDIDATE"
+                        id="candidate"
+                        disabled={!canBeCandidate && userStatus !== 'CANDIDATE'}
+                      />
+                      <Label
+                        htmlFor="candidate"
+                        className="text-base font-medium cursor-pointer"
+                      >
+                        Кандидат
+                      </Label>
                     </div>
-                  )}
-                  <p className="text-xs sm:text-sm font-medium">Ваша роль:</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={
-                        userStatus === 'CANDIDATE' ? 'default' : 'outline'
-                      }
-                      size="sm"
-                      disabled={!canBeCandidate && userStatus !== 'CANDIDATE'}
-                      onClick={() => {
-                        if (canBeCandidate) {
-                          setUserStatus('CANDIDATE');
-                          setProfessionNotificationShown(false);
-                        }
-                      }}
-                      className={`text-xs sm:text-sm ${
-                        !canBeCandidate && userStatus !== 'CANDIDATE'
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
-                    >
-                      <span className="hidden xs:inline">Кандидат</span>
-                      <span className="xs:hidden">Кандидат</span>
-                      {!canBeCandidate && userStatus !== 'CANDIDATE' && (
-                        <span className="ml-1">🔒</span>
-                      )}
-                    </Button>
-                    <Button
-                      variant={
-                        userStatus === 'INTERVIEWER' ? 'default' : 'outline'
-                      }
-                      size="sm"
-                      disabled={userStatus !== 'INTERVIEWER'}
-                      onClick={() => {
-                        if (userStatus === 'INTERVIEWER') {
-                          setUserStatus('INTERVIEWER');
-                          setProfessionNotificationShown(false);
-                        }
-                      }}
-                      className={`text-xs sm:text-sm ${
-                        userStatus !== 'INTERVIEWER'
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
-                    >
-                      <span className="hidden xs:inline">Интервьюер</span>
-                      <span className="xs:hidden">Интервьюер</span>
-                      {userStatus !== 'INTERVIEWER' && (
-                        <span className="ml-1">🔒</span>
-                      )}
-                    </Button>
-                  </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value="INTERVIEWER"
+                        id="interviewer"
+                        disabled={userStatus !== 'INTERVIEWER'}
+                      />
+                      <Label
+                        htmlFor="interviewer"
+                        className="text-base font-medium cursor-pointer flex items-center gap-1"
+                      >
+                        Интервьюер
+                        <Star className="w-4 h-4 text-warning" />
+                      </Label>
+                    </div>
+                  </RadioGroup>
 
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p>
-                      {userStatus === 'CANDIDATE'
-                        ? 'Вы будете проходить собеседование'
-                        : 'Вы будете проводить собеседование'}
-                    </p>
-                    {!canBeCandidate && userStatus !== 'CANDIDATE' && (
-                      <p className="text-amber-600 font-medium text-xs">
-                        🔒 Чтобы стать кандидатом, сначала проведите
+                  {userStatus === 'CANDIDATE' &&
+                    !canBeCandidate &&
+                    userStatus !== 'CANDIDATE' && (
+                      <p className="text-sm text-muted-foreground mt-2 p-3 bg-gradient-secondary rounded-lg">
+                        💡 Чтобы стать кандидатом, сначала проведите
                         собеседование как интервьюер и получите обратную связь
                       </p>
                     )}
-                    {userStatus !== 'INTERVIEWER' && (
-                      <p className="text-amber-600 font-medium text-xs">
-                        🔒 Чтобы стать интервьюером, сначала пройдите
-                        собеседование как кандидат и получите обратную связь
-                      </p>
-                    )}
-                  </div>
+
+                  {userStatus === 'INTERVIEWER' && (
+                    <p className="text-sm text-success mt-2 p-3 bg-success/10 rounded-lg">
+                      Вы будете проводить собеседование
+                    </p>
+                  )}
                 </div>
               )}
 
-              {error && (
-                <div className="text-red-500 text-xs sm:text-sm">
-                  Ошибка: {error}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Календарь */}
-          {showCalendar && (
-            <Card className="lg:col-span-2">
-              <CardHeader className="px-4 sm:px-6">
-                <CardTitle className="text-base sm:text-lg">
-                  Шаг 2: Выберите время
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Нажмите на доступный временной слот (зеленые блоки) для выбора
-                  времени. Серые слоты - прошедшее время, красные - недоступные
-                  слоты. Недоступные слоты не кликабельны.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-4 sm:px-6 pb-6">
-                {/* Легенда календаря */}
-                <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                    Легенда:
-                  </p>
-                  <div className="flex flex-wrap gap-2 sm:gap-3 text-xs sm:text-sm">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-                      <span className="hidden xs:inline">
-                        Доступно (зеленые)
-                      </span>
-                      <span className="xs:hidden">Доступно</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-200 border border-gray-300 rounded opacity-60"></div>
-                      <span className="hidden xs:inline">
-                        Прошедшее время (серые)
-                      </span>
-                      <span className="xs:hidden">Прошедшее</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-100 border border-red-300 rounded opacity-80"></div>
-                      <span className="hidden xs:inline">
-                        Недоступно (красные)
-                      </span>
-                      <span className="xs:hidden">Недоступно</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    💡 Нажмите на зеленые блоки для выбора времени. Серые блоки
-                    показывают прошедшее время, красные - недоступные слоты.
-                  </p>
-                </div>
-
-                {loading ? (
-                  <div className="flex items-center justify-center h-48 sm:h-64">
-                    <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
-                    <span className="ml-2 text-sm sm:text-base">
-                      Загрузка доступных слотов...
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    className="flex-1 min-h-0 overflow-x-auto"
-                    style={{ height: '100%' }}
-                  >
-                    {/* Часы пользователя */}
-                    <div className="clock-widget mb-4">
-                      <Clock className="clock-icon" />
-                      <div className="flex flex-col items-center">
-                        <div className="time-display">
-                          {currentTime.toLocaleTimeString('ru-RU', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false,
-                          })}
-                        </div>
-                        <div className="date-display">
-                          {currentTime.toLocaleDateString('ru-RU', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Debug buttons for testing calendar view switching */}
-                    <div className="mb-4 flex gap-2"></div>
-
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold mb-2">
-                          Выберите удобную дату для интервью
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Выберите дату, затем выберите время из доступных
-                          слотов
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-center space-y-4">
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={handleDateSelect}
-                          className="rounded-md border"
-                          disabled={(date) => {
-                            // Отключаем прошедшие даты
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            return date < today;
-                          }}
-                        />
-
-                        {selectedDate && (
-                          <div className="w-full max-w-md">
-                            <h4 className="text-sm font-medium mb-3 text-center">
-                              Доступные слоты на{' '}
-                              {format(selectedDate, 'dd MMMM yyyy', {
-                                locale: ru,
-                              })}
-                              :
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2">
-                              {getAllSlotsForSelectedDate().map(
-                                (slot, index) => {
-                                  const slotDateTime =
-                                    typeof slot.datetime === 'string'
-                                      ? new Date(slot.datetime)
-                                      : slot.datetime;
-
-                                  const isAvailable = slot.available;
-                                  const isPast = slotDateTime < new Date();
-
-                                  return (
-                                    <Button
-                                      key={index}
-                                      variant="outline"
-                                      size="sm"
-                                      disabled={!isAvailable || isPast}
-                                      className={`text-xs transition-colors interview-time-slot ${
-                                        isAvailable && !isPast
-                                          ? 'available'
-                                          : isPast
-                                          ? 'past'
-                                          : 'unavailable'
-                                      }`}
-                                      onClick={() => {
-                                        if (isAvailable && !isPast) {
-                                          const slotInfo = {
-                                            start: slotDateTime,
-                                            end: new Date(
-                                              slotDateTime.getTime() +
-                                                60 * 60 * 1000
-                                            ),
-                                            slots: [
-                                              slotDateTime,
-                                              new Date(
-                                                slotDateTime.getTime() +
-                                                  60 * 60 * 1000
-                                              ),
-                                            ],
-                                            action: 'select' as const,
-                                          };
-                                          handleTimeSlotSelect(slotInfo);
-                                        }
-                                      }}
-                                    >
-                                      {format(slotDateTime, 'HH:mm', {
-                                        locale: ru,
-                                      })}
-                                    </Button>
-                                  );
-                                }
-                              )}
-                            </div>
-
-                            {getAllSlotsForSelectedDate().filter(
-                              (slot) => slot.available
-                            ).length === 0 && (
-                              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <p className="text-sm text-gray-500">
-                                  На выбранную дату нет доступных слотов
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Сообщение, если нет доступных слотов */}
-                      {availableSlots.filter((slot) => slot.available)
-                        .length === 0 && (
-                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm text-blue-700">
-                            Нет доступных слотов для записи на собеседование.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {selectedTimeSlot && (
-                  <div className="mt-4 p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base flex items-center gap-2">
-                      <span className="text-green-600">✅</span>
-                      Выбранное время:
-                    </h4>
-                    <p className="text-green-700 text-sm sm:text-base">
-                      {format(selectedTimeSlot, 'dd MMMM yyyy, HH:mm', {
-                        locale: ru,
-                      })}
+              {userCountry && (
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg flex-shrink-0">
+                    {getCountryFlag(userCountry)}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Язык собеседования: {getLanguageName(userLanguage)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Вы будете участвовать в собеседованиях на{' '}
+                      {getLanguageName(userLanguage).toLowerCase()} языке
                     </p>
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+          </Card>
 
-                {selectedTimeSlot && (
-                  <div className="mt-4 flex gap-2 sm:gap-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedTimeSlot(null)}
-                      size="sm"
-                      className="text-xs sm:text-sm"
+          {/* Step 2 Header */}
+          {showCalendar && (
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2">
+                Шаг 2: Выберите дату и время
+              </h2>
+              <p className="text-muted-foreground">
+                Выберите удобную дату и время для собеседования
+              </p>
+
+              {value && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/10 text-primary"
+                  >
+                    <Users className="w-3 h-3 mr-1" />
+                    {itPositions.find((pos) => pos.value === value)?.label}
+                  </Badge>
+                  <Badge variant="outline">
+                    {userStatus === 'INTERVIEWER' ? 'Интервьюер' : 'Кандидат'}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Calendar */}
+          {showCalendar && (
+            <Card className="p-6 mb-6">
+              <div className="flex flex-col items-center">
+                <div className="flex justify-center mb-4">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    disabled={(date) => {
+                      // Разрешаем выбирать текущий день, но блокируем прошедшие дни
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return date < today;
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                    locale={ru}
+                  />
+                </div>
+
+                {/* Кнопка для возврата к текущему дню */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedDate(new Date())}
+                  className="text-xs"
+                >
+                  <CalendarIcon className="w-3 h-3 mr-1" />
+                  Вернуться к сегодняшнему дню
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Available Time Slots */}
+          {showCalendar && selectedDate && (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 text-center">
+                Доступные слоты на{' '}
+                {format(selectedDate, 'dd MMMM yyyy', { locale: ru })}:
+              </h3>
+
+              {loading ? (
+                <div className="flex items-center justify-center h-32">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Загрузка доступных слотов...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {getAllSlotsForSelectedDate().map((slot, index) => {
+                    const slotDateTime =
+                      typeof slot.datetime === 'string'
+                        ? new Date(slot.datetime)
+                        : slot.datetime;
+
+                    const isAvailable = slot.available;
+                    const isPast = slotDateTime < new Date();
+
+                    return (
+                      <Button
+                        key={index}
+                        variant={isAvailable && !isPast ? 'default' : 'outline'}
+                        className={`h-12 text-lg font-medium transition-all duration-200 ${
+                          isAvailable && !isPast
+                            ? 'bg-success text-white hover:bg-success/90'
+                            : isPast
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                            : 'hover:border-primary hover:text-primary'
+                        }`}
+                        disabled={!isAvailable || isPast}
+                        onClick={() => {
+                          if (isAvailable && !isPast) {
+                            const slotInfo = {
+                              start: slotDateTime,
+                              end: new Date(
+                                slotDateTime.getTime() + 60 * 60 * 1000
+                              ),
+                              slots: [
+                                slotDateTime,
+                                new Date(
+                                  slotDateTime.getTime() + 60 * 60 * 1000
+                                ),
+                              ],
+                              action: 'select' as const,
+                            };
+                            handleTimeSlotSelect(slotInfo);
+                          }
+                        }}
+                      >
+                        <Clock
+                          className={`w-4 h-4 mr-2 ${
+                            isPast ? 'text-gray-400' : ''
+                          }`}
+                        />
+                        {format(slotDateTime, 'HH:mm', { locale: ru })}
+                        {isPast && (
+                          <span className="ml-1 text-xs">(прошло)</span>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {selectedTimeSlot && (
+                <div className="mt-6 text-center">
+                  <div className="p-4 bg-gradient-secondary rounded-lg mb-4">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Выбранное время:
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {format(selectedTimeSlot, 'dd MMMM yyyy', { locale: ru })}{' '}
+                      в {format(selectedTimeSlot, 'HH:mm', { locale: ru })}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={joinQueue}
+                    className="w-full"
+                    size="lg"
+                    disabled={!selectedTimeSlot || !value || joiningQueue}
+                  >
+                    {joiningQueue ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Записываемся...
+                      </>
+                    ) : (
+                      'Записаться на собеседование'
+                    )}
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Queue Status */}
+          {queueStatus && queueStatus.status === 'WAITING' && (
+            <Card className="mt-6">
+              <CardHeader className="px-6">
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-orange-500" />
+                  Ожидание партнера
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="space-y-4">
+                  <p className="text-sm">
+                    Мы ищем для вас подходящего партнера для собеседования:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">
+                      Профессия: {queueStatus.profession}
+                    </Badge>
+                    <Badge variant="outline">
+                      Язык: {getLanguageName(queueStatus.language)}
+                    </Badge>
+                    <Badge variant="outline">
+                      Время:{' '}
+                      {format(
+                        queueStatus.preferredDateTime,
+                        'dd.MM.yyyy HH:mm',
+                        { locale: ru }
+                      )}
+                    </Badge>
+                  </div>
+
+                  {queueStatus.usersInQueueWithSameLanguage !== undefined && (
+                    <div
+                      className={`p-3 rounded-lg ${
+                        queueStatus.usersInQueueWithSameLanguage <= 1
+                          ? 'bg-amber-50 border border-amber-200'
+                          : 'bg-green-50 border border-green-200'
+                      }`}
                     >
-                      Выбрать другое время
-                    </Button>
+                      <div className="flex items-center gap-2">
+                        {queueStatus.usersInQueueWithSameLanguage <= 1 ? (
+                          <span className="text-amber-600">⚠️</span>
+                        ) : (
+                          <span className="text-green-600">👥</span>
+                        )}
+                        <p
+                          className={`text-sm ${
+                            queueStatus.usersInQueueWithSameLanguage <= 1
+                              ? 'text-amber-700'
+                              : 'text-green-700'
+                          }`}
+                        >
+                          {queueStatus.usersInQueueWithSameLanguage <= 1
+                            ? `Вы первый с языком ${getLanguageName(
+                                queueStatus.language
+                              )}. Ожидание других участников...`
+                            : `В очереди ${
+                                queueStatus.usersInQueueWithSameLanguage
+                              } участников с языком ${getLanguageName(
+                                queueStatus.language
+                              )}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="destructive"
+                    onClick={leaveQueue}
+                    className="w-full"
+                  >
+                    Отменить запись
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Completed Sessions */}
+          {completedSessions.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader className="px-6">
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  Завершенные собеседования
+                </CardTitle>
+                <CardDescription>
+                  Оставьте отзыв о прошедших собеседованиях или создайте новое
+                  интервью
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                {loadingCompletedSessions ? (
+                  <div className="text-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Загрузка...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {completedSessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{session.profession}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(
+                              session.scheduledDateTime,
+                              'dd MMMM yyyy, HH:mm',
+                              { locale: ru }
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/feedback/${session.id}`}>
+                              <MessageSquare className="h-4 w-4 mr-1" />
+                              Отзыв
+                            </Link>
+                          </Button>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to="/feedback-history">
+                              <Star className="h-4 w-4 mr-1" />
+                              История
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
             </Card>
           )}
-        </div>
 
-        {/* Статус очереди */}
-        {queueStatus && queueStatus.status === 'WAITING' && (
-          <Card className="mt-6 sm:mt-8 max-w-2xl mx-auto">
-            <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                Ожидание партнера
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-6">
-              <div className="space-y-3">
-                <p className="text-sm sm:text-base">
-                  Мы ищем для вас подходящего партнера для собеседования:
-                </p>
-                <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm">
-                  <Badge variant="outline">
-                    Профессия: {queueStatus.profession}
-                  </Badge>
-                  <Badge variant="outline">
-                    Язык: {getLanguageName(queueStatus.language)}
-                  </Badge>
-                  <Badge variant="outline">
-                    Время:{' '}
-                    {format(queueStatus.preferredDateTime, 'dd.MM.yyyy HH:mm', {
-                      locale: ru,
-                    })}
-                  </Badge>
-                </div>
-
-                {/* Предупреждение о количестве пользователей */}
-                {queueStatus.usersInQueueWithSameLanguage !== undefined && (
-                  <div
-                    className={`p-3 sm:p-4 rounded-lg ${
-                      queueStatus.usersInQueueWithSameLanguage <= 1
-                        ? 'bg-amber-50 border border-amber-200'
-                        : 'bg-green-50 border border-green-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {queueStatus.usersInQueueWithSameLanguage <= 1 ? (
-                        <span className="text-amber-600">⚠️</span>
-                      ) : (
-                        <span className="text-green-600">👥</span>
-                      )}
-                      <p
-                        className={`text-xs sm:text-sm ${
-                          queueStatus.usersInQueueWithSameLanguage <= 1
-                            ? 'text-amber-700'
-                            : 'text-green-700'
-                        }`}
-                      >
-                        {queueStatus.usersInQueueWithSameLanguage <= 1
-                          ? `Вы первый с языком ${getLanguageName(
-                              queueStatus.language
-                            )}. Ожидание других участников...`
-                          : `В очереди ${
-                              queueStatus.usersInQueueWithSameLanguage
-                            } участников с языком ${getLanguageName(
-                              queueStatus.language
-                            )}`}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 sm:gap-4 pt-4">
-                  <Button
-                    variant="destructive"
-                    onClick={leaveQueue}
-                    size="sm"
-                    className="text-xs sm:text-sm"
-                  >
-                    Отменить запись
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {!showCalendar && getAuthToken() && (
-          <div className="text-center mt-6 sm:mt-8">
-            <ProfessionHistory
-              userId={JSON.parse(
-                atob(getAuthToken()!.split('.')[1])
-              ).userId.toString()}
-            />
-
-            {/* Кнопка для создания нового интервью когда нет активных сессий */}
-            {completedSessions.length === 0 && (
-              <div className="mt-4 sm:mt-6">
+          {/* Create New Interview Button */}
+          {!showCalendar &&
+            getAuthToken() &&
+            completedSessions.length === 0 && (
+              <div className="text-center mt-6">
+                <ProfessionHistory
+                  userId={JSON.parse(
+                    atob(getAuthToken()!.split('.')[1])
+                  ).userId.toString()}
+                />
                 <Button
                   onClick={() => {
-                    // Сбрасываем состояние формы для нового интервью
                     setValue('');
                     setSelectedTimeSlot(null);
                     setShowCalendar(false);
                     setQueueStatus(null);
                     dispatch(clearError());
-                    // Прокручиваем к началу страницы
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
+                  className="mt-4"
                 >
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Создать новое интервью
                 </Button>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Секция завершенных собеседований */}
-        {completedSessions.length > 0 && (
-          <Card className="mt-6 sm:mt-8">
-            <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-                Завершенные собеседования
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Оставьте отзыв о прошедших собеседованиях или создайте новое
-                интервью
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-6">
-              {loadingCompletedSessions ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Загрузка...
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  {completedSessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm sm:text-base">
-                              {session.profession}
-                            </p>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {format(
-                                session.scheduledDateTime,
-                                'dd MMMM yyyy, HH:mm',
-                                { locale: ru }
-                              )}
-                            </p>
-                          </div>
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                Кандидат
-                              </Badge>
-                              <span className="text-xs sm:text-sm">
-                                {session.candidate?.firstName}{' '}
-                                {session.candidate?.lastName}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                Интервьюер
-                              </Badge>
-                              <span className="text-xs sm:text-sm">
-                                {session.interviewer?.firstName}{' '}
-                                {session.interviewer?.lastName}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="flex-1 sm:flex-none text-xs"
-                        >
-                          <Link to={`/feedback/${session.id}`}>
-                            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            <span className="hidden xs:inline">
-                              Оставить отзыв
-                            </span>
-                            <span className="xs:hidden">Отзыв</span>
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="flex-1 sm:flex-none text-xs"
-                        >
-                          <Link to="/feedback-history">
-                            <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            <span className="hidden xs:inline">
-                              История отзывов
-                            </span>
-                            <span className="xs:hidden">История</span>
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        </div>
       </div>
 
-      {/* Модальное окно подтверждения выбора времени */}
+      {/* Модальные окна остаются без изменений */}
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
         <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
@@ -1970,7 +1818,6 @@ const Interview = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Модальное окно уведомлений */}
       <Dialog open={notificationModal.isOpen} onOpenChange={closeNotification}>
         <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>

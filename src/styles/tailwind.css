@@ -1,175 +1,256 @@
 @import 'tailwindcss';
 
-/* SuperMockStart Design System - Modern IT Interview Platform */
-
 @theme {
-  /* Light mode colors - Beautiful purple-blue gradient theme */
-  --color-primary: #8b5cf6;
-  --color-primary-foreground: #fafafa;
-  --color-primary-glow: #a855f7;
+  /* Base colors - Light mode */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(220 8.9% 9.8%);
 
-  --color-secondary: #f5f3ff;
-  --color-secondary-foreground: #8b5cf6;
+  /* Card colors */
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 8.9% 9.8%);
 
-  --color-accent: #0ea5e9;
-  --color-accent-foreground: #fafafa;
+  /* Popover colors */
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 8.9% 9.8%);
 
-  --color-muted: #f8fafc;
-  --color-muted-foreground: #64748b;
+  /* Primary - Purple-Blue gradient start */
+  --color-primary: hsl(258 90% 66%);
+  --color-primary-foreground: hsl(0 0% 98%);
+  --color-primary-glow: hsl(258 100% 75%);
 
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #fafafa;
+  /* Secondary - Lighter purple */
+  --color-secondary: hsl(260 15% 95%);
+  --color-secondary-foreground: hsl(258 90% 66%);
 
-  --color-success: #059669;
-  --color-success-foreground: #fafafa;
+  /* Muted colors */
+  --color-muted: hsl(220 13% 95%);
+  --color-muted-foreground: hsl(220 8.9% 46.1%);
 
-  --color-warning: #f59e0b;
-  --color-warning-foreground: #fafafa;
+  /* Accent - Cyan for highlights */
+  --color-accent: hsl(199 89% 48%);
+  --color-accent-foreground: hsl(0 0% 98%);
 
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
+  /* Destructive */
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 98%);
 
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
+  /* Success color for positive actions */
+  --color-success: hsl(142 76% 36%);
+  --color-success-foreground: hsl(0 0% 98%);
 
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #8b5cf6;
+  /* Warning color */
+  --color-warning: hsl(38 92% 50%);
+  --color-warning-foreground: hsl(0 0% 98%);
 
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
+  /* Borders and inputs */
+  --color-border: hsl(220 13% 91%);
+  --color-input: hsl(220 13% 91%);
+  --color-ring: hsl(258 90% 66%);
+
+  /* Gradients for beautiful backgrounds */
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(258 90% 66%),
+    hsl(199 89% 48%)
+  );
+  --gradient-secondary: linear-gradient(
+    135deg,
+    hsl(260 15% 95%),
+    hsl(220 13% 95%)
+  );
+  --gradient-dark: linear-gradient(
+    135deg,
+    hsl(220 26% 14%),
+    hsl(258 90% 66% / 0.1)
+  );
+
+  /* Shadows with primary color glow */
+  --shadow-elegant: 0 10px 30px -10px hsl(258 90% 66% / 0.3);
+  --shadow-glow: 0 0 40px hsl(258 100% 75% / 0.4);
+
+  /* Animations */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   --radius: 0.75rem;
 
-  --font-sans: 'Inter', 'system-ui', 'sans-serif';
-  --font-mono: 'JetBrains Mono', 'monospace';
-
-  /* Beautiful gradients */
-  --gradient-primary: linear-gradient(135deg, #8b5cf6, #0ea5e9);
-  --gradient-secondary: linear-gradient(135deg, #f5f3ff, #f8fafc);
-  --gradient-dark: linear-gradient(135deg, #1e293b, rgba(139, 92, 246, 0.1));
-
-  /* Elegant shadows */
-  --shadow-elegant: 0 10px 30px -10px rgba(139, 92, 246, 0.3);
-  --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.4);
+  /* Sidebar colors */
+  --color-sidebar-background: hsl(0 0% 98%);
+  --color-sidebar-foreground: hsl(240 5.3% 26.1%);
+  --color-sidebar-primary: hsl(240 5.9% 10%);
+  --color-sidebar-primary-foreground: hsl(0 0% 98%);
+  --color-sidebar-accent: hsl(240 4.8% 95.9%);
+  --color-sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --color-sidebar-border: hsl(220 13% 91%);
+  --color-sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: #1e293b;
-    --color-foreground: #fafafa;
+/* Dark mode theme */
+.dark {
+  /* Base colors - Dark mode */
+  --color-background: hsl(220 26% 14%);
+  --color-foreground: hsl(0 0% 98%);
 
-    --color-card: #1e293b;
-    --color-card-foreground: #fafafa;
+  /* Card colors */
+  --color-card: hsl(220 26% 14%);
+  --color-card-foreground: hsl(0 0% 98%);
 
-    --color-popover: #1e293b;
-    --color-popover-foreground: #fafafa;
+  /* Popover colors */
+  --color-popover: hsl(220 26% 14%);
+  --color-popover-foreground: hsl(0 0% 98%);
 
-    --color-primary: #8b5cf6;
-    --color-primary-foreground: #0f172a;
-    --color-primary-glow: #a855f7;
+  /* Primary - Brighter in dark mode */
+  --color-primary: hsl(258 90% 66%);
+  --color-primary-foreground: hsl(0 0% 9%);
+  --color-primary-glow: hsl(258 100% 80%);
 
-    --color-secondary: #334155;
-    --color-secondary-foreground: #fafafa;
+  /* Secondary - Dark purple */
+  --color-secondary: hsl(260 8% 20%);
+  --color-secondary-foreground: hsl(0 0% 98%);
 
-    --color-muted: #334155;
-    --color-muted-foreground: #94a3b8;
+  /* Muted colors */
+  --color-muted: hsl(220 13% 20%);
+  --color-muted-foreground: hsl(220 8.9% 65%);
 
-    --color-accent: #0ea5e9;
-    --color-accent-foreground: #0f172a;
+  /* Accent - Brighter cyan */
+  --color-accent: hsl(199 89% 55%);
+  --color-accent-foreground: hsl(0 0% 9%);
 
-    --color-border: #475569;
-    --color-input: #475569;
+  /* Destructive */
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 98%);
 
-    --gradient-primary: linear-gradient(135deg, #8b5cf6, #0ea5e9);
-    --gradient-secondary: linear-gradient(135deg, #334155, #475569);
-    --gradient-dark: linear-gradient(135deg, #1e293b, rgba(139, 92, 246, 0.2));
+  /* Success */
+  --color-success: hsl(142 76% 45%);
+  --color-success-foreground: hsl(0 0% 9%);
 
-    --shadow-elegant: 0 10px 30px -10px rgba(139, 92, 246, 0.5);
-    --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.6);
-  }
+  /* Warning */
+  --color-warning: hsl(38 92% 60%);
+  --color-warning-foreground: hsl(0 0% 9%);
+
+  /* Borders and inputs */
+  --color-border: hsl(220 13% 25%);
+  --color-input: hsl(220 13% 25%);
+  --color-ring: hsl(258 90% 66%);
+
+  /* Gradients for dark mode */
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(258 90% 66%),
+    hsl(199 89% 55%)
+  );
+  --gradient-secondary: linear-gradient(
+    135deg,
+    hsl(260 8% 20%),
+    hsl(220 13% 20%)
+  );
+  --gradient-dark: linear-gradient(
+    135deg,
+    hsl(220 26% 14%),
+    hsl(258 90% 66% / 0.2)
+  );
+
+  /* Enhanced shadows for dark mode */
+  --shadow-elegant: 0 10px 30px -10px hsl(258 90% 66% / 0.5);
+  --shadow-glow: 0 0 40px hsl(258 100% 80% / 0.6);
+
+  /* Sidebar colors for dark mode */
+  --color-sidebar-background: hsl(240 5.9% 10%);
+  --color-sidebar-foreground: hsl(240 4.8% 95.9%);
+  --color-sidebar-primary: hsl(224.3 76.3% 48%);
+  --color-sidebar-primary-foreground: hsl(0 0% 100%);
+  --color-sidebar-accent: hsl(240 3.7% 15.9%);
+  --color-sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --color-sidebar-border: hsl(240 3.7% 15.9%);
+  --color-sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-/* Custom utility classes */
-@layer utilities {
-  /* Hover effects for interactive elements */
-  .hover-lift {
-    @apply transition-all duration-300 hover:scale-105;
-    box-shadow: var(--shadow-elegant);
-  }
+/* Base styles */
+* {
+  border-color: hsl(var(--color-border));
+}
 
-  .hover-lift:hover {
-    box-shadow: var(--shadow-glow);
-  }
+body {
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+}
 
-  .hover-glow {
-    @apply transition-all duration-300;
-  }
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
 
-  .hover-glow:hover {
-    box-shadow: var(--shadow-glow);
-  }
+/* Beautiful focus rings */
+*:focus-visible {
+  outline: 2px solid hsl(var(--color-primary));
+  outline-offset: 2px;
+}
 
-  /* Text gradient utilities */
-  .text-gradient {
-    background: var(--gradient-primary);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* Hover effects for interactive elements */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* Card hover animations */
-  .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-1;
-  }
+.hover-lift:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-elegant);
+}
 
-  .card-hover:hover {
-    box-shadow: var(--shadow-elegant);
-  }
+.hover-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* Gradient backgrounds */
-  .bg-gradient-primary {
-    background: var(--gradient-primary);
-  }
+.hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
 
-  .bg-gradient-secondary {
-    background: var(--gradient-secondary);
-  }
+/* Text gradient utilities */
+.text-gradient {
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
 
-  .bg-gradient-dark {
-    background: var(--gradient-dark);
-  }
+/* Card hover animations */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* Custom scrollbar */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) var(--color-muted);
-  }
+.card-hover:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: var(--shadow-elegant);
+}
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
+/* Custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--color-primary)) hsl(var(--color-muted));
+}
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--color-muted);
-    border-radius: 3px;
-  }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--color-primary);
-    border-radius: 3px;
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--color-muted));
+  border-radius: 3px;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary-glow);
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--color-primary));
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-primary-glow));
 }
 
 /* Mobile optimizations for Telegram Mini Apps */
 @media (max-width: 768px) {
   .container {
-    @apply px-3;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 
   /* Touch-friendly button sizes */
@@ -210,26 +291,33 @@
 /* Enhanced mobile animations */
 @media (prefers-reduced-motion: no-preference) {
   .mobile-card {
-    @apply transition-all duration-200 ease-out;
+    transition: all 0.2s ease-out;
   }
 
   .mobile-card:active {
-    @apply scale-95;
+    transform: scale(0.95);
   }
 }
 
-/* Global styles */
-body {
-  font-feature-settings: 'rlig' 1, 'calt' 1;
+/* Mobile-first gradient backgrounds */
+.mobile-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--color-primary)) 0%,
+    hsl(var(--color-accent)) 100%
+  );
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Beautiful focus rings */
-*:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+/* Debug styles for theme switching */
+.theme-debug {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: hsl(var(--color-card));
+  color: hsl(var(--color-card-foreground));
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 9999;
+  border: 1px solid hsl(var(--color-border));
 }

@@ -40,3 +40,6 @@ lerna-debug.log*
 # Vite
 .vite/ 
 /code-mentor-quest-main
+
+# Windows special files
+nul

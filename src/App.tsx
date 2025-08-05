@@ -29,7 +29,7 @@ import AuthProvider from './components/AuthProvider';
 const ConditionalHeader = () => {
   const location = useLocation();
 
-  // Use modern header only on main pages, old navigation on specific functional pages
+  // Use modern header on main pages, old navigation on specific functional pages
   const useModernHeader = [
     '/',
     '/about',
