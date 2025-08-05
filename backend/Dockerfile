@@ -58,6 +58,10 @@ RUN chmod +x ./scripts/setup-db.sh
 COPY scripts/init-db.sh ./scripts/init-db.sh
 RUN chmod +x ./scripts/init-db.sh
 
+# Копируем скрипт исправления базы данных
+COPY scripts/fix-db.sh ./scripts/fix-db.sh
+RUN chmod +x ./scripts/fix-db.sh
+
 # Копируем и делаем исполняемым startup скрипт
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh

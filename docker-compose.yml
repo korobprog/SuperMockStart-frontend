@@ -43,6 +43,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)'
@@ -81,6 +83,22 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+
+  # Инициализация базы данных
+  db-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@database:5432/supermock
+      - NODE_ENV=production
+    networks:
+      - dokploy-network
+    depends_on:
+      database:
+        condition: service_healthy
+    command: ['./scripts/init-db.sh']
+    restart: 'no'
 
 networks:
   dokploy-network:
