@@ -13,13 +13,6 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Копируем исходный код
 COPY . .
 
-# Отладка - проверяем структуру проекта
-RUN echo "=== Project structure ===" && ls -la
-RUN echo "=== Source directory ===" && ls -la src/ || echo "src directory not found"
-RUN echo "=== Check package.json ===" && cat package.json | grep -A5 -B5 build
-RUN echo "=== Check tsconfig.json ===" && cat tsconfig.json || echo "tsconfig.json not found"
-RUN echo "=== Check vite.config.ts ===" && cat vite.config.ts || echo "vite.config.ts not found"
-
 # Запускаем сборку только с Vite (без TypeScript проверки)
 RUN pnpm run build:vite
 
