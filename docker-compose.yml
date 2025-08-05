@@ -2,7 +2,7 @@ services:
   # Фронтенд
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     restart: always
     expose:
