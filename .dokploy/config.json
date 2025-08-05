@@ -1,0 +1,85 @@
+{
+  "project": {
+    "name": "SuperMock",
+    "description": "Платформа для проведения технических собеседований с интеграцией Telegram бота",
+    "server": {
+      "ip": "217.198.6.238",
+      "url": "http://217.198.6.238:3000",
+      "sshKey": "~/.ssh/timeweb_vps_key"
+    }
+  },
+  "compose": {
+    "file": "docker-compose.yml",
+    "services": {
+      "frontend": {
+        "domain": "supermock.ru",
+        "port": 80,
+        "healthCheck": "https://supermock.ru"
+      },
+      "backend": {
+        "domain": "api.supermock.ru",
+        "port": 3001,
+        "healthCheck": "https://api.supermock.ru/api/health"
+      },
+      "database": {
+        "type": "postgres",
+        "version": "16-alpine",
+        "port": 5432,
+        "credentials": {
+          "user": "postgres",
+          "database": "supermock"
+        }
+      }
+    }
+  },
+  "environment": {
+    "production": {
+      "TELEGRAM_TOKEN": "${TELEGRAM_TOKEN}",
+      "BOT_USERNAME": "SuperMock_bot",
+      "JWT_SECRET": "${JWT_SECRET}",
+      "DATABASE_URL": "postgresql://postgres:password@database:5432/supermock",
+      "NODE_ENV": "production",
+      "PORT": "3001",
+      "FRONTEND_URL": "https://supermock.ru",
+      "BACKEND_URL": "https://api.supermock.ru",
+      "RATE_LIMIT_WINDOW_MS": "900000",
+      "RATE_LIMIT_MAX_REQUESTS": "100"
+    }
+  },
+  "database": {
+    "migrations": {
+      "autoRun": true,
+      "scripts": ["npx prisma generate", "npx prisma migrate deploy"],
+      "fallbackScripts": ["npx prisma db push --accept-data-loss"]
+    },
+    "backup": {
+      "enabled": true,
+      "schedule": "0 2 * * *",
+      "retention": 7
+    }
+  },
+  "deployment": {
+    "strategy": "rolling",
+    "healthCheck": {
+      "enabled": true,
+      "timeout": 30,
+      "retries": 3,
+      "interval": 10
+    },
+    "autoUpdate": {
+      "enabled": true,
+      "branch": "main",
+      "webhook": true
+    }
+  },
+  "monitoring": {
+    "logs": {
+      "retention": "7d",
+      "level": "info"
+    },
+    "metrics": {
+      "enabled": true,
+      "prometheus": false
+    }
+  }
+}

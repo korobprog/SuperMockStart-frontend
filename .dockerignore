@@ -1,22 +1,226 @@
-node_modules
-npm-debug.log
-.git
-.gitignore
-README.md
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+.output/
+
+# Environment files
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-dist
-build
-.DS_Store
-*.log
-.vscode
-.idea
-coverage
-.nyc_output
-backend/
-DEPLOY.md
+.env.development
+.env.test
+.env.production
+.env.backend
+.env.prod
+env.backend
+env.production
+env.local
+env.prod
 env.dokploy
-docker-compose.yml 
+env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Scripts that are not needed in production
+scripts/
+deploy.sh
+dev-setup.sh
+env-switch.sh
+migrate-database.sh
+quick-deploy.sh
+start-dev.sh
+telegram-prod-setup.sh
+telegram-setup.sh
+telegram-switch.sh
+
+# Development tools
+.eslintrc*
+.prettierrc*
+.babelrc*
+tsconfig.json
+tsconfig.node.json
+vite.config*.ts
+tailwind.config*.js
+postcss.config.js
+
+# Package manager files (keep only the ones needed)
+package-lock.json
+yarn.lock
+
+# Docker related
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Deployment files
+deploy-db-update.sh
+DEPLOYMENT.md
+DEV_SETUP.md
+AUTH_SYSTEM.md
+THEME_SWITCHING_GUIDE.md
+
+# Development setup files
+how --name-only HEAD
+
+# Frontend specific
+components.json
+
+# Backend specific (for frontend build context)
+backend/
+
+# Database migrations (for frontend build context)
+prisma/migrations/
+
+# External projects
+code-mentor-quest-main/
+
+# Test and development files
+test-*.js
+test-*.cjs
+*.test.js
+*.test.cjs
+
+# Generated files
+generate-*.js
+generate-*.cjs
+get-*.js
+get-*.cjs
+create-*.js
+create-*.cjs
+update-*.js
+update-*.cjs
+check-*.js
+check-*.cjs
+fix-*.js
+fix-*.cjs
+reset-*.js
+reset-*.cjs
+simple-*.js
+simple-*.cjs
+quick-*.js
+quick-*.cjs 
