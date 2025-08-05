@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
-import { QueueStatus, SessionStatus, NotificationType, } from '@prisma/client';
+import pkg from '@prisma/client';
+const { QueueType, QueueStatus, SessionStatus, NotificationType } = pkg;
 import { v4 as uuidv4 } from 'uuid';
 export class CalendarService {
     /**
@@ -85,6 +86,7 @@ export class CalendarService {
                 },
             },
             include: {
+                user: true,
                 matchedSession: {
                     include: {
                         candidate: true,

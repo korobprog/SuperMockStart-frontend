@@ -1,10 +1,19 @@
-import { QueueType, QueueStatus } from '@prisma/client';
+import pkg from '@prisma/client';
+declare const QueueType: {
+    CANDIDATE: "CANDIDATE";
+    INTERVIEWER: "INTERVIEWER";
+}, QueueStatus: {
+    WAITING: "WAITING";
+    MATCHED: "MATCHED";
+    CANCELLED: "CANCELLED";
+    EXPIRED: "EXPIRED";
+};
 export interface JoinQueueData {
     userId: string;
     profession: string;
     language: string;
     preferredDateTime: Date;
-    queueType: QueueType;
+    queueType: (typeof QueueType)[keyof typeof QueueType];
     timeFlexibility?: number;
 }
 export interface MatchResult {
@@ -27,9 +36,9 @@ export declare class CalendarService {
         user: {
             id: string;
             username: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: pkg.$Enums.UserRole;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
             firstName: string | null;
@@ -41,11 +50,11 @@ export declare class CalendarService {
         createdAt: Date;
         profession: string;
         language: string;
-        status: import("@prisma/client").$Enums.QueueStatus;
+        status: pkg.$Enums.QueueStatus;
         updatedAt: Date;
         preferredDateTime: Date;
         timeFlexibility: number;
-        queueType: import("@prisma/client").$Enums.QueueType;
+        queueType: pkg.$Enums.QueueType;
         matchedSessionId: string | null;
     }>;
     /**
@@ -53,7 +62,7 @@ export declare class CalendarService {
      */
     static getQueueStatus(userId: string): Promise<{
         id: string;
-        status: QueueStatus;
+        status: (typeof QueueStatus)[keyof typeof QueueStatus];
         profession: string;
         language: string;
         preferredDateTime: Date;
@@ -66,9 +75,9 @@ export declare class CalendarService {
             candidate: {
                 id: string;
                 username: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: pkg.$Enums.UserRole;
                 createdAt: Date;
-                status: import("@prisma/client").$Enums.UserStatus;
+                status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
                 firstName: string | null;
@@ -77,9 +86,9 @@ export declare class CalendarService {
             interviewer: {
                 id: string;
                 username: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: pkg.$Enums.UserRole;
                 createdAt: Date;
-                status: import("@prisma/client").$Enums.UserStatus;
+                status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
                 firstName: string | null;
@@ -89,7 +98,7 @@ export declare class CalendarService {
         usersInQueueWithSameLanguage?: undefined;
     } | {
         id: string;
-        status: QueueStatus;
+        status: (typeof QueueStatus)[keyof typeof QueueStatus];
         profession: string;
         language: string;
         preferredDateTime: Date;
@@ -107,9 +116,9 @@ export declare class CalendarService {
         candidate: {
             id: string;
             username: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: pkg.$Enums.UserRole;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
             firstName: string | null;
@@ -118,9 +127,9 @@ export declare class CalendarService {
         interviewer: {
             id: string;
             username: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: pkg.$Enums.UserRole;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
             firstName: string | null;
@@ -134,7 +143,7 @@ export declare class CalendarService {
         profession: string;
         language: string;
         meetingLink: string;
-        status: import("@prisma/client").$Enums.SessionStatus;
+        status: pkg.$Enums.SessionStatus;
         candidateId: string;
         interviewerId: string;
         updatedAt: Date;
@@ -146,7 +155,7 @@ export declare class CalendarService {
         interview: {
             id: string;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.InterviewStatus;
+            status: pkg.$Enums.InterviewStatus;
             candidateId: string;
             interviewerId: string;
             updatedAt: Date;
@@ -156,9 +165,9 @@ export declare class CalendarService {
         candidate: {
             id: string;
             username: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: pkg.$Enums.UserRole;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
             firstName: string | null;
@@ -167,9 +176,9 @@ export declare class CalendarService {
         interviewer: {
             id: string;
             username: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: pkg.$Enums.UserRole;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
             firstName: string | null;
@@ -183,7 +192,7 @@ export declare class CalendarService {
         profession: string;
         language: string;
         meetingLink: string;
-        status: import("@prisma/client").$Enums.SessionStatus;
+        status: pkg.$Enums.SessionStatus;
         candidateId: string;
         interviewerId: string;
         updatedAt: Date;
@@ -205,4 +214,5 @@ export declare class CalendarService {
      */
     private static generateMeetingLink;
 }
+export {};
 //# sourceMappingURL=calendarService.d.ts.map

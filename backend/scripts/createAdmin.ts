@@ -5,7 +5,8 @@
  * Использование: npm run create-admin
  */
 
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import dotenv from 'dotenv';
 
 // Загружаем переменные окружения

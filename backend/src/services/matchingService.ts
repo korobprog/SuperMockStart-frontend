@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
-import { QueueType, QueueStatus } from '@prisma/client';
+import pkg from '@prisma/client';
+const { QueueType, QueueStatus } = pkg;
 import { MatchResult } from './calendarService.js';
 
 export class MatchingService {

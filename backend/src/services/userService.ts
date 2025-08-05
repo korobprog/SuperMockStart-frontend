@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import { User, UserStatus, ApiResponse } from '../types/index.js';
 
 const prisma = new PrismaClient();

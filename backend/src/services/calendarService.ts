@@ -1,10 +1,6 @@
 import prisma from './prisma.js';
-import {
-  QueueType,
-  QueueStatus,
-  SessionStatus,
-  NotificationType,
-} from '@prisma/client';
+import pkg from '@prisma/client';
+const { QueueType, QueueStatus, SessionStatus, NotificationType } = pkg;
 import { v4 as uuidv4 } from 'uuid';
 
 export interface JoinQueueData {
@@ -12,7 +8,7 @@ export interface JoinQueueData {
   profession: string;
   language: string;
   preferredDateTime: Date;
-  queueType: QueueType;
+  queueType: (typeof QueueType)[keyof typeof QueueType];
   timeFlexibility?: number;
 }
 
@@ -97,7 +93,8 @@ export class CalendarService {
         preferredDateTime: data.preferredDateTime,
         queueType: data.queueType,
         timeFlexibility: data.timeFlexibility || 30,
-        status: QueueStatus.WAITING,
+        status:
+          QueueStatus.WAITING as (typeof QueueStatus)[keyof typeof QueueStatus],
       },
       include: {
         user: true,
@@ -115,10 +112,11 @@ export class CalendarService {
       where: {
         userId,
         status: {
-          in: [QueueStatus.WAITING, QueueStatus.MATCHED],
+          in: [QueueStatus.WAITING, QueueStatus.MATCHED] as typeof QueueStatus[keyof typeof QueueStatus][],
         },
       },
       include: {
+        user: true,
         matchedSession: {
           include: {
             candidate: true,
@@ -139,7 +137,7 @@ export class CalendarService {
     if (queueEntry.matchedSession) {
       return {
         id: queueEntry.id,
-        status: 'MATCHED' as QueueStatus,
+        status: 'MATCHED' as typeof QueueStatus[keyof typeof QueueStatus],
         profession: queueEntry.profession,
         language: queueEntry.language,
         preferredDateTime: queueEntry.preferredDateTime,
@@ -159,13 +157,13 @@ export class CalendarService {
     const usersInQueueWithSameLanguage = await prisma.interviewQueue.count({
       where: {
         language: queueEntry.language,
-        status: QueueStatus.WAITING,
+        status: QueueStatus.WAITING as typeof QueueStatus[keyof typeof QueueStatus],
       },
     });
 
     return {
       id: queueEntry.id,
-      status: 'WAITING' as QueueStatus,
+      status: 'WAITING' as typeof QueueStatus[keyof typeof QueueStatus],
       profession: queueEntry.profession,
       language: queueEntry.language,
       preferredDateTime: queueEntry.preferredDateTime,
@@ -181,11 +179,11 @@ export class CalendarService {
       where: {
         userId,
         status: {
-          in: [QueueStatus.WAITING, QueueStatus.MATCHED],
+          in: [QueueStatus.WAITING, QueueStatus.MATCHED] as typeof QueueStatus[keyof typeof QueueStatus][],
         },
       },
       data: {
-        status: QueueStatus.CANCELLED,
+        status: QueueStatus.CANCELLED as typeof QueueStatus[keyof typeof QueueStatus],
       },
     });
   }
@@ -229,7 +227,7 @@ export class CalendarService {
         },
       },
       data: {
-        status: QueueStatus.MATCHED,
+        status: QueueStatus.MATCHED as typeof QueueStatus[keyof typeof QueueStatus],
         matchedSessionId: session.id,
       },
     });

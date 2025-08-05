@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
-import { NotificationType } from '@prisma/client';
+import pkg from '@prisma/client';
+const { NotificationType } = pkg;
 import { TelegramBotService } from './telegramBotService.js';
 export class NotificationService {
     /**

@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
-import { QueueType, QueueStatus } from '@prisma/client';
+import pkg from '@prisma/client';
+const { QueueType, QueueStatus } = pkg;
 export class MatchingService {
     /**
      * Найти подходящий матч для пользователя в очереди

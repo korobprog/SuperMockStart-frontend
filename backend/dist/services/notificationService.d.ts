@@ -1,3 +1,4 @@
+import pkg from '@prisma/client';
 export declare class NotificationService {
     /**
      * Отправить уведомление о подтвержденном собеседовании
@@ -39,9 +40,9 @@ export declare class NotificationService {
             candidate: {
                 id: string;
                 username: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: pkg.$Enums.UserRole;
                 createdAt: Date;
-                status: import("@prisma/client").$Enums.UserStatus;
+                status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
                 firstName: string | null;
@@ -50,9 +51,9 @@ export declare class NotificationService {
             interviewer: {
                 id: string;
                 username: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: pkg.$Enums.UserRole;
                 createdAt: Date;
-                status: import("@prisma/client").$Enums.UserStatus;
+                status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
                 firstName: string | null;
@@ -66,7 +67,7 @@ export declare class NotificationService {
             profession: string;
             language: string;
             meetingLink: string;
-            status: import("@prisma/client").$Enums.SessionStatus;
+            status: pkg.$Enums.SessionStatus;
             candidateId: string;
             interviewerId: string;
             updatedAt: Date;
@@ -76,7 +77,7 @@ export declare class NotificationService {
         id: string;
         userId: string;
         sessionId: string | null;
-        type: import("@prisma/client").$Enums.NotificationType;
+        type: pkg.$Enums.NotificationType;
         title: string;
         scheduled: Date | null;
         sent: boolean;

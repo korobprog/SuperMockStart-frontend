@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import { UserService } from '../services/userService.js';
 const prisma = new PrismaClient();
 export class ProfessionController {
