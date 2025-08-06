@@ -21,6 +21,19 @@ export default defineConfig({
   //     },
   //   ],
   // },
+  build: {
+    // Оптимизации для продакшена
+    target: 'es2015',
+    minify: 'esbuild',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

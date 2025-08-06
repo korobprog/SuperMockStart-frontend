@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Test Tailwind CSS Styles</title>
+   <link rel="stylesheet" href="dist/assets/index-B8QoS82d.css">
+</head>
+
+<body class="bg-background text-foreground">
+   <div class="container mx-auto p-8">
+      <h1 class="text-4xl font-bold text-primary mb-8">Test Tailwind CSS Styles</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+         <!-- Primary Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Primary Button</h2>
+            <button
+               class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+               Primary Button
+            </button>
+         </div>
+
+         <!-- Secondary Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Secondary Button</h2>
+            <button
+               class="bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/80 transition-colors">
+               Secondary Button
+            </button>
+         </div>
+
+         <!-- Accent Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Accent Button</h2>
+            <button class="bg-accent text-accent-foreground px-4 py-2 rounded-md hover:bg-accent/90 transition-colors">
+               Accent Button
+            </button>
+         </div>
+
+         <!-- Destructive Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Destructive Button</h2>
+            <button
+               class="bg-destructive text-destructive-foreground px-4 py-2 rounded-md hover:bg-destructive/90 transition-colors">
+               Destructive Button
+            </button>
+         </div>
+
+         <!-- Success Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Success Button</h2>
+            <button
+               class="bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 transition-colors">
+               Success Button
+            </button>
+         </div>
+
+         <!-- Warning Button -->
+         <div class="bg-card p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Warning Button</h2>
+            <button
+               class="bg-warning text-warning-foreground px-4 py-2 rounded-md hover:bg-warning/90 transition-colors">
+               Warning Button
+            </button>
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <h2 class="text-2xl font-semibold mb-4">Text Colors</h2>
+         <div class="space-y-2">
+            <p class="text-primary">Primary text color</p>
+            <p class="text-secondary-foreground">Secondary text color</p>
+            <p class="text-accent">Accent text color</p>
+            <p class="text-destructive">Destructive text color</p>
+            <p class="text-success">Success text color</p>
+            <p class="text-warning">Warning text color</p>
+            <p class="text-muted-foreground">Muted text color</p>
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <h2 class="text-2xl font-semibold mb-4">Background Colors</h2>
+         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-primary text-primary-foreground p-4 rounded-md">Primary</div>
+            <div class="bg-secondary text-secondary-foreground p-4 rounded-md">Secondary</div>
+            <div class="bg-accent text-accent-foreground p-4 rounded-md">Accent</div>
+            <div class="bg-destructive text-destructive-foreground p-4 rounded-md">Destructive</div>
+            <div class="bg-success text-success-foreground p-4 rounded-md">Success</div>
+            <div class="bg-warning text-warning-foreground p-4 rounded-md">Warning</div>
+            <div class="bg-muted text-muted-foreground p-4 rounded-md">Muted</div>
+            <div class="bg-card text-card-foreground p-4 rounded-md border">Card</div>
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <h2 class="text-2xl font-semibold mb-4">Gradients</h2>
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-r from-primary to-accent text-primary-foreground p-6 rounded-lg">
+               Primary to Accent Gradient
+            </div>
+            <div class="bg-gradient-to-r from-secondary to-muted text-secondary-foreground p-6 rounded-lg">
+               Secondary to Muted Gradient
+            </div>
+            <div class="bg-gradient-to-r from-success to-accent text-success-foreground p-6 rounded-lg">
+               Success to Accent Gradient
+            </div>
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <h2 class="text-2xl font-semibold mb-4">Shadows</h2>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-card p-6 rounded-lg shadow-elegant">
+               Elegant Shadow
+            </div>
+            <div class="bg-card p-6 rounded-lg shadow-glow">
+               Glow Shadow
+            </div>
+         </div>
+      </div>
+   </div>
+</body>
+
+</html>

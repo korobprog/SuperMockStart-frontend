@@ -1,0 +1,56 @@
+http:
+  routers:
+    dokploy-router-app:
+      rule: Host(`dokploy.docker.localhost`) && PathPrefix(`/`)
+      service: dokploy-service-app
+      entryPoints:
+        - web
+    supermock-frontend:
+      rule: Host(`supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+    supermock-frontend-secure:
+      rule: Host(`supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    supermock-backend:
+      rule: Host(`api.supermock.ru`)
+      service: supermock-backend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+    supermock-backend-secure:
+      rule: Host(`api.supermock.ru`)
+      service: supermock-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+  services:
+    dokploy-service-app:
+      loadBalancer:
+        servers:
+          - url: http://dokploy:3000
+        passHostHeader: true
+    supermock-frontend-service:
+      loadBalancer:
+        servers:
+          - url: http://code-frontend-1:80
+        passHostHeader: true
+    supermock-backend-service:
+      loadBalancer:
+        servers:
+          - url: http://code-backend-1:3001
+        passHostHeader: true
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
