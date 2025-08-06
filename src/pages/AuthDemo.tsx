@@ -14,14 +14,14 @@ const AuthDemo: React.FC = () => {
   const [authUrl, setAuthUrl] = useState('');
   const [userId] = useState(1736594064); // Реальный User ID из логов
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   const createAuthUrl = async () => {
     setLoading(true);
     console.log('🔗 Creating auth URL for user:', userId);
 
     try {
-      const response = await fetch(`${API_URL}/telegram-bot/auth-url`, {
+      const response = await fetch(`${API_URL}/api/telegram-bot/auth-url`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const AuthDemo: React.FC = () => {
     console.log('🔍 Checking auth for user:', userId);
 
     try {
-      const response = await fetch(`${API_URL}/telegram-bot/verify-user`, {
+      const response = await fetch(`${API_URL}/api/telegram-bot/verify-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

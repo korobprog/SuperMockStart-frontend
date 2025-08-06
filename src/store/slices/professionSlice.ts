@@ -25,7 +25,7 @@ const initialState: ProfessionState = {
 
 // Базовый URL для API
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
 // Async thunks
 export const addSelectedProfession = createAsyncThunk(

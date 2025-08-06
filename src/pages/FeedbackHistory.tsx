@@ -34,7 +34,7 @@ const FeedbackHistory = () => {
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState<'given' | 'received'>('received');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   // Получаем токен из localStorage
   const getAuthToken = () => {
@@ -48,7 +48,7 @@ const FeedbackHistory = () => {
         if (!token) return;
 
         const response = await fetch(
-          `${API_URL}/feedback/user?type=${type}`,
+          `${API_URL}/api/feedback/user?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

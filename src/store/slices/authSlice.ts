@@ -45,9 +45,9 @@ export const verifyToken = createAsyncThunk(
     }
 
     const API_URL =
-      import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+      import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-    const response = await fetch(`${API_URL}/auth/verify`, {
+    const response = await fetch(`${API_URL}/api/auth/verify`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -68,9 +68,9 @@ export const loginWithTelegram = createAsyncThunk(
   'auth/loginWithTelegram',
   async (initData: string) => {
     const API_URL =
-      import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+      import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-    const response = await fetch(`${API_URL}/auth/telegram`, {
+    const response = await fetch(`${API_URL}/api/auth/telegram`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -106,9 +106,9 @@ export const getTestToken = createAsyncThunk(
     // Используем debounce для предотвращения множественных запросов
     return debouncedGetTestToken(async () => {
       const API_URL =
-        import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-      const response = await fetch(`${API_URL}/auth/test-token`);
+      const response = await fetch(`${API_URL}/api/auth/test-token`);
 
       if (!response.ok) {
         if (response.status === 429) {

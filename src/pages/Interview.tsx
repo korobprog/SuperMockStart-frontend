@@ -402,7 +402,7 @@ const Interview = () => {
   const [, setCurrentTime] = useState(new Date());
 
   // API URL - используем переменную окружения или fallback на продакшен
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   // Обновление времени каждую секунду
   useEffect(() => {
@@ -450,7 +450,7 @@ const Interview = () => {
         }
 
         const response = await fetch(
-          `${API_URL}/calendar/slots/${profession}`,
+          `${API_URL}/api/calendar/slots/${profession}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -487,7 +487,7 @@ const Interview = () => {
       }
 
       console.log('🔍 Проверяем статус очереди...');
-      const response = await fetch(`${API_URL}/calendar/queue/status`, {
+      const response = await fetch(`${API_URL}/api/calendar/queue/status`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -523,7 +523,7 @@ const Interview = () => {
       }
 
       console.log('🔍 Загружаем завершенные сессии...');
-      const response = await fetch(`${API_URL}/calendar/sessions`, {
+      const response = await fetch(`${API_URL}/api/calendar/sessions`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -565,7 +565,7 @@ const Interview = () => {
       }
 
       console.log('🔍 Обновляем статус пользователя...');
-      const response = await fetch(`${API_URL}/form`, {
+      const response = await fetch(`${API_URL}/api/form`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -612,7 +612,7 @@ const Interview = () => {
           return;
         }
 
-        const response = await fetch(`${API_URL}/form`, {
+        const response = await fetch(`${API_URL}/api/form`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -682,7 +682,7 @@ const Interview = () => {
 
       setLoadingProfession(true);
       try {
-        const response = await fetch(`${API_URL}/form`, {
+        const response = await fetch(`${API_URL}/api/form`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -896,7 +896,7 @@ const Interview = () => {
     setJoiningQueue(true);
     try {
       const token = getAuthToken();
-      const response = await fetch(`${API_URL}/calendar/queue`, {
+      const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -947,7 +947,7 @@ const Interview = () => {
   const leaveQueue = async () => {
     try {
       const token = getAuthToken();
-      const response = await fetch(`${API_URL}/calendar/queue`, {
+      const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -972,7 +972,7 @@ const Interview = () => {
       console.log('🔍 Токен получен:', token ? 'да' : 'нет');
 
       const response = await fetch(
-        `${API_URL}/calendar/sessions/${sessionId}/complete`,
+        `${API_URL}/api/calendar/sessions/${sessionId}/complete`,
         {
           method: 'PATCH',
           headers: {

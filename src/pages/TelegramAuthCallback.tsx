@@ -30,7 +30,7 @@ const TelegramAuthCallback: React.FC = () => {
   const API_URL =
     import.meta.env.VITE_API_URL_HTTPS ||
     import.meta.env.VITE_API_URL ||
-    'https://api.supermock.ru/api';
+    'https://api.supermock.ru';
 
   useEffect(() => {
     const processAuth = async () => {
@@ -75,7 +75,7 @@ const TelegramAuthCallback: React.FC = () => {
         console.log('📤 Отправляем данные на сервер:', authData);
 
         // Отправляем данные на backend для валидации и получения токена
-        const response = await fetch(`${API_URL}/auth/telegram-widget`, {
+        const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

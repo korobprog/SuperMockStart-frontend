@@ -52,7 +52,7 @@ const TestFeedback = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
   const sessionId = 'test-session-1';
 
   // Тестовый расширенный токен для кандидата из сессии test-session-1
@@ -67,7 +67,7 @@ const TestFeedback = () => {
 
         // Загружаем информацию о сессии
         const sessionResponse = await fetch(
-          `${API_URL}/calendar/sessions/${sessionId}`,
+          `${API_URL}/api/calendar/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${TEST_TOKEN}`,
@@ -86,7 +86,7 @@ const TestFeedback = () => {
 
         // Загружаем существующие отзывы
         const feedbackResponse = await fetch(
-          `${API_URL}/feedback/sessions/${sessionId}`,
+          `${API_URL}/api/feedback/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${TEST_TOKEN}`,
@@ -120,7 +120,7 @@ const TestFeedback = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${API_URL}/feedback/sessions/${sessionId}`,
+        `${API_URL}/api/feedback/sessions/${sessionId}`,
         {
           method: 'POST',
           headers: {

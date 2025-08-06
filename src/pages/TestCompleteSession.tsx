@@ -14,7 +14,7 @@ const TestCompleteSession = () => {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
   const sessionId = 'test-session-1';
 
   // Тестовый расширенный токен
@@ -28,7 +28,7 @@ const TestCompleteSession = () => {
 
     try {
       const response = await fetch(
-        `${API_URL}/calendar/sessions/${sessionId}/complete`,
+        `${API_URL}/api/calendar/sessions/${sessionId}/complete`,
         {
           method: 'PATCH',
           headers: {

@@ -21,7 +21,7 @@ const DebugAuth: React.FC = () => {
       telegramWebApp: window.Telegram?.WebApp ? 'доступен' : 'не доступен',
       envVars: {
         VITE_API_URL:
-          import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api',
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru',
         VITE_TELEGRAM_BOT_USERNAME:
           import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'не задан',
         NODE_ENV: import.meta.env.NODE_ENV || 'не задан',
@@ -47,9 +47,9 @@ const DebugAuth: React.FC = () => {
 
     try {
       const API_URL =
-        import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-      const response = await fetch(`${API_URL}/auth/test`, {
+      const response = await fetch(`${API_URL}/api/auth/test`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -55,7 +55,7 @@ const Feedback = () => {
   const [roleChanged, setRoleChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   // Получаем токен из localStorage
   const getAuthToken = () => {
@@ -87,7 +87,7 @@ const Feedback = () => {
 
         // Загружаем информацию о сессии
         const sessionResponse = await fetch(
-          `${API_URL}/calendar/sessions/${sessionId}`,
+          `${API_URL}/api/calendar/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ const Feedback = () => {
 
         // Загружаем существующие отзывы
         const feedbackResponse = await fetch(
-          `${API_URL}/feedback/sessions/${sessionId}`,
+          `${API_URL}/api/feedback/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -168,7 +168,7 @@ const Feedback = () => {
       }
 
       const response = await fetch(
-        `${API_URL}/feedback/sessions/${sessionId}`,
+        `${API_URL}/api/feedback/sessions/${sessionId}`,
         {
           method: 'POST',
           headers: {

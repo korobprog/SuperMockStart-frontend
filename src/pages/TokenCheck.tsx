@@ -24,7 +24,7 @@ const TokenCheck = () => {
     null
   );
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
   useEffect(() => {
     console.log('TokenCheck component mounted');
@@ -93,7 +93,7 @@ const TokenCheck = () => {
 
       console.log('🔄 Обновление токена для userId:', currentUserId);
 
-      const response = await fetch(`${API_URL}/auth/test-token-user`, {
+      const response = await fetch(`${API_URL}/api/auth/test-token-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ const TokenCheck = () => {
   const getTestToken = async () => {
     try {
       console.log('Getting test token...');
-      const response = await fetch(`${API_URL}/auth/test-token`);
+      const response = await fetch(`${API_URL}/api/auth/test-token`);
       const data = await response.json();
 
       console.log('Token response:', data);
@@ -172,7 +172,7 @@ const TokenCheck = () => {
 
       console.log('Creating real token for userId:', urlUserId);
 
-      const response = await fetch(`${API_URL}/auth/test-token-user`, {
+      const response = await fetch(`${API_URL}/api/auth/test-token-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const TokenCheck = () => {
         additionalInfo: 'Дополнительная информация',
       };
 
-              const response = await fetch(`${API_URL}/form`, {
+              const response = await fetch(`${API_URL}/api/form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
