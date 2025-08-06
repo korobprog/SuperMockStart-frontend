@@ -9,7 +9,12 @@ import {
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
 import TelegramAuth from '../components/TelegramAuth';
 import TelegramBotAuth from '../components/TelegramBotAuth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import HeroSection from '../components/HeroSection';
 import BackgroundGradient from '../components/BackgroundGradient';
@@ -29,14 +34,69 @@ import {
 const Home: React.FC = () => {
   const { user, loading, isAuthenticated } = useTelegramAuth();
   const [activeTab, setActiveTab] = React.useState('webapp');
+  const [checkingFormData, setCheckingFormData] = React.useState(false);
   const navigate = useNavigate();
 
-  // Перемещаем useEffect в начало компонента
+  // Проверяем данные формы пользователя при загрузке
   React.useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate('/interview');
-    }
-  }, [navigate, isAuthenticated, user]);
+    const checkUserFormData = async () => {
+      if (!isAuthenticated || !user) return;
+
+      setCheckingFormData(true);
+      try {
+        const token =
+          localStorage.getItem('extended_token') ||
+          localStorage.getItem('telegram_token');
+        if (!token) {
+          setCheckingFormData(false);
+          return;
+        }
+
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+        const response = await fetch(`${apiUrl}/api/form`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            // Если у пользователя есть данные формы (профессия и страна), перенаправляем на интервью
+            if (data.data.profession && data.data.country) {
+              console.log(
+                '✅ У пользователя есть данные формы, перенаправляем на /interview'
+              );
+              navigate('/interview');
+            } else {
+              console.log(
+                '❌ У пользователя нет данных формы, перенаправляем на /collectingcontacts'
+              );
+              navigate('/collectingcontacts');
+            }
+          } else {
+            console.log(
+              '❌ Ошибка получения данных формы, перенаправляем на /collectingcontacts'
+            );
+            navigate('/collectingcontacts');
+          }
+        } else {
+          console.log(
+            '❌ Ошибка запроса данных формы, перенаправляем на /collectingcontacts'
+          );
+          navigate('/collectingcontacts');
+        }
+      } catch (error) {
+        console.error('💥 Ошибка проверки данных формы:', error);
+        navigate('/collectingcontacts');
+      } finally {
+        setCheckingFormData(false);
+      }
+    };
+
+    checkUserFormData();
+  }, [isAuthenticated, user, navigate]);
 
   const handleAuthSuccess = (_user: any, token: string) => {
     // Сохраняем токен в правильном ключе
@@ -44,7 +104,42 @@ const Home: React.FC = () => {
 
     // Небольшая задержка перед перенаправлением
     setTimeout(() => {
-      navigate('/interview');
+      // После успешной авторизации проверяем данные формы
+      const checkFormDataAfterAuth = async () => {
+        try {
+          const apiUrl =
+            import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+          const response = await fetch(`${apiUrl}/api/form`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (
+              data.success &&
+              data.data &&
+              data.data.profession &&
+              data.data.country
+            ) {
+              navigate('/interview');
+            } else {
+              navigate('/collectingcontacts');
+            }
+          } else {
+            navigate('/collectingcontacts');
+          }
+        } catch (error) {
+          console.error(
+            'Ошибка проверки данных формы после авторизации:',
+            error
+          );
+          navigate('/collectingcontacts');
+        }
+      };
+
+      checkFormDataAfterAuth();
     }, 500);
   };
 
@@ -52,21 +147,7 @@ const Home: React.FC = () => {
     console.error('Ошибка авторизации:', error);
   };
 
-  if (loading) {
-    return (
-      <BackgroundGradient className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
-            <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
-          </div>
-          <p className="text-muted-foreground">Загрузка...</p>
-        </div>
-      </BackgroundGradient>
-    );
-  }
-
-  // Если пользователь авторизован, показываем загрузку во время перенаправления
-  if (isAuthenticated && user) {
+  if (loading || checkingFormData) {
     return (
       <BackgroundGradient className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -74,8 +155,24 @@ const Home: React.FC = () => {
             <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
           </div>
           <p className="text-muted-foreground">
-            Перенаправление на страницу интервью...
+            {checkingFormData
+              ? 'Проверяем данные пользователя...'
+              : 'Загрузка...'}
           </p>
+        </div>
+      </BackgroundGradient>
+    );
+  }
+
+  // Если пользователь авторизован и проверка завершена, показываем загрузку во время перенаправления
+  if (isAuthenticated && user && !checkingFormData) {
+    return (
+      <BackgroundGradient className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
+            <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
+          </div>
+          <p className="text-muted-foreground">Перенаправление...</p>
         </div>
       </BackgroundGradient>
     );

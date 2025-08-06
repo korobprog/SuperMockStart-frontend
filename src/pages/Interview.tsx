@@ -397,6 +397,7 @@ const Interview = () => {
   });
   const [professionNotificationShown, setProfessionNotificationShown] =
     useState(false);
+  const [registrationIncomplete, setRegistrationIncomplete] = useState(false);
 
   // Состояние для времени пользователя
   const [, setCurrentTime] = useState(new Date());
@@ -629,9 +630,11 @@ const Interview = () => {
             // We check for both profession and country since country is only set when the form is actually submitted
             if (!data.data.profession || !data.data.country) {
               console.log(
-                '❌ Пользователь не завершил регистрацию, перенаправляем на форму'
+                '❌ Пользователь не завершил регистрацию, показываем сообщение'
               );
-              navigate('/collectingcontacts');
+              // Вместо перенаправления показываем сообщение и кнопку для перехода к форме
+              setRegistrationIncomplete(true);
+              setCheckingRegistration(false);
               return;
             }
 
@@ -647,7 +650,7 @@ const Interview = () => {
               'Пожалуйста, заполните форму регистрации перед записью на собеседование',
               'error'
             );
-            navigate('/collectingcontacts');
+            setCheckingRegistration(false);
           }
         } else {
           console.log('❌ Ошибка запроса данных формы:', response.status);
@@ -656,7 +659,7 @@ const Interview = () => {
             'Не удалось проверить статус регистрации. Пожалуйста, попробуйте снова.',
             'error'
           );
-          navigate('/collectingcontacts');
+          setCheckingRegistration(false);
         }
       } catch (error) {
         console.error('💥 Ошибка проверки регистрации:', error);
@@ -665,7 +668,7 @@ const Interview = () => {
           'Произошла ошибка при проверке регистрации. Пожалуйста, попробуйте позже.',
           'error'
         );
-        navigate('/collectingcontacts');
+        setCheckingRegistration(false);
       } finally {
         setCheckingRegistration(false);
       }
@@ -1312,6 +1315,77 @@ const Interview = () => {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Проверяем регистрацию...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show registration incomplete message
+  if (registrationIncomplete) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <Button
+                variant="ghost"
+                className="mb-4"
+                onClick={() => window.history.back()}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Назад
+              </Button>
+
+              <div className="text-center">
+                <h1 className="text-2xl font-bold mb-2">
+                  Требуется регистрация
+                </h1>
+                <p className="text-muted-foreground mb-6">
+                  Для записи на собеседование необходимо заполнить форму
+                  регистрации
+                </p>
+              </div>
+            </div>
+
+            <Card className="p-6">
+              <div className="text-center space-y-6">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-8 w-8 text-amber-600" />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Заполните форму регистрации
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    Для участия в собеседованиях необходимо указать вашу
+                    профессию, страну и другие данные.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={() => navigate('/collectingcontacts')}
+                    className="flex-1"
+                    size="lg"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Заполнить форму регистрации
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/')}
+                    className="flex-1"
+                    size="lg"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Вернуться на главную
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     );

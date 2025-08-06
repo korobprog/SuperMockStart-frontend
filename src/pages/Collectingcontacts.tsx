@@ -141,7 +141,8 @@ const CollectingContacts = memo(() => {
           return;
         }
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
         const response = await fetch(`${apiUrl}/api/form`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,6 +160,11 @@ const CollectingContacts = memo(() => {
             );
             navigate('/interview');
             return;
+          } else {
+            console.log(
+              '❌ У пользователя нет данных формы, показываем форму для заполнения'
+            );
+            // Показываем форму для заполнения
           }
         }
       } catch (error) {
@@ -191,7 +197,8 @@ const CollectingContacts = memo(() => {
           return;
         }
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
         console.log('🌐 API URL:', apiUrl);
 
         const response = await fetch(`${apiUrl}/api/form`, {
