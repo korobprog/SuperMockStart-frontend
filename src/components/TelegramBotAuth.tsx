@@ -35,7 +35,7 @@ const TelegramBotAuth: React.FC<TelegramBotAuthProps> = ({
   const [error, setError] = useState<string>('');
   const [user, setUser] = useState<TelegramUser | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
   const botUsername =
     import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'SuperMock_bot';
 
@@ -52,7 +52,7 @@ const TelegramBotAuth: React.FC<TelegramBotAuthProps> = ({
       const userId = generateUserId();
       const redirectUrl = `${window.location.origin}/auth-callback`;
 
-      const response = await fetch(`${API_URL}/api/telegram-bot/auth-url`, {
+      const response = await fetch(`${API_URL}/telegram-bot/auth-url`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const TelegramBotAuth: React.FC<TelegramBotAuthProps> = ({
     const checkInterval = setInterval(async () => {
       try {
         const response = await fetch(
-          `${API_URL}/api/telegram-bot/verify-user`,
+          `${API_URL}/telegram-bot/verify-user`,
           {
             method: 'POST',
             headers: {

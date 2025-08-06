@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { Star, Send, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -50,7 +55,7 @@ const Feedback = () => {
   const [roleChanged, setRoleChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
 
   // Получаем токен из localStorage
   const getAuthToken = () => {
@@ -82,7 +87,7 @@ const Feedback = () => {
 
         // Загружаем информацию о сессии
         const sessionResponse = await fetch(
-          `${API_URL}/api/calendar/sessions/${sessionId}`,
+          `${API_URL}/calendar/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -98,7 +103,7 @@ const Feedback = () => {
 
         // Загружаем существующие отзывы
         const feedbackResponse = await fetch(
-          `${API_URL}/api/feedback/sessions/${sessionId}`,
+          `${API_URL}/feedback/sessions/${sessionId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -163,7 +168,7 @@ const Feedback = () => {
       }
 
       const response = await fetch(
-        `${API_URL}/api/feedback/sessions/${sessionId}`,
+        `${API_URL}/feedback/sessions/${sessionId}`,
         {
           method: 'POST',
           headers: {

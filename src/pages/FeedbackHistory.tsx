@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Star, ArrowLeft, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -29,7 +34,7 @@ const FeedbackHistory = () => {
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState<'given' | 'received'>('received');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
 
   // Получаем токен из localStorage
   const getAuthToken = () => {
@@ -43,7 +48,7 @@ const FeedbackHistory = () => {
         if (!token) return;
 
         const response = await fetch(
-          `${API_URL}/api/feedback/user?type=${type}`,
+          `${API_URL}/feedback/user?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

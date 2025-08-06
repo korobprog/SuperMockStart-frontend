@@ -29,7 +29,7 @@ const ChooseInterview = () => {
   const handleStatusChange = async (status: UserStatus) => {
     try {
       // Получаем ID пользователя из базы данных по Telegram ID
-      const response = await fetch(`${API_URL}/api/user-status/status`, {
+      const response = await fetch(`${API_URL}/user-status/status`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
@@ -38,7 +38,7 @@ const ChooseInterview = () => {
       if (response.ok) {
         // Для обновления статуса нам нужен ID из базы данных, а не Telegram ID
         // Получаем пользователя по Telegram ID, чтобы получить его ID в базе
-        const userResponse = await fetch(`${API_URL}/api/user-status/status`, {
+        const userResponse = await fetch(`${API_URL}/user-status/status`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -70,7 +70,7 @@ const ChooseInterview = () => {
 
   const handleGetTestToken = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/test-token`);
+      const response = await fetch(`${API_URL}/auth/test-token`);
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('authToken', data.data.token);

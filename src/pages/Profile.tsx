@@ -99,7 +99,8 @@ const Profile: React.FC = () => {
 
         if (!token) return;
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
         const response = await fetch(`${apiUrl}/api/form`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -138,7 +139,7 @@ const Profile: React.FC = () => {
 
       if (!token) return;
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
       const response = await fetch(`${apiUrl}/api/form`, {
         method: 'PUT',
         headers: {

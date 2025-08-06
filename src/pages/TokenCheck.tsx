@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 
 const TokenCheck = () => {
@@ -19,7 +24,7 @@ const TokenCheck = () => {
     null
   );
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
 
   useEffect(() => {
     console.log('TokenCheck component mounted');
@@ -88,7 +93,7 @@ const TokenCheck = () => {
 
       console.log('🔄 Обновление токена для userId:', currentUserId);
 
-      const response = await fetch(`${API_URL}/api/auth/test-token-user`, {
+      const response = await fetch(`${API_URL}/auth/test-token-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +134,7 @@ const TokenCheck = () => {
   const getTestToken = async () => {
     try {
       console.log('Getting test token...');
-      const response = await fetch(`${API_URL}/api/auth/test-token`);
+      const response = await fetch(`${API_URL}/auth/test-token`);
       const data = await response.json();
 
       console.log('Token response:', data);
@@ -167,7 +172,7 @@ const TokenCheck = () => {
 
       console.log('Creating real token for userId:', urlUserId);
 
-      const response = await fetch(`${API_URL}/api/auth/test-token-user`, {
+      const response = await fetch(`${API_URL}/auth/test-token-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -242,7 +247,7 @@ const TokenCheck = () => {
         additionalInfo: 'Дополнительная информация',
       };
 
-      const response = await fetch(`${API_URL}/api/form`, {
+              const response = await fetch(`${API_URL}/form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

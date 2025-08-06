@@ -24,14 +24,15 @@ const initialState: ProfessionState = {
 };
 
 // Базовый URL для API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
 
 // Async thunks
 export const addSelectedProfession = createAsyncThunk(
   'profession/addSelectedProfession',
   async ({ userId, profession }: { userId: string; profession: string }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/professions/selected`, {
+      const response = await fetch(`${API_BASE_URL}/professions/selected`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,9 +58,7 @@ export const addSelectedProfession = createAsyncThunk(
 export const fetchUserProfessions = createAsyncThunk(
   'profession/fetchUserProfessions',
   async (userId: string) => {
-    const response = await fetch(
-      `${API_BASE_URL}/api/professions/user/${userId}`
-    );
+    const response = await fetch(`${API_BASE_URL}/professions/user/${userId}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -77,7 +76,7 @@ export const removeSelectedProfession = createAsyncThunk(
   'profession/removeSelectedProfession',
   async (professionId: string) => {
     const response = await fetch(
-      `${API_BASE_URL}/api/professions/selected/${professionId}`,
+      `${API_BASE_URL}/professions/selected/${professionId}`,
       {
         method: 'DELETE',
       }

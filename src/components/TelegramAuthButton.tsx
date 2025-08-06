@@ -33,7 +33,7 @@ const TelegramAuthButton: React.FC<TelegramAuthButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
   const botUsername =
     import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'SuperMock_bot';
 
@@ -50,7 +50,7 @@ const TelegramAuthButton: React.FC<TelegramAuthButtonProps> = ({
 
   const verifyToken = async (token: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/verify`, {
+      const response = await fetch(`${API_URL}/auth/verify`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -91,7 +91,7 @@ const TelegramAuthButton: React.FC<TelegramAuthButtonProps> = ({
         throw new Error('Данные инициализации Telegram не найдены');
       }
 
-      const response = await fetch(`${API_URL}/api/auth/authenticate`, {
+      const response = await fetch(`${API_URL}/auth/authenticate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

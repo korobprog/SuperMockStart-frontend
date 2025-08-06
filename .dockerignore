@@ -1,31 +1,31 @@
 # Dependencies
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Build outputs
-dist/
-build/
+# Build outputs (keep for development builds)
+# dist/
+# build/
 .next/
 .nuxt/
 .output/
 
-# Environment files
+# Environment files (keep only production ones)
 .env
 .env.local
 .env.development
 .env.test
-.env.production
-.env.backend
-.env.prod
-env.backend
-env.production
-env.local
-env.prod
-env.dokploy
-env.example
+# .env.production - keep this for production
+# .env.backend - keep this for production
+# env.backend - keep this for production
+# env.production - keep this for production
+# env.local - keep this for production
+# env.prod - keep this for production
+# env.dokploy - keep this for production
+# env.example - keep this for production
 
 # IDE and editor files
 .vscode/
@@ -48,10 +48,10 @@ Thumbs.db
 .gitignore
 .gitattributes
 
-# Docker
-Dockerfile*
-docker-compose*.yml
-.dockerignore
+# Docker (keep for production)
+# Dockerfile* - keep this for production
+# docker-compose*.yml - keep this for production
+# .dockerignore - keep this for production
 
 # Logs
 logs/
@@ -103,7 +103,7 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# dist - keep this for production
 
 # Gatsby files
 .cache/
@@ -141,59 +141,59 @@ __tests__/
 *.spec.js
 *.spec.ts
 
-# Documentation
-README.md
-*.md
-docs/
+# Documentation (keep for production)
+# README.md - keep this for production
+# *.md - keep this for production
+# docs/ - keep this for production
 
-# Scripts that are not needed in production
-scripts/
-deploy.sh
-dev-setup.sh
-env-switch.sh
-migrate-database.sh
-quick-deploy.sh
-start-dev.sh
-telegram-prod-setup.sh
-telegram-setup.sh
-telegram-switch.sh
+# Scripts that are needed in production
+# scripts/ - keep this for production
+# deploy.sh - keep this for production
+# dev-setup.sh - keep this for production
+# env-switch.sh - keep this for production
+# migrate-database.sh - keep this for production
+# quick-deploy.sh - keep this for production
+# start-dev.sh - keep this for production
+# telegram-prod-setup.sh - keep this for production
+# telegram-setup.sh - keep this for production
+# telegram-switch.sh - keep this for production
 
-# Development tools
-.eslintrc*
-.prettierrc*
-.babelrc*
-tsconfig.node.json
-vite.config*.ts
-tailwind.config*.js
-postcss.config.js
+# Development tools (keep for production)
+# .eslintrc* - keep this for production
+# .prettierrc* - keep this for production
+# .babelrc* - keep this for production
+# tsconfig.node.json - keep this for production
+# vite.config*.ts - keep this for production
+# tailwind.config*.js - keep this for production
+# postcss.config.js - keep this for production
 
 # Package manager files (keep only the ones needed)
 package-lock.json
 yarn.lock
 
-# Docker related
-docker-compose*.yml
-Dockerfile*
-.dockerignore
+# Docker related (keep for production)
+# docker-compose*.yml - keep this for production
+# Dockerfile* - keep this for production
+# .dockerignore - keep this for production
 
-# Deployment files
-deploy-db-update.sh
-DEPLOYMENT.md
-DEV_SETUP.md
-AUTH_SYSTEM.md
-THEME_SWITCHING_GUIDE.md
+# Deployment files (keep for production)
+# deploy-db-update.sh - keep this for production
+# DEPLOYMENT.md - keep this for production
+# DEV_SETUP.md - keep this for production
+# AUTH_SYSTEM.md - keep this for production
+# THEME_SWITCHING_GUIDE.md - keep this for production
 
 # Development setup files
 how --name-only HEAD
 
-# Frontend specific
-components.json
+# Frontend specific (keep for production)
+# components.json - keep this for production
 
-# Backend specific (for frontend build context)
-backend/
+# Backend specific (keep for production)
+# backend/ - keep this for production
 
-# Database migrations (for frontend build context)
-prisma/migrations/
+# Database migrations (keep for production)
+# prisma/migrations/ - keep this for production
 
 # External projects
 code-mentor-quest-main/

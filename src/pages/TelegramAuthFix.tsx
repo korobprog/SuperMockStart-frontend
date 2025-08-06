@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 
 const TelegramAuthFix: React.FC = () => {
@@ -13,7 +18,7 @@ const TelegramAuthFix: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru/api';
 
   const addLog = (message: string) => {
     setLogs((prev) => [
@@ -66,7 +71,7 @@ const TelegramAuthFix: React.FC = () => {
 
   const validateToken = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/validate-token`, {
+      const response = await fetch(`${API_URL}/auth/validate-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +91,7 @@ const TelegramAuthFix: React.FC = () => {
       addLog('🔄 Создаем новый токен...');
 
       // Пытаемся получить тестовый токен
-      const response = await fetch(`${API_URL}/api/auth/test-token`);
+      const response = await fetch(`${API_URL}/auth/test-token`);
       const data = await response.json();
 
       if (data.success) {

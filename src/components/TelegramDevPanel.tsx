@@ -46,7 +46,7 @@ const TelegramDevPanel: React.FC = () => {
 
         if (webApp.initData) {
           // Если есть данные от Telegram, отправляем их на сервер
-          const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
+          const response = await fetch(`${API_URL}/auth/telegram-widget`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ const TelegramDevPanel: React.FC = () => {
         photo_url: 'https://via.placeholder.com/150',
       };
 
-      const response = await fetch(`${API_URL}/api/auth/test`, {
+      const response = await fetch(`${API_URL}/auth/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
