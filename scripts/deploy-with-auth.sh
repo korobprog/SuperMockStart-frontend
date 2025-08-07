@@ -76,7 +76,7 @@ COMPOSE_RESPONSE=$(curl -s -X POST "$DOKPLOY_URL/api/trpc/compose.create" \
         \"name\":\"supermock-compose\",
         \"projectId\":\"$PROJECT_ID\",
         \"sourceType\":\"git\",
-        \"repository\":\"https://github.com/korobprog/SuperMockStart.git\",
+        \"repository\":\"https://github.com/korobprog/SuperMock.git\",
         \"branch\":\"main\",
         \"composePath\":\"frontend/docker-compose.yml\"
     }}")

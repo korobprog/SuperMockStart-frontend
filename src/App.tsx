@@ -23,7 +23,9 @@ import FeedbackHistory from './pages/FeedbackHistory';
 import TestFeedback from './pages/TestFeedback';
 import TestCompleteSession from './pages/TestCompleteSession';
 import TelegramAuthFix from './pages/TelegramAuthFix';
+import ModernBordersDemo from './pages/ModernBordersDemo';
 import AuthProvider from './components/AuthProvider';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Component to conditionally render header
 const ConditionalHeader = () => {
@@ -39,6 +41,8 @@ const ConditionalHeader = () => {
     '/dashboard',
     '/test-complete-session',
     '/auth',
+    '/collectingcontacts',
+    '/modern-borders-demo',
   ].includes(location.pathname);
 
   return useModernHeader ? <ModernHeader /> : <Navigation />;
@@ -52,14 +56,50 @@ function App() {
           <ConditionalHeader />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/interview" element={<Interview />} />
+            <Route
+              path="/modern-borders-demo"
+              element={<ModernBordersDemo />}
+            />
+            <Route
+              path="/interview"
+              element={
+                <ProtectedRoute>
+                  <Interview />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/about" element={<About />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chooseinterview" element={<ChooseInterview />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chooseinterview"
+              element={
+                <ProtectedRoute>
+                  <ChooseInterview />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/collectingcontacts"
-              element={<CollectingContacts />}
+              element={
+                <ProtectedRoute>
+                  <CollectingContacts />
+                </ProtectedRoute>
+              }
             />
             <Route path="/auth" element={<Auth />} />
             <Route path="/debug-auth" element={<DebugAuth />} />
@@ -67,8 +107,22 @@ function App() {
             <Route path="/auth-callback" element={<TelegramAuthCallback />} />
             <Route path="/token-check" element={<TokenCheck />} />
             <Route path="/auth-fix" element={<TelegramAuthFix />} />
-            <Route path="/feedback/:sessionId" element={<Feedback />} />
-            <Route path="/feedback-history" element={<FeedbackHistory />} />
+            <Route
+              path="/feedback/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <Feedback />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/feedback-history"
+              element={
+                <ProtectedRoute>
+                  <FeedbackHistory />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/test-feedback" element={<TestFeedback />} />
             <Route
               path="/test-complete-session"

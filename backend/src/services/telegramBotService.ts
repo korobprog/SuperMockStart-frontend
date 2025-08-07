@@ -81,6 +81,35 @@ export class TelegramBotService {
   }
 
   /**
+   * Создает LoginUrl объект для авторизации через Telegram Login Widget
+   */
+  static createLoginUrl(userId: number, redirectUrl: string): any {
+    const botUsername = process.env.BOT_USERNAME || 'SuperMock_bot';
+    const authId = `${userId}_${Date.now()}`;
+
+    // Сохраняем информацию о pending авторизации
+    this.pendingAuths.set(authId, { userId, timestamp: Date.now() });
+
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
+    console.log(
+      `🔗 Created LoginUrl for user ${userId} with auth ID: ${authId} (${
+        isDevelopment ? 'dev mode' : 'production mode'
+      })`
+    );
+
+    // Создаем LoginUrl объект согласно документации Telegram Bot API
+    const loginUrl = {
+      url: `${redirectUrl}?auth_id=${authId}`,
+      forward_text: 'Авторизоваться в SuperMock',
+      bot_username: botUsername,
+      request_write_access: true,
+    };
+
+    return loginUrl;
+  }
+
+  /**
    * Создает URL для авторизации через бота
    */
   static createAuthUrl(userId: number, redirectUrl: string): string {
@@ -90,15 +119,24 @@ export class TelegramBotService {
     // Сохраняем информацию о pending авторизации
     this.pendingAuths.set(authId, { userId, timestamp: Date.now() });
 
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     console.log(
-      `🔗 Created auth URL for user ${userId} with auth ID: ${authId}`
+      `🔗 Created auth URL for user ${userId} with auth ID: ${authId} (${
+        isDevelopment ? 'dev mode' : 'production mode'
+      })`
     );
     console.log(
       `📋 Current pending auths after creation:`,
       Array.from(this.pendingAuths.entries())
     );
 
-    return `https://t.me/${botUsername}?start=auth_${authId}`;
+    // Создаем правильную ссылку для Telegram Login Widget
+    // Используем формат, который поддерживает Telegram Login Widget
+    const baseUrl = `https://t.me/${botUsername}`;
+    const authUrl = `${baseUrl}?start=auth_${authId}`;
+
+    return authUrl;
   }
 
   /**
@@ -135,7 +173,6 @@ export class TelegramBotService {
     );
 
     // Проверяем, может ли бот отправлять сообщения пользователю
-    // Используем реальный ID пользователя из Telegram, а не из pending auth
     const canSendMessage = await this.canSendMessage(auth.userId);
 
     if (canSendMessage) {
@@ -143,6 +180,15 @@ export class TelegramBotService {
         `✅ Bot can send message to user ${auth.userId}, auth successful`
       );
       this.pendingAuths.delete(authId);
+
+      // В dev режиме всегда возвращаем валидный результат
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      if (isDevelopment) {
+        console.log(
+          `🔧 Dev mode: returning valid auth result for user ${auth.userId}`
+        );
+      }
+
       return { userId: auth.userId, valid: true };
     }
 
@@ -185,28 +231,49 @@ export class TelegramBotService {
         const authResult = await this.checkPendingAuth(authId);
 
         if (authResult && authResult.valid) {
-          // Проверяем, что ID пользователя совпадает с тем, кто отправил команду
-          if (authResult.userId === user.id) {
-            // Отправляем сообщение об успешной авторизации
+          // В dev режиме используем реальный ID пользователя из Telegram
+          const isDevelopment = process.env.NODE_ENV === 'development';
+
+          if (isDevelopment) {
+            // В dev режиме всегда разрешаем авторизацию, если бот может отправлять сообщения
+            console.log(
+              `✅ Dev mode: allowing auth for user ${user.id} (${user.first_name})`
+            );
+
             await this.bot.sendMessage(
               chatId,
-              `✅ Авторизация успешна!\n\nДобро пожаловать, ${user.first_name}!\n\nТеперь вы можете использовать приложение SuperMock.\n\nДля проверки токена перейдите в приложение и нажмите кнопку "Проверить токен".`
+              `✅ Авторизация успешна!\n\nДобро пожаловать, ${user.first_name}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
             );
 
             console.log(
-              `User ${user.id} (${user.first_name}) authenticated via bot`
+              `User ${user.id} (${user.first_name}) authenticated via bot (dev mode)`
             );
 
             // Отправляем кнопку для проверки токена
-            await this.sendCheckTokenButton(chatId);
+            await this.sendAuthButton(chatId);
           } else {
-            console.log(
-              `❌ User ID mismatch: expected ${authResult.userId}, got ${user.id}`
-            );
-            await this.bot.sendMessage(
-              chatId,
-              'Ошибка авторизации: неверный пользователь. Попробуйте еще раз.'
-            );
+            // В production режиме проверяем совпадение ID пользователя
+            if (authResult.userId === user.id) {
+              await this.bot.sendMessage(
+                chatId,
+                `✅ Авторизация успешна!\n\nДобро пожаловать, ${user.first_name}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: production\n✅ Безопасная авторизация`
+              );
+
+              console.log(
+                `User ${user.id} (${user.first_name}) authenticated via bot`
+              );
+
+              // Отправляем кнопку для проверки токена
+              await this.sendAuthButton(chatId);
+            } else {
+              console.log(
+                `❌ User ID mismatch: expected ${authResult.userId}, got ${user.id}`
+              );
+              await this.bot.sendMessage(
+                chatId,
+                'Ошибка авторизации: неверный пользователь. Попробуйте еще раз.'
+              );
+            }
           }
         } else {
           await this.bot.sendMessage(
@@ -216,13 +283,22 @@ export class TelegramBotService {
         }
       } else {
         // Обычное приветствие
-        await this.bot.sendMessage(
-          chatId,
-          `👋 Привет, ${user.first_name}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".`
-        );
+        const isDevelopment = process.env.NODE_ENV === 'development';
 
-        // Отправляем кнопку для проверки токена
-        await this.sendCheckTokenButton(chatId);
+        if (isDevelopment) {
+          await this.bot.sendMessage(
+            chatId,
+            `👋 Привет, ${user.first_name}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
+          );
+        } else {
+          await this.bot.sendMessage(
+            chatId,
+            `👋 Привет, ${user.first_name}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: production\n✅ Безопасная авторизация`
+          );
+        }
+
+        // Отправляем кнопку для авторизации
+        await this.sendAuthButton(chatId);
       }
     } catch (error) {
       console.error('Error handling start command:', error);
@@ -273,7 +349,10 @@ export class TelegramBotService {
     }
   }
 
-  static async sendCheckTokenButton(chatId: number) {
+  /**
+   * Отправляет кнопку для авторизации
+   */
+  static async sendAuthButton(chatId: number) {
     try {
       if (!this.bot) {
         throw new Error('Bot not initialized');
@@ -281,18 +360,29 @@ export class TelegramBotService {
 
       const isProduction = process.env.NODE_ENV === 'production';
 
-      // Telegram не принимает localhost URLs, поэтому используем production URL
-      // или отправляем инструкцию для разработки
       if (isProduction) {
+        // В продакшне отправляем кнопку для авторизации через Login Widget
         const baseUrl = 'https://supermock.ru';
-        const checkUrl = `${baseUrl}/token-check?userId=${chatId}`;
+        const authUrl = `${baseUrl}/auth-callback`;
 
+        // Создаем inline keyboard с LoginUrl объектом
         const keyboard = {
           inline_keyboard: [
             [
               {
-                text: '🔍 Проверить токен',
-                url: checkUrl,
+                text: '🔐 Авторизоваться в приложении',
+                login_url: {
+                  url: authUrl,
+                  forward_text: 'Авторизоваться в SuperMock',
+                  bot_username: process.env.BOT_USERNAME || 'SuperMock_bot',
+                  request_write_access: true,
+                },
+              },
+            ],
+            [
+              {
+                text: '📱 Открыть в Telegram',
+                web_app: { url: authUrl },
               },
             ],
           ],
@@ -300,20 +390,30 @@ export class TelegramBotService {
 
         await this.bot.sendMessage(
           chatId,
-          `🔗 Нажмите кнопку ниже, чтобы проверить ваш токен авторизации:\n\n🌐 Среда: production\n🔗 Ссылка: ${checkUrl}`,
+          `🔗 Добро пожаловать в SuperMock!\n\nНажмите кнопку ниже для авторизации в приложении:\n\n🌐 Среда: production\n✅ Безопасная авторизация через Telegram`,
           { reply_markup: keyboard }
         );
       } else {
         // В режиме разработки отправляем инструкцию без кнопки
+        const devUrl = `http://localhost:5173/auth-callback?auth_id=${chatId}_${Date.now()}`;
+
         await this.bot.sendMessage(
           chatId,
-          `🔗 Для проверки токена в режиме разработки:\n\n1️⃣ Откройте приложение: http://localhost:5173\n2️⃣ Перейдите на страницу: /token-check?userId=${chatId}\n\n🌐 Среда: development\n⚠️ В режиме разработки кнопка недоступна`
+          `🔗 Для авторизации в режиме разработки:\n\n1️⃣ Откройте приложение: http://localhost:5173\n2️⃣ Перейдите на страницу: ${devUrl}\n\n🌐 Среда: development\n⚠️ В режиме разработки используйте тестовые токены`
         );
       }
 
-      console.log('✅ Check token button sent to chat:', chatId);
+      console.log('✅ Auth button sent to chat:', chatId);
     } catch (error) {
-      console.error('❌ Error sending check token button:', error);
+      console.error('❌ Error sending auth button:', error);
     }
+  }
+
+  /**
+   * Отправляет кнопку для проверки токена (устаревший метод)
+   */
+  static async sendCheckTokenButton(chatId: number) {
+    // Перенаправляем на новый метод
+    await this.sendAuthButton(chatId);
   }
 }

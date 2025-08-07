@@ -47,8 +47,10 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
 
   useEffect(() => {
     console.log('🔄 useTelegramAuth: запуск checkAuthStatus');
-    checkAuthStatus();
-  }, []);
+    if (!isAuthenticated && !loading) {
+      checkAuthStatus();
+    }
+  }, [isAuthenticated, loading]);
 
   return {
     user,

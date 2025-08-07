@@ -800,13 +800,9 @@ const Interview = () => {
             return;
           }
 
-          // Декодируем JWT токен для получения userId
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const realUserId = payload.userId.toString();
-
           await dispatch(
             addSelectedProfession({
-              userId: realUserId, // Используем реальный telegramId
+              userId: '', // userId будет извлечен из токена на бэкенде
               profession: selectedProfession.value, // Сохраняем value, а не label
             })
           ).unwrap();

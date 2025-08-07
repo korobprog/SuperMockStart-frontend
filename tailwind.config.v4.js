@@ -138,5 +138,175 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    // Плагин для кастомных классов границ
+    function ({ addUtilities }) {
+      const modernBorders = {
+        '.border-modern': {
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          position: 'relative',
+        },
+        '.border-modern::after': {
+          content: '""',
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+        },
+        '.border-modern-elevated': {
+          border: '1px solid rgba(0, 0, 0, 0.12)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
+          position: 'relative',
+        },
+        '.border-modern-elevated::after': {
+          content: '""',
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          boxShadow: '0 1px 1px rgba(0, 0, 0, 0.02)',
+        },
+        '.border-modern-colored': {
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1)',
+          position: 'relative',
+        },
+        '.border-modern-colored::after': {
+          content: '""',
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          border: '1px solid rgba(59, 130, 246, 0.08)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          boxShadow: '0 1px 1px rgba(59, 130, 246, 0.05)',
+        },
+        '.border-modern-gradient': {
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1)',
+          position: 'relative',
+        },
+        '.border-modern-gradient::after': {
+          content: '""',
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          border: '1px solid rgba(147, 51, 234, 0.08)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          boxShadow: '0 1px 1px rgba(147, 51, 234, 0.05)',
+        },
+        // Темная тема
+        '.dark .border-modern': {
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+        },
+        '.dark .border-modern::after': {
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+        },
+        '.dark .border-modern-elevated': {
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)',
+        },
+        '.dark .border-modern-elevated::after': {
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 1px 1px rgba(0, 0, 0, 0.15)',
+        },
+        '.dark .border-modern-colored': {
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(59, 130, 246, 0.2)',
+        },
+        '.dark .border-modern-colored::after': {
+          border: '1px solid rgba(59, 130, 246, 0.15)',
+          boxShadow: '0 1px 1px rgba(59, 130, 246, 0.1)',
+        },
+        '.dark .border-modern-gradient': {
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow:
+            '0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(147, 51, 234, 0.2)',
+        },
+        '.dark .border-modern-gradient::after': {
+          border: '1px solid rgba(147, 51, 234, 0.15)',
+          boxShadow: '0 1px 1px rgba(147, 51, 234, 0.1)',
+        },
+        // Анимации при наведении
+        '.border-modern:hover, .border-modern-elevated:hover, .border-modern-colored:hover, .border-modern-gradient:hover':
+          {
+            transform: 'translateY(-1px)',
+            boxShadow:
+              '0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
+          },
+        '.dark .border-modern:hover, .dark .border-modern-elevated:hover, .dark .border-modern-colored:hover, .dark .border-modern-gradient:hover':
+          {
+            boxShadow:
+              '0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3)',
+          },
+        // Утилитарные классы для карточек и инпутов
+        '.card-modern': {
+          '@apply border-modern rounded-lg bg-background': {},
+        },
+        '.card-modern-elevated': {
+          '@apply border-modern-elevated rounded-lg bg-background': {},
+        },
+        '.card-modern-colored': {
+          '@apply border-modern-colored rounded-lg bg-background': {},
+        },
+        '.card-modern-gradient': {
+          '@apply border-modern-gradient rounded-lg bg-background': {},
+        },
+        '.btn-modern': {
+          '@apply border-modern rounded-md bg-background text-foreground': {},
+        },
+        '.btn-modern-elevated': {
+          '@apply border-modern-elevated rounded-md bg-background text-foreground':
+            {},
+        },
+        '.btn-modern-colored': {
+          '@apply border-modern-colored rounded-md bg-background text-foreground':
+            {},
+        },
+        '.btn-modern-gradient': {
+          '@apply border-modern-gradient rounded-md bg-background text-foreground':
+            {},
+        },
+        '.input-modern': {
+          '@apply border-modern rounded-md bg-background text-foreground': {},
+        },
+        '.input-modern-elevated': {
+          '@apply border-modern-elevated rounded-md bg-background text-foreground':
+            {},
+        },
+        '.input-modern-colored': {
+          '@apply border-modern-colored rounded-md bg-background text-foreground':
+            {},
+        },
+        '.input-modern-gradient': {
+          '@apply border-modern-gradient rounded-md bg-background text-foreground':
+            {},
+        },
+      };
+      addUtilities(modernBorders);
+    },
+  ],
 };

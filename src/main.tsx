@@ -5,6 +5,10 @@ import { store } from './store';
 import App from './App.tsx';
 import './styles/tailwind.css';
 import './styles/calendar.scss';
+import { cleanupInvalidData } from './utils/auth';
+
+// Очищаем некорректные данные из localStorage при инициализации приложения
+cleanupInvalidData();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

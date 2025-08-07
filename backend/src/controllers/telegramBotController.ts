@@ -35,6 +35,36 @@ export class TelegramBotController {
   }
 
   /**
+   * Создает LoginUrl объект для авторизации через Telegram Login Widget
+   */
+  static async createLoginUrl(req: Request, res: Response) {
+    try {
+      const { userId, redirectUrl } = req.body;
+
+      if (!userId || !redirectUrl) {
+        return res.status(400).json({
+          success: false,
+          error: 'userId and redirectUrl are required',
+        } as ApiResponse);
+      }
+
+      const loginUrl = TelegramBotService.createLoginUrl(userId, redirectUrl);
+
+      res.json({
+        success: true,
+        data: { loginUrl },
+        message: 'LoginUrl created successfully',
+      } as ApiResponse);
+    } catch (error) {
+      console.error('Create LoginUrl error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      } as ApiResponse);
+    }
+  }
+
+  /**
    * Проверяет авторизацию пользователя через бота
    */
   static async verifyUserAuth(req: Request, res: Response) {

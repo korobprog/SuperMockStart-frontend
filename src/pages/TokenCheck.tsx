@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Navigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -25,6 +25,12 @@ const TokenCheck = () => {
   );
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+  const isProduction = import.meta.env.VITE_NODE_ENV === 'production';
+
+  // В продакшне перенаправляем на главную страницу
+  if (isProduction) {
+    return <Navigate to="/" replace />;
+  }
 
   useEffect(() => {
     console.log('TokenCheck component mounted');
@@ -247,7 +253,7 @@ const TokenCheck = () => {
         additionalInfo: 'Дополнительная информация',
       };
 
-              const response = await fetch(`${API_URL}/api/form`, {
+      const response = await fetch(`${API_URL}/api/form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

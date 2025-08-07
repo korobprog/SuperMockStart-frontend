@@ -392,4 +392,58 @@ export class AuthService {
   static isTokenValid(token: string): boolean {
     return !JwtUtils.isTokenExpired(token);
   }
+
+  /**
+   * Создает тестового пользователя для разработки
+   */
+  static async createDevUser(data: {
+    telegramId: number;
+    firstName: string;
+    lastName: string;
+    username: string;
+    photoUrl: string;
+  }): Promise<ApiResponse<{ token: string; user: User }>> {
+    try {
+      // Проверяем, что мы в режиме разработки
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          error: 'Dev user creation is not allowed in production',
+        };
+      }
+
+      // Создаем пользователя через UserService
+      const userResult = await UserService.findOrCreateTelegramUser({
+        id: data.telegramId,
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error || 'Failed to create dev user',
+        };
+      }
+
+      // Генерируем токен
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
+
+      return {
+        success: true,
+        data: {
+          token,
+          user: userResult.data,
+        },
+        message: 'Dev user created successfully',
+      };
+    } catch (error) {
+      console.error('Create dev user error:', error);
+      return {
+        success: false,
+        error: 'Failed to create dev user',
+      };
+    }
+  }
 }

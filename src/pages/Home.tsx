@@ -1,24 +1,13 @@
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
-import TelegramAuth from '../components/TelegramAuth';
-import TelegramBotAuth from '../components/TelegramBotAuth';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import HeroSection from '../components/HeroSection';
 import BackgroundGradient from '../components/BackgroundGradient';
 import Footer from '../components/Footer';
+import LoadingSpinner from '../components/LoadingSpinner';
+import AuthSection from '../components/AuthSection';
+
 import {
   Code,
   Users,
@@ -33,25 +22,29 @@ import {
 
 const Home: React.FC = () => {
   const { user, loading, isAuthenticated } = useTelegramAuth();
-  const [activeTab, setActiveTab] = React.useState('webapp');
   const [checkingFormData, setCheckingFormData] = React.useState(false);
   const navigate = useNavigate();
 
   // Проверяем данные формы пользователя при загрузке
   React.useEffect(() => {
     const checkUserFormData = async () => {
-      if (!isAuthenticated || !user) return;
+      // Проверяем только если пользователь авторизован и есть токен
+      if (!isAuthenticated || !user) {
+        setCheckingFormData(false);
+        return;
+      }
+
+      const token =
+        localStorage.getItem('extended_token') ||
+        localStorage.getItem('telegram_token');
+
+      if (!token) {
+        setCheckingFormData(false);
+        return;
+      }
 
       setCheckingFormData(true);
       try {
-        const token =
-          localStorage.getItem('extended_token') ||
-          localStorage.getItem('telegram_token');
-        if (!token) {
-          setCheckingFormData(false);
-          return;
-        }
-
         const apiUrl =
           import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
         const response = await fetch(`${apiUrl}/api/form`, {
@@ -108,7 +101,7 @@ const Home: React.FC = () => {
       const checkFormDataAfterAuth = async () => {
         try {
           const apiUrl =
-            import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+            import.meta.env.VITE_API_URL || 'http://localhost:3001';
           const response = await fetch(`${apiUrl}/api/form`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -123,11 +116,20 @@ const Home: React.FC = () => {
               data.data.profession &&
               data.data.country
             ) {
+              console.log(
+                '✅ У пользователя есть данные формы, перенаправляем на /interview'
+              );
               navigate('/interview');
             } else {
+              console.log(
+                '❌ У пользователя нет данных формы, перенаправляем на /collectingcontacts'
+              );
               navigate('/collectingcontacts');
             }
           } else {
+            console.log(
+              '❌ Ошибка запроса данных формы, перенаправляем на /collectingcontacts'
+            );
             navigate('/collectingcontacts');
           }
         } catch (error) {
@@ -150,16 +152,13 @@ const Home: React.FC = () => {
   if (loading || checkingFormData) {
     return (
       <BackgroundGradient className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
-            <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
-          </div>
-          <p className="text-muted-foreground">
-            {checkingFormData
+        <LoadingSpinner
+          message={
+            checkingFormData
               ? 'Проверяем данные пользователя...'
-              : 'Загрузка...'}
-          </p>
-        </div>
+              : 'Загрузка...'
+          }
+        />
       </BackgroundGradient>
     );
   }
@@ -168,12 +167,7 @@ const Home: React.FC = () => {
   if (isAuthenticated && user && !checkingFormData) {
     return (
       <BackgroundGradient className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 mx-auto animate-glow-pulse">
-            <div className="w-8 h-8 bg-white rounded-full animate-ping"></div>
-          </div>
-          <p className="text-muted-foreground">Перенаправление...</p>
-        </div>
+        <LoadingSpinner message="Перенаправление..." />
       </BackgroundGradient>
     );
   }
@@ -329,87 +323,10 @@ const Home: React.FC = () => {
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
-          <Card className="max-w-2xl mx-auto shadow-elegant bg-white/80 backdrop-blur">
-            <CardHeader className="text-center px-4 sm:px-6">
-              <CardTitle className="text-2xl sm:text-3xl font-bold text-gradient">
-                Начните прямо сейчас
-              </CardTitle>
-              <CardDescription className="text-base sm:text-lg">
-                Войдите через Telegram и начните первое собеседование
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6">
-              {/* Проверяем, находимся ли мы в Telegram Web App */}
-              {window.Telegram?.WebApp ? (
-                // Если мы в Telegram Web App, показываем только Web App авторизацию
-                <div className="space-y-4">
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4 mb-4">
-                    <div className="flex items-center">
-                      <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center mr-2">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      </div>
-                      <span className="text-sm text-primary font-medium">
-                        Вы используете Telegram Web App
-                      </span>
-                    </div>
-                  </div>
-
-                  <TelegramAuth
-                    onAuthSuccess={handleAuthSuccess}
-                    onAuthError={handleAuthError}
-                  />
-                </div>
-              ) : (
-                // Если мы в обычном браузере, показываем выбор метода авторизации
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="w-full"
-                >
-                  <TabsList className="grid w-full grid-cols-2 bg-gradient-secondary">
-                    <TabsTrigger value="webapp" className="text-xs sm:text-sm">
-                      Telegram Web App
-                    </TabsTrigger>
-                    <TabsTrigger value="bot" className="text-xs sm:text-sm">
-                      Telegram Bot
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="webapp" className="space-y-4 mt-4">
-                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-center">
-                        <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center mr-2">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        </div>
-                        <span className="text-sm text-primary font-medium">
-                          Рекомендуется для мобильных устройств
-                        </span>
-                      </div>
-                    </div>
-                    <TelegramAuth
-                      onAuthSuccess={handleAuthSuccess}
-                      onAuthError={handleAuthError}
-                    />
-                  </TabsContent>
-                  <TabsContent value="bot" className="space-y-4 mt-4">
-                    <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-center">
-                        <div className="w-5 h-5 bg-accent/20 rounded-full flex items-center justify-center mr-2">
-                          <div className="w-2 h-2 bg-accent rounded-full"></div>
-                        </div>
-                        <span className="text-sm text-accent font-medium">
-                          Альтернативный способ авторизации
-                        </span>
-                      </div>
-                    </div>
-                    <TelegramBotAuth
-                      onAuthSuccess={handleAuthSuccess}
-                      onAuthError={handleAuthError}
-                    />
-                  </TabsContent>
-                </Tabs>
-              )}
-            </CardContent>
-          </Card>
+          <AuthSection
+            onAuthSuccess={handleAuthSuccess}
+            onAuthError={handleAuthError}
+          />
         </div>
       </section>
 

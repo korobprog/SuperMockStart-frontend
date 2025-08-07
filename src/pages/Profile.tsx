@@ -256,7 +256,7 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-1">
             <Card className="p-6 shadow-elegant">
               <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-24 h-24 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center profile-avatar">
                   <User className="w-12 h-12 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold mb-1 text-gradient">

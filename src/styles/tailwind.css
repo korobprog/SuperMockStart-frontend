@@ -162,6 +162,70 @@
   --color-sidebar-accent-foreground: hsl(240 4.8% 95.9%);
   --color-sidebar-border: hsl(240 3.7% 15.9%);
   --color-sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Стили кнопки для темной темы */
+  .dark .btn-gradient-enhanced {
+    font-weight: 700 !important;
+    /* Усиленная тень для лучшей видимости в темной теме */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6),
+      0 3px 9px rgba(0, 0, 0, 0.4) !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+    /* Усиленная тень для всего элемента */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+    letter-spacing: 0.025em !important;
+  }
+
+  .dark .btn-gradient-enhanced:hover {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.7),
+      0 3px 12px rgba(0, 0, 0, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px hsl(var(--color-primary) / 0.6),
+      0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)) !important;
+  }
+
+  /* Альтернативный стиль для темной темы */
+  .dark .btn-gradient-enhanced-alt {
+    font-weight: 700 !important;
+    /* Усиленная тень для темной темы */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)) !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .dark .btn-gradient-enhanced-alt:hover {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.7) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 30px hsl(var(--color-primary) / 0.7),
+      0 5px 15px rgba(0, 0, 0, 0.3) !important;
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.6)) !important;
+  }
+
+  /* Стиль с обводкой для темной темы */
+  .dark .btn-gradient-enhanced-outline {
+    font-weight: 700 !important;
+    /* Темная обводка для максимального контраста */
+    -webkit-text-stroke: 2px rgba(0, 0, 0, 0.8) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+  }
+
+  .dark .btn-gradient-enhanced-outline:hover {
+    -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9) !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.7) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px hsl(var(--color-primary) / 0.7),
+      0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)) !important;
+  }
 }
 
 /* Base styles */
@@ -175,9 +239,32 @@ body {
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
+/* Современные границы с мягкими тенями - теперь определены в tailwind.config.js */
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+/* Стили для секции авторизации */
+#auth-section {
+  scroll-margin-top: 2rem;
+}
+
+/* Анимация появления секции авторизации */
+#auth-section {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Beautiful focus rings */
@@ -299,6 +386,100 @@ html {
   }
 }
 
+/* Enhanced outline button styles for better visibility in light theme */
+.btn-outline-enhanced {
+  border-width: 2px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--color-foreground)) !important;
+  background-color: hsl(var(--color-background)) !important;
+  border-color: hsl(var(--color-border)) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-outline-enhanced:hover {
+  background-color: hsl(var(--color-accent) / 0.15) !important;
+  border-color: hsl(var(--color-accent)) !important;
+  color: hsl(var(--color-accent-foreground)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px hsl(var(--color-accent) / 0.2) !important;
+}
+
+/* Enhanced badge styles for better visibility */
+.badge-outline-enhanced {
+  border-width: 1.5px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--color-foreground)) !important;
+  background-color: hsl(var(--color-background)) !important;
+  border-color: hsl(var(--color-border)) !important;
+}
+
+/* Enhanced gradient button styles for better text visibility */
+.btn-gradient-enhanced {
+  font-weight: 700 !important;
+  /* Улучшенная тень текста для лучшей видимости в белой теме */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+  /* Дополнительная тень для всего элемента */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+  /* Улучшенный контраст */
+  letter-spacing: 0.025em !important;
+}
+
+.btn-gradient-enhanced:hover {
+  /* Усиленная тень при наведении */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px hsl(var(--color-primary) / 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  /* Усиленная тень при наведении */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) !important;
+}
+
+/* Стиль с обводкой для максимальной видимости */
+.btn-gradient-enhanced-outline {
+  font-weight: 700 !important;
+  /* Обводка текста для максимального контраста */
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+}
+
+.btn-gradient-enhanced-outline:hover {
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5) !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px hsl(var(--color-primary) / 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) !important;
+}
+
+/* Альтернативный стиль для кнопки с лучшей видимостью */
+.btn-gradient-enhanced-alt {
+  font-weight: 700 !important;
+  /* Более темная тень для лучшего контраста */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  color: rgb(0, 0, 0) !important;
+  transition: all 0.3s ease !important;
+  /* Дополнительная тень */
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1)) !important;
+  /* Улучшенный контраст */
+  letter-spacing: 0.05em !important;
+}
+
+.btn-gradient-enhanced-alt:hover {
+  text-shadow: 0 1px 4px rgba(5, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  color: rgb(10, 0, 0) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 30px hsl(var(--color-primary) / 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.2) !important;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4)) !important;
+}
+
 /* Mobile-first gradient backgrounds */
 .mobile-gradient {
   background: linear-gradient(
@@ -411,5 +592,1442 @@ html {
 
   [cmdk-input] {
     min-height: 44px !important;
+  }
+}
+
+/* Стили для карточек в темной теме */
+.dark .bg-white\/80 {
+  background-color: rgba(30, 30, 30, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .bg-white\/50 {
+  background-color: rgba(30, 30, 30, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Стили для текста в карточках в темной теме */
+.dark .bg-white\/80 .text-gradient {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .bg-white\/80 .text-muted-foreground {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .bg-white\/80 h1,
+.dark .bg-white\/80 h2,
+.dark .bg-white\/80 h3,
+.dark .bg-white\/80 h4,
+.dark .bg-white\/80 h5,
+.dark .bg-white\/80 h6 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Улучшенные стили для кнопок в темной теме */
+.dark .btn-outline-enhanced {
+  color: #ffffff !important;
+  border-color: hsl(var(--color-primary)) !important;
+  background-color: transparent !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  margin: 0.5rem !important; /* Добавляем отступы между кнопками */
+}
+
+.dark .btn-outline-enhanced:hover {
+  color: #ffffff !important;
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  border-color: hsl(var(--color-primary)) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Стили для контейнера кнопок - увеличиваем отступы */
+.dark .flex.flex-col.sm\:flex-row.gap-4 {
+  gap: 1.5rem !important; /* Увеличиваем отступы между кнопками */
+}
+
+.dark .flex.flex-col.sm\:flex-row.gap-4 > * {
+  margin: 0.5rem !important; /* Дополнительные отступы для кнопок */
+}
+
+/* Специальные стили для кнопок с размером xl в темной теме */
+.dark .size-xl {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  margin: 0.5rem !important;
+}
+
+.dark .size-xl:hover {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Исправленные стили для кнопок в темной теме */
+.dark .bg-white {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dark .bg-white:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Стили для неактивных кнопок в темной теме */
+.dark .bg-gray-100 {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  box-shadow: none !important;
+}
+
+.dark .bg-gray-100:hover {
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+/* Увеличенные отступы между кнопками */
+.dark .grid.w-full.grid-cols-2 {
+  gap: 1rem !important;
+}
+
+.dark .grid.w-full.grid-cols-3 {
+  gap: 1rem !important;
+}
+
+/* Стили для TabsList в темной теме */
+.dark .bg-gradient-secondary {
+  background-color: rgba(30, 30, 30, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  box-shadow: none !important;
+}
+
+/* Стили для TabsTrigger в темной теме - исправленные */
+.dark
+  .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-sm.px-3.py-1\.5.text-sm.font-medium {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  margin: 0.25rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Активные кнопки в темной теме */
+.dark .bg-white.text-gray-900 {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  box-shadow: none !important;
+}
+
+.dark .bg-white.text-gray-900:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Неактивные кнопки в темной теме */
+.dark .hover\:bg-gray-50 {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--color-primary) / 0.5) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+/* Стили для TabsList в темной теме */
+.dark.inline-flex.items-center.justify-center.rounded-md.bg-gray-100.p-1.text-gray-500 {
+  background-color: rgba(30, 30, 30, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  box-shadow: none !important;
+}
+
+/* Увеличенные отступы между кнопками */
+.dark .grid.w-full.grid-cols-2 {
+  gap: 1rem !important;
+}
+
+.dark .grid.w-full.grid-cols-3 {
+  gap: 1rem !important;
+}
+
+/* Альтернативный подход - стили для всех кнопок в TabsList */
+.dark .bg-gradient-secondary button {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  margin: 0.25rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.dark .bg-gradient-secondary button.bg-white {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+.dark .bg-gradient-secondary button.bg-white:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .bg-gradient-secondary button:not(.bg-white) {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--color-primary) / 0.5) !important;
+}
+
+.dark .bg-gradient-secondary button:not(.bg-white):hover {
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+/* Специальные стили для кнопок авторизации */
+.dark .text-xs.sm\:text-sm {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .text-xs.sm\:text-sm[data-state='active'] {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  font-weight: 600 !important;
+}
+
+/* Универсальные стили для всех кнопок в темной теме */
+.dark button {
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.dark button:hover {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Стили для активных кнопок в темной теме */
+.dark .bg-white {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  box-shadow: none !important;
+}
+
+.dark .bg-white:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Стили для неактивных кнопок в темной теме */
+.dark .bg-gray-100 {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--color-primary) / 0.5) !important;
+  box-shadow: none !important;
+}
+
+.dark .bg-gray-100:hover {
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+/* Стили для TabsList в темной теме */
+.dark .bg-gradient-secondary {
+  background-color: rgba(30, 30, 30, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  box-shadow: none !important;
+}
+
+/* Специальные стили для кнопок в TabsList */
+.dark .bg-gradient-secondary button {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+  margin: 0.25rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.dark .bg-gradient-secondary button.bg-white {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+.dark .bg-gradient-secondary button.bg-white:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .bg-gradient-secondary button:not(.bg-white) {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--color-primary) / 0.5) !important;
+}
+
+.dark .bg-gradient-secondary button:not(.bg-white):hover {
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid hsl(var(--color-primary)) !important;
+}
+
+/* Увеличенные отступы между кнопками */
+.dark .grid.w-full.grid-cols-2 {
+  gap: 1rem !important;
+}
+
+.dark .grid.w-full.grid-cols-3 {
+  gap: 1rem !important;
+}
+
+/* Стили для всех outline кнопок */
+.dark .outline-enhanced {
+  color: #ffffff !important;
+  border-color: hsl(var(--color-primary)) !important;
+  background-color: transparent !important;
+  margin: 0.5rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+.dark .outline-enhanced:hover {
+  color: #ffffff !important;
+  background-color: hsl(var(--color-primary) / 0.2) !important;
+  border-color: hsl(var(--color-primary)) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Стили для градиентных кнопок */
+.dark .btn-gradient-enhanced-alt {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  margin: 0.5rem !important;
+}
+
+.dark .btn-gradient-enhanced-alt:hover {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Стили для всех кнопок с размером xl */
+.dark .size-xl {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  margin: 0.5rem !important;
+}
+
+.dark .size-xl:hover {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Убираем все лишние рамки и тени */
+.dark * {
+  outline: none !important;
+}
+
+.dark *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dark *:focus-visible {
+  outline: 2px solid hsl(var(--color-primary)) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+/* Специальные стили для активных кнопок */
+.dark [data-state='active'] {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  border-color: hsl(var(--color-primary)) !important;
+  box-shadow: none !important;
+}
+
+.dark [data-state='active']:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Стили для всех текстовых элементов в темной теме */
+.dark .text-gray-900 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .text-gray-500 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .text-gray-600 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Специальные стили для кнопок с размером */
+.dark .text-xs.sm\:text-sm {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .text-xs.sm\:text-sm.bg-white {
+  background-color: hsl(var(--color-primary)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .text-xs.sm\:text-sm.bg-white:hover {
+  background-color: hsl(var(--color-primary) / 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Убрать рамку у контейнера, оставить рамки у кнопок */
+.dark .bg-gradient-secondary {
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+}
+
+/* Рамки только у кнопок Telegram */
+.dark .bg-gradient-secondary button[value='bot'],
+.dark .bg-gradient-secondary button[value='webapp'] {
+  border: 1px solid hsl(var(--color-primary)) !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Активные кнопки */
+.dark .bg-gradient-secondary button[value='bot'].bg-white,
+.dark .bg-gradient-secondary button[value='webapp'].bg-white {
+  border: 1px solid hsl(var(--color-primary)) !important;
+  border-width: 2px !important;
+}
+
+/* При наведении */
+.dark .bg-gradient-secondary button[value='bot']:hover,
+.dark .bg-gradient-secondary button[value='webapp']:hover {
+  border: 1px solid hsl(var(--color-primary)) !important;
+  border-width: 2px !important;
+}
+
+/* Специальные стили для кнопки Telegram в светлой теме */
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  background: linear-gradient(
+    135deg,
+    #3b82f6 0%,
+    #2563eb 50%,
+    #1d4ed8 100%
+  ) !important;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3),
+    0 0 15px rgba(59, 130, 246, 0.2) !important;
+  border: 2px solid #60a5fa !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:hover {
+  background: linear-gradient(
+    135deg,
+    #2563eb 0%,
+    #1d4ed8 50%,
+    #1e40af 100%
+  ) !important;
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4),
+    0 0 25px rgba(59, 130, 246, 0.3) !important;
+  border: 2px solid #93c5fd !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Анимация пульсации для светлой темы */
+@keyframes telegram-pulse-light {
+  0%,
+  100% {
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3),
+      0 0 15px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4),
+      0 0 25px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  animation: telegram-pulse-light 3s ease-in-out infinite;
+}
+
+/* Убираем анимацию при наведении */
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:hover {
+  animation: none;
+}
+
+/* Специальные стили для иконки Telegram в светлой теме */
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Стили для текста кнопки в светлой теме */
+.bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Специальные стили для кнопки Telegram в темной теме */
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  background: linear-gradient(
+    135deg,
+    #3b82f6 0%,
+    #2563eb 50%,
+    #1d4ed8 100%
+  ) !important;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4),
+    0 0 20px rgba(59, 130, 246, 0.2) !important;
+  border: 2px solid #60a5fa !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:hover {
+  background: linear-gradient(
+    135deg,
+    #2563eb 0%,
+    #1d4ed8 50%,
+    #1e40af 100%
+  ) !important;
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.6),
+    0 0 30px rgba(59, 130, 246, 0.3) !important;
+  border: 2px solid #93c5fd !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Анимация пульсации для темной темы */
+@keyframes telegram-pulse-dark {
+  0%,
+  100% {
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4),
+      0 0 20px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.4);
+  }
+}
+
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  animation: telegram-pulse-dark 3s ease-in-out infinite;
+}
+
+/* Убираем анимацию при наведении в темной теме */
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700:hover {
+  animation: none;
+}
+
+/* Специальные стили для иконки Telegram в темной теме */
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Стили для текста кнопки в темной теме */
+.dark .bg-gradient-to-r.from-blue-500.via-blue-600.to-blue-700 {
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Специальные стили для кнопки "Начать собеседование" */
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700 {
+  background: linear-gradient(
+    135deg,
+    #10b981 0%,
+    #059669 50%,
+    #047857 100%
+  ) !important;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4),
+    0 0 20px rgba(16, 185, 129, 0.2) !important;
+  border: 2px solid #34d399 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700:hover {
+  background: linear-gradient(
+    135deg,
+    #059669 0%,
+    #047857 50%,
+    #065f46 100%
+  ) !important;
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6),
+    0 0 30px rgba(16, 185, 129, 0.3) !important;
+  border: 2px solid #6ee7b7 !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Для темной темы - более яркие цвета */
+.dark .bg-gradient-to-r.from-green-500.via-green-600.to-green-700 {
+  background: linear-gradient(
+    135deg,
+    #22c55e 0%,
+    #16a34a 50%,
+    #15803d 100%
+  ) !important;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.5),
+    0 0 20px rgba(34, 197, 94, 0.3) !important;
+  border: 2px solid #4ade80 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .bg-gradient-to-r.from-green-500.via-green-600.to-green-700:hover {
+  background: linear-gradient(
+    135deg,
+    #16a34a 0%,
+    #15803d 50%,
+    #166534 100%
+  ) !important;
+  box-shadow: 0 15px 35px rgba(34, 197, 94, 0.7),
+    0 0 30px rgba(34, 197, 94, 0.4) !important;
+  border: 2px solid #86efac !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* Анимация пульсации для привлечения внимания */
+@keyframes start-interview-pulse {
+  0%,
+  100% {
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4),
+      0 0 20px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6),
+      0 0 30px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700 {
+  animation: start-interview-pulse 2s ease-in-out infinite;
+}
+
+/* Убираем анимацию при наведении */
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700:hover {
+  animation: none;
+}
+
+/* Специальные стили для иконки Play */
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700 svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Стили для текста кнопки */
+.bg-gradient-to-r.from-green-500.via-green-600.to-green-700 {
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Стили для адаптивных заголовков карточек */
+@media (max-width: 640px) {
+  .text-center .hidden.sm\:inline {
+    display: none !important;
+  }
+
+  .text-center .sm\:hidden {
+    display: block !important;
+    line-height: 1.3 !important;
+    font-size: 1.1rem !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .text-center .hidden.sm\:inline {
+    display: inline !important;
+  }
+
+  .text-center .sm\:hidden {
+    display: none !important;
+  }
+}
+
+/* Стили для h3.font-semibold - светло-серый цвет */
+h3.font-semibold {
+  color: #9ca3af !important; /* light gray */
+}
+
+/* Для темной темы - более светлый серый */
+.dark h3.font-semibold {
+  color: #d1d5db !important; /* lighter gray for dark theme */
+}
+
+/* Для светлой темы - стандартный светло-серый */
+h3.font-semibold {
+  color: #6b7280 !important; /* gray-500 for light theme */
+}
+
+/* Утилитарные классы для современных границ - теперь определены в tailwind.config.js */
+
+/* Дополнительные стили для продвинутых границ с тенями */
+.border-window-shadow {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border-window-shadow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.border-window-shadow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+}
+
+/* Границы с цветными тенями */
+.border-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border-window-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.05) 0%,
+    rgba(147, 51, 234, 0.02) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.border-window-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(147, 51, 234, 0.1);
+  pointer-events: none;
+}
+
+/* Границы с акцентными тенями */
+.border-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border-window-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.05) 0%,
+    rgba(59, 130, 246, 0.02) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.border-window-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+}
+
+/* Границы с градиентными тенями */
+.border-window-gradient {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.08),
+    0 1px 1px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border-window-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.03) 0%,
+    rgba(59, 130, 246, 0.02) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.border-window-gradient::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(147, 51, 234, 0.08);
+  pointer-events: none;
+}
+
+/* Темная тема для границ с тенями */
+.dark .border-window-shadow {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dark .border-window-shadow::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    transparent 100%
+  );
+}
+
+.dark .border-window-shadow::after {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark .border-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(147, 51, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dark .border-window-primary::before {
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.1) 0%,
+    rgba(147, 51, 234, 0.05) 50%,
+    transparent 100%
+  );
+}
+
+.dark .border-window-primary::after {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(147, 51, 234, 0.2);
+}
+
+.dark .border-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dark .border-window-accent::before {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(59, 130, 246, 0.05) 50%,
+    transparent 100%
+  );
+}
+
+.dark .border-window-accent::after {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.2);
+}
+
+.dark .border-window-gradient {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(147, 51, 234, 0.2),
+    0 1px 1px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dark .border-window-gradient::before {
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.08) 0%,
+    rgba(59, 130, 246, 0.05) 50%,
+    transparent 100%
+  );
+}
+
+.dark .border-window-gradient::after {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(147, 51, 234, 0.2);
+}
+
+/* Анимации при наведении */
+.border-window-shadow:hover,
+.border-window-primary:hover,
+.border-window-accent:hover,
+.border-window-gradient:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.dark .border-window-shadow:hover,
+.dark .border-window-primary:hover,
+.dark .border-window-accent:hover,
+.dark .border-window-gradient:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Утилитарные классы для карточек */
+.card-window-shadow {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-window-gradient {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.08),
+    0 1px 1px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Утилитарные классы для кнопок */
+.btn-window-shadow {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 1rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 1rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 1rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-window-gradient {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.08),
+    0 1px 1px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 1rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Утилитарные классы для инпутов */
+.input-window-shadow {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-window-gradient {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.08),
+    0 1px 1px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Специальные стили для модальных окон */
+.modal-window-shadow {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-window-primary {
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-window-accent {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-window-gradient {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(147, 51, 234, 0.08),
+    0 1px 1px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background-color: hsl(var(--color-background));
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Стили для фокуса */
+.border-window-shadow:focus,
+.border-window-primary:focus,
+.border-window-accent:focus,
+.border-window-gradient:focus {
+  outline: 2px solid hsl(var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* Стили для активного состояния */
+.border-window-shadow:active,
+.border-window-primary:active,
+.border-window-accent:active,
+.border-window-gradient:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .border-window-shadow:active,
+.dark .border-window-primary:active,
+.dark .border-window-accent:active,
+.dark .border-window-gradient:active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Стили для улучшения видимости аватарок в светлой теме */
+.avatar-enhanced {
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.avatar-enhanced:hover {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Стили для аватарок в темной теме */
+.dark .avatar-enhanced {
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .avatar-enhanced:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Стили для fallback аватарок (когда нет фото) */
+.avatar-fallback {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--color-primary)),
+    hsl(var(--color-accent))
+  ) !important;
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.avatar-fallback:hover {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Стили для fallback аватарок в темной теме */
+.dark .avatar-fallback {
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .avatar-fallback:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Специальные стили для аватарок в профиле */
+.profile-avatar {
+  border: 3px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s ease !important;
+}
+
+.profile-avatar:hover {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 3px 10px rgba(0, 0, 0, 0.2) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Стили для аватарок в профиле в темной теме */
+.dark .profile-avatar {
+  border: 3px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .profile-avatar:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Стили для аватарок в хедере */
+.header-avatar {
+  border: 2px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease !important;
+}
+
+.header-avatar:hover {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Стили для аватарок в хедере в темной теме */
+.dark .header-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .header-avatar:hover {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Стили для аватарок в карточках */
+.card-avatar {
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+}
+
+.card-avatar:hover {
+  border-color: rgba(0, 0, 0, 0.18) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+  transform: scale(1.03) !important;
+}
+
+/* Стили для аватарок в карточках в темной теме */
+.dark .card-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark .card-avatar:hover {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Специальные стили для аватарок с градиентной рамкой */
+.avatar-gradient-border {
+  border: 2px solid transparent !important;
+  background: linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, hsl(var(--color-primary)), hsl(var(--color-accent)))
+      border-box !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.avatar-gradient-border:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Стили для аватарок с градиентной рамкой в темной теме */
+.dark .avatar-gradient-border {
+  background: linear-gradient(
+        hsl(var(--color-background)),
+        hsl(var(--color-background))
+      )
+      padding-box,
+    linear-gradient(135deg, hsl(var(--color-primary)), hsl(var(--color-accent)))
+      border-box !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .avatar-gradient-border:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Анимация пульсации для привлечения внимания к аватаркам */
+@keyframes avatar-pulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.avatar-pulse {
+  animation: avatar-pulse 2s ease-in-out infinite;
+}
+
+/* Анимация для темной темы */
+@keyframes avatar-pulse-dark {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.dark .avatar-pulse {
+  animation: avatar-pulse-dark 2s ease-in-out infinite;
+}
+
+/* Убираем анимацию при наведении */
+.avatar-pulse:hover {
+  animation: none;
+}
+
+/* Специальные стили для аватарок в мобильной версии */
+@media (max-width: 768px) {
+  .avatar-enhanced,
+  .avatar-fallback,
+  .profile-avatar,
+  .header-avatar,
+  .card-avatar,
+  .avatar-gradient-border {
+    border-width: 1.5px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .avatar-enhanced:hover,
+  .avatar-fallback:hover,
+  .profile-avatar:hover,
+  .header-avatar:hover,
+  .card-avatar:hover,
+  .avatar-gradient-border:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    transform: scale(1.02) !important;
+  }
+
+  .dark .avatar-enhanced,
+  .dark .avatar-fallback,
+  .dark .profile-avatar,
+  .dark .header-avatar,
+  .dark .card-avatar,
+  .dark .avatar-gradient-border {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .dark .avatar-enhanced:hover,
+  .dark .avatar-fallback:hover,
+  .dark .profile-avatar:hover,
+  .dark .header-avatar:hover,
+  .dark .card-avatar:hover,
+  .dark .avatar-gradient-border:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   }
 }

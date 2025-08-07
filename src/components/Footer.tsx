@@ -123,11 +123,24 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-border/40 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 SuperMockStart. Все права защищены.
+            © 2025 SuperMock. Все права защищены.
           </p>
-          <p className="text-sm text-muted-foreground flex items-center mt-2 md:mt-0">
-            Сделано с <Heart className="w-4 h-4 mx-1 text-red-500" /> в России
-          </p>
+          <div className="text-sm text-muted-foreground flex items-center mt-2 md:mt-0 space-x-2 flex-wrap justify-center">
+            <span className="flex items-center">
+              Сделано с <Heart className="w-4 h-4 mx-1 text-red-500" /> в России
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <a
+              href="https://github.com/korobprog"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors flex items-center"
+            >
+              <Github className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Автор: @korobprog</span>
+              <span className="sm:hidden">@korobprog</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>

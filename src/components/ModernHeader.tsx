@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from './ui/button';
+import Avatar from './ui/avatar';
 import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
+  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from './ui/navigation-menu';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { Menu, User, LogOut, BookOpen, Calendar } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from '../hooks/useAuth';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import { User, BookOpen, Calendar, LogOut, Menu, X } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 const ModernHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -84,10 +93,13 @@ const ModernHeader: React.FC = () => {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium">
+                      <Avatar
+                        user={user}
+                        alt={user.first_name || user.username || 'Пользователь'}
+                        size="md"
+                        variant="header"
+                      />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {user.first_name || user.username || 'Пользователь'}
                       </span>
                     </NavigationMenuTrigger>

@@ -1,13 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { Play, Star, Users, Clock, Zap } from 'lucide-react';
+import { Play, Users, Zap, Clock, Star } from 'lucide-react';
 
 const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+
+  const scrollToAuth = () => {
+    const authSection = document.getElementById('auth-section');
+    if (authSection) {
+      authSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  };
+
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-primary/5 rounded-full blur-3xl animate-pulse delay-500"></div>
@@ -34,11 +47,21 @@ const HeroSection: React.FC = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="gradient" size="xl" className="group hover-glow">
-              <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <Button
+              variant="gradient"
+              size="xl"
+              className="group hover-glow btn-gradient-enhanced-alt bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-bold text-lg py-6 px-8 rounded-xl shadow-2xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 border-2 border-green-400 hover:border-green-300 animate-pulse"
+              onClick={scrollToAuth}
+            >
+              <Play className="w-6 h-6 group-hover:scale-110 transition-transform mr-3" />
               Начать собеседование
             </Button>
-            <Button variant="outline" size="xl" className="hover-lift">
+            <Button
+              variant="outline-enhanced"
+              size="xl"
+              className="hover-lift btn-outline-enhanced"
+              onClick={() => navigate('/demo')}
+            >
               Смотреть демо
             </Button>
           </div>
@@ -92,6 +115,16 @@ const HeroSection: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="mt-12 flex flex-col items-center">
+            <div className="text-sm text-muted-foreground mb-2">
+              Нажмите кнопку выше или прокрутите вниз
+            </div>
+            <div className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-muted-foreground/50 rounded-full mt-2 animate-bounce"></div>
+            </div>
           </div>
         </div>
       </div>

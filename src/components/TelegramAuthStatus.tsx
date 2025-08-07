@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from './ui/button';
+import Avatar from './ui/avatar';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 interface TelegramAuthStatusProps {
@@ -33,25 +34,15 @@ const TelegramAuthStatus: React.FC<TelegramAuthStatusProps> = ({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div className="flex items-center gap-2">
-        {user.photo_url ? (
-          <img
-            src={user.photo_url}
-            alt={user.first_name}
-            className="w-8 h-8 rounded-full"
-          />
-        ) : (
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">
-              {user.first_name.charAt(0)}
-            </span>
-          </div>
-        )}
+        <Avatar user={user} alt={user.first_name} size="md" variant="header" />
         <div className="hidden sm:block">
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
             {user.first_name} {user.last_name}
           </p>
           {user.username && (
-            <p className="text-xs text-gray-500">@{user.username}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300">
+              @{user.username}
+            </p>
           )}
         </div>
       </div>

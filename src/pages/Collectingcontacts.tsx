@@ -21,6 +21,7 @@ import {
   CommandList,
 } from '../components/ui/command';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { cn } from '../lib/utils';
 import { itPositions, ItPosition } from '../data/itPositions';
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
@@ -94,38 +95,35 @@ const CollectingContacts = memo(() => {
     mode: 'onChange', // Показывать ошибки при изменении полей
   });
 
-  // Автоматическая аутентификация в режиме разработки (оптимизированная)
+  // Автоматическое заполнение формы в режиме разработки
   useEffect(() => {
-    const authenticateInDev = async () => {
-      const token =
-        localStorage.getItem('extended_token') ||
-        localStorage.getItem('telegram_token');
+    const isDevelopment = import.meta.env.DEV;
+    if (isDevelopment) {
+      console.log('🔧 Режим разработки: автоматически заполняем форму');
+      setValue('profession', 'frontend-developer');
+      setValue('country', 'RU');
+      setValue('language', 'ru');
+      setValue('experience', '1-3');
+      setValue('email', 'test@example.com');
+      setValue('phone', '+7 (999) 123-45-67');
+    }
+  }, [setValue]);
 
-      if (!token && import.meta.env.DEV) {
-        setIsAuthenticating(true);
-        try {
-          const apiUrl =
-            import.meta.env.VITE_API_URL || 'http://localhost:3001';
-          const response = await fetch(`${apiUrl}/api/auth/test-token`, {
-            cache: 'no-cache',
-          });
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              localStorage.setItem('extended_token', data.data.token);
-            }
-          }
-        } catch (error) {
-          setError(
-            'Ошибка аутентификации. Пожалуйста, попробуйте обновить страницу.'
-          );
-        } finally {
-          setIsAuthenticating(false);
-        }
-      }
-    };
+  // Убираем автоматическую аутентификацию в режиме разработки
+  // Пользователь должен авторизоваться через Telegram
+  useEffect(() => {
+    // Проверяем только наличие токена
+    const token =
+      localStorage.getItem('extended_token') ||
+      localStorage.getItem('telegram_token');
 
-    authenticateInDev();
+    if (!token) {
+      console.log('❌ Токен не найден, пользователь должен авторизоваться');
+      setIsAuthenticating(false);
+      return;
+    }
+
+    setIsAuthenticating(false);
   }, []);
 
   // Проверка существующих данных формы пользователя
@@ -137,7 +135,8 @@ const CollectingContacts = memo(() => {
           localStorage.getItem('telegram_token');
 
         if (!token) {
-          setIsCheckingExistingData(false);
+          console.log('❌ Токен не найден, перенаправляем на главную страницу');
+          navigate('/');
           return;
         }
 
@@ -166,10 +165,15 @@ const CollectingContacts = memo(() => {
             );
             // Показываем форму для заполнения
           }
+        } else {
+          console.log(
+            '❌ Ошибка запроса данных формы, перенаправляем на главную страницу'
+          );
+          navigate('/');
         }
       } catch (error) {
         console.log('⚠️ Ошибка при проверке данных формы:', error);
-        // Продолжаем показывать форму в случае ошибки
+        navigate('/');
       } finally {
         setIsCheckingExistingData(false);
       }
@@ -232,6 +236,28 @@ const CollectingContacts = memo(() => {
     [navigate]
   );
 
+  // Автоматическая отправка формы в режиме разработки
+  useEffect(() => {
+    const isDevelopment = import.meta.env.DEV;
+    if (isDevelopment && !isCheckingExistingData) {
+      // Автоматически отправляем форму через 3 секунды после загрузки
+      const timer = setTimeout(() => {
+        console.log('🔧 Режим разработки: автоматически отправляем форму');
+        const formData = {
+          profession: 'frontend-developer',
+          country: 'RU',
+          language: 'ru',
+          experience: '1-3',
+          email: 'test@example.com',
+          phone: '+7 (999) 123-45-67',
+        };
+        onSubmit(formData);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [onSubmit, isCheckingExistingData]);
+
   // Мемоизированный список стран
   const countriesList = useMemo(() => {
     return Object.entries(countries as Record<string, any>)
@@ -289,16 +315,13 @@ const CollectingContacts = memo(() => {
   // Показываем загрузку во время аутентификации или проверки данных
   if (isAuthenticating || isCheckingExistingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">
-            {isAuthenticating
-              ? 'Настройка аутентификации...'
-              : 'Проверка данных пользователя...'}
-          </p>
-        </div>
-      </div>
+      <LoadingSpinner
+        message={
+          isAuthenticating
+            ? 'Настройка аутентификации...'
+            : 'Проверка данных пользователя...'
+        }
+      />
     );
   }
 
@@ -329,6 +352,19 @@ const CollectingContacts = memo(() => {
           <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
             Заполните форму для прохождения собеседования
           </h1>
+
+          {/* Сообщение о режиме разработки */}
+          {import.meta.env.DEV && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <p className="text-blue-800 text-sm">
+                  🔧 Режим разработки: форма будет автоматически заполнена и
+                  отправлена через 3 секунды
+                </p>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Выбор профессии */}
             <div className="space-y-2">

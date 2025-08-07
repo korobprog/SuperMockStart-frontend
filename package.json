@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:debug": "vite --config vite.config.dev.ts",
     "dev:backend": "cd backend && npm run dev",
     "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:backend\"",
     "dev:db": "docker-compose -f docker-compose.dev.yml up -d postgres",

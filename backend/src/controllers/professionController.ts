@@ -9,18 +9,19 @@ export class ProfessionController {
   // Добавление выбранной профессии
   static async addSelectedProfession(req: Request, res: Response) {
     try {
-      const { userId, profession } = req.body;
+      const { profession } = req.body;
+      const userId = req.extendedUser?.id;
 
       if (!userId || !profession) {
         return res.status(400).json({
           success: false,
-          message: 'userId и profession обязательны',
+          message: 'profession обязателен',
         });
       }
 
-      // Находим пользователя по telegramId
+      // Находим пользователя по ID из токена
       const user = await prisma.user.findUnique({
-        where: { telegramId: userId },
+        where: { id: userId },
       });
 
       if (!user) {
@@ -57,30 +58,18 @@ export class ProfessionController {
   // Получение всех выбранных профессий пользователя
   static async getUserProfessions(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const authenticatedUserId = req.extendedUser?.id;
 
-      if (!userId) {
-        return res.status(400).json({
+      if (!authenticatedUserId) {
+        return res.status(401).json({
           success: false,
-          message: 'userId обязателен',
+          message: 'Unauthorized',
         });
       }
 
-      // Находим пользователя по telegramId
-      const user = await prisma.user.findUnique({
-        where: { telegramId: userId },
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'Пользователь не найден',
-        });
-      }
-
-      // Получаем все выбранные профессии пользователя
+      // Получаем все выбранные профессии аутентифицированного пользователя
       const professions = await prisma.selectedProfession.findMany({
-        where: { userId: user.id },
+        where: { userId: authenticatedUserId },
         orderBy: { createdAt: 'desc' },
       });
 

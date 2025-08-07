@@ -183,8 +183,8 @@ const Dashboard: React.FC = () => {
               </div>
 
               <Button
-                className="w-full mt-6"
-                variant="outline"
+                className="w-full mt-6 btn-outline-enhanced"
+                variant="outline-enhanced"
                 onClick={() => navigate('/interview')}
               >
                 Показать все направления
@@ -200,21 +200,30 @@ const Dashboard: React.FC = () => {
               <h3 className="font-semibold mb-4">Быстрые действия</h3>
               <div className="space-y-3">
                 <Button
-                  className="w-full justify-start hover:shadow-glow transition-all duration-300"
+                  className="w-full justify-start hover:shadow-glow transition-all duration-300 bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-green-400 hover:border-green-300"
                   onClick={() => navigate('/interview')}
                 >
-                  <Play className="w-4 h-4 mr-2" />
+                  <Play className="w-5 h-5 mr-2" />
                   Начать собеседование
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button
+                  className="w-full justify-start btn-outline-enhanced"
+                  variant="outline-enhanced"
+                >
                   <BookOpen className="w-4 h-4 mr-2" />
                   Тренажеры
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button
+                  className="w-full justify-start btn-outline-enhanced"
+                  variant="outline-enhanced"
+                >
                   <Trophy className="w-4 h-4 mr-2" />
                   Хакатоны
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button
+                  className="w-full justify-start btn-outline-enhanced"
+                  variant="outline-enhanced"
+                >
                   <Users className="w-4 h-4 mr-2" />
                   Найти ментора
                 </Button>

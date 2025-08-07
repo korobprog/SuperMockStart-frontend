@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   frontend:
     build:
@@ -18,12 +17,22 @@ services:
     environment:
       - NODE_ENV=production
     labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-web.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-web.entrypoints=web
+      - traefik.http.services.supermock-supermock-full-stack-yrvopu-3-web.loadbalancer.server.port=80
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-web.service=supermock-supermock-full-stack-yrvopu-3-web
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-websecure.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-websecure.entrypoints=websecure
+      - traefik.http.services.supermock-supermock-full-stack-yrvopu-3-websecure.loadbalancer.server.port=80
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-websecure.service=supermock-supermock-full-stack-yrvopu-3-websecure
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-3-websecure.tls.certresolver=letsencrypt
       - traefik.enable=true
       - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`)
       - traefik.http.routers.supermock-frontend.entrypoints=websecure
       - traefik.http.routers.supermock-frontend.tls.certResolver=letsencrypt
       - traefik.http.services.supermock-frontend.loadbalancer.server.port=80
-
   backend:
     build:
       context: ./backend
@@ -51,12 +60,22 @@ services:
     volumes:
       - ../files/backend-logs:/app/logs
     labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-web.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-web.entrypoints=web
+      - traefik.http.services.supermock-supermock-full-stack-yrvopu-4-web.loadbalancer.server.port=3001
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-web.service=supermock-supermock-full-stack-yrvopu-4-web
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-websecure.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-websecure.entrypoints=websecure
+      - traefik.http.services.supermock-supermock-full-stack-yrvopu-4-websecure.loadbalancer.server.port=3001
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-websecure.service=supermock-supermock-full-stack-yrvopu-4-websecure
+      - traefik.http.routers.supermock-supermock-full-stack-yrvopu-4-websecure.tls.certresolver=letsencrypt
       - traefik.enable=true
       - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.supermock-backend.entrypoints=websecure
       - traefik.http.routers.supermock-backend.tls.certResolver=letsencrypt
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3001
-
   database:
     image: postgres:16-alpine
     restart: always
@@ -78,7 +97,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-
 networks:
   dokploy-network:
     external: true

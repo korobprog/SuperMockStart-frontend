@@ -14,19 +14,26 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border bg-background text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 dark:text-foreground',
+        'outline-enhanced':
+          'border-2 bg-background text-foreground shadow-xs hover:bg-accent/10 hover:text-accent-foreground hover:border-accent font-semibold dark:bg-input/30 dark:border-input dark:hover:bg-input/50 dark:text-foreground',
         secondary:
           'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
         ghost:
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         gradient:
-          'bg-gradient-primary text-white border-0 hover:scale-105 shadow-elegant hover:shadow-glow',
+          'bg-gradient-primary text-white border-0 hover:scale-105 shadow-elegant hover:shadow-glow font-semibold hover:text-white',
         hero: 'bg-gradient-primary text-white border-0 hover:scale-105 shadow-glow animate-glow-pulse text-lg font-semibold',
-        success: 'bg-success text-success-foreground hover:bg-success/90',
-        warning: 'bg-warning text-warning-foreground hover:bg-warning/90',
-        premium:
-          'bg-gradient-to-r from-primary to-accent text-white border-0 hover:scale-105 shadow-glow relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700',
+        // Новые варианты с современными границами
+        modern:
+          'border-modern bg-background text-foreground hover:bg-accent/10 hover:text-accent-foreground',
+        'modern-elevated':
+          'border-modern-elevated bg-background text-foreground hover:bg-accent/10 hover:text-accent-foreground',
+        'modern-colored':
+          'border-modern-colored bg-background text-foreground hover:bg-accent/10 hover:text-accent-foreground',
+        'modern-gradient':
+          'border-modern-gradient bg-background text-foreground hover:bg-accent/10 hover:text-accent-foreground',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',

@@ -23,8 +23,26 @@ export const useAuth = () => {
   };
 
   const checkAuth = async () => {
+    // Проверяем токен из Redux store
     if (auth.token) {
       return await dispatch(verifyToken() as any);
+    }
+
+    // Если токена нет в Redux, проверяем localStorage
+    const storedToken = localStorage.getItem('telegram_token');
+    const storedUser = localStorage.getItem('telegram_user');
+
+    if (storedToken && storedUser && !auth.isAuthenticated) {
+      try {
+        const user = JSON.parse(storedUser);
+        dispatch(setToken(storedToken));
+        dispatch(setUser(user));
+        return await dispatch(verifyToken() as any);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('telegram_token');
+        localStorage.removeItem('telegram_user');
+      }
     }
   };
 

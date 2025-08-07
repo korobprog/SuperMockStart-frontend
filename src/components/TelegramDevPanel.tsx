@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
 import {
   Card,
   CardContent,
@@ -7,6 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
+import { Button } from './ui/button';
+import Avatar from './ui/avatar';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 interface TelegramUser {
   id: number;
@@ -151,18 +153,17 @@ const TelegramDevPanel: React.FC = () => {
         {telegramUser ? (
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              {telegramUser.photo_url && (
-                <img
-                  src={telegramUser.photo_url}
-                  alt="User"
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
+              <Avatar
+                user={telegramUser}
+                alt={`${telegramUser.first_name} ${telegramUser.last_name}`}
+                size="md"
+                variant="header"
+              />
               <div>
-                <div className="font-medium">
+                <div className="font-medium text-gray-900 dark:text-white">
                   {telegramUser.first_name} {telegramUser.last_name}
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-300">
                   @{telegramUser.username} (ID: {telegramUser.id})
                 </div>
               </div>

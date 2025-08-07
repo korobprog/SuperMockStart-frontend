@@ -232,6 +232,81 @@ export class AuthController {
   }
 
   /**
+   * Аутентификация через Telegram Login Widget (новый)
+   */
+  static async authenticateWithTelegramLogin(req: Request, res: Response) {
+    try {
+      const { telegramData, user } = req.body;
+
+      if (!telegramData || !user) {
+        return res.status(400).json({
+          success: false,
+          error: 'Telegram data and user are required',
+        } as ApiResponse);
+      }
+
+      const {
+        id,
+        first_name,
+        last_name,
+        username,
+        photo_url,
+        auth_date,
+        hash,
+      } = telegramData;
+
+      if (!id || !first_name || !auth_date || !hash) {
+        return res.status(400).json({
+          success: false,
+          error: 'Required Telegram fields are missing',
+        } as ApiResponse);
+      }
+
+      // TODO: В продакшне здесь должна быть проверка hash
+      const isProduction = process.env.NODE_ENV === 'production';
+
+      if (isProduction) {
+        // TODO: Добавить проверку hash в продакшне
+        console.log('⚠️ Hash verification not implemented for production');
+      }
+
+      // Находим или создаем пользователя в БД
+      const userResult = await UserService.findOrCreateTelegramUser({
+        id: parseInt(id),
+        username: username || `user_${id}`,
+        firstName: first_name,
+        lastName: last_name,
+        photoUrl: photo_url,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return res.status(500).json({
+          success: false,
+          error: userResult.error || 'Failed to create/find user',
+        } as ApiResponse);
+      }
+
+      // Генерируем JWT токен
+      const token = JwtUtils.generateExtendedToken(userResult.data);
+
+      res.json({
+        success: true,
+        data: {
+          user: userResult.data,
+          token,
+        },
+        message: 'Telegram login successful',
+      } as ApiResponse);
+    } catch (error) {
+      console.error('Telegram Login authentication error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      } as ApiResponse);
+    }
+  }
+
+  /**
    * Получение тестового токена для разработки
    */
   static async getTestToken(req: Request, res: Response) {
@@ -310,24 +385,39 @@ export class AuthController {
   }
 
   /**
-   * Проверка валидности токена
+   * Верификация JWT токена
    */
-  static async verifyToken(req: Request, res: Response) {
+  static verifyToken(req: Request, res: Response) {
     try {
       const authHeader = req.headers.authorization;
       const token = authHeader && authHeader.split(' ')[1];
 
+      console.log(
+        '🔍 verifyToken called with header:',
+        authHeader ? 'present' : 'missing'
+      );
+
       if (!token) {
+        console.log('❌ No token provided');
         return res.status(401).json({
           success: false,
           error: 'Token is required',
         } as ApiResponse);
       }
 
+      console.log('🔍 Verifying token:', token.substring(0, 20) + '...');
+
       const result = AuthService.verifyToken(token);
+
+      console.log('🔍 verifyToken result:', {
+        success: result.success,
+        hasData: !!result.data,
+        error: result.error,
+      });
+
       res.json(result);
     } catch (error) {
-      console.error('Token verification error:', error);
+      console.error('❌ Token verification error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
@@ -495,6 +585,51 @@ export class AuthController {
     } catch (error) {
       console.error('Token validation error:', error);
       return res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      });
+    }
+  }
+
+  /**
+   * Создание тестового пользователя для разработки
+   */
+  static async createDevUser(req: Request, res: Response) {
+    try {
+      // Проверяем, что мы в режиме разработки
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({
+          success: false,
+          error: 'Dev user creation is not allowed in production',
+        });
+      }
+
+      const { id, first_name, last_name, username, photo_url } = req.body;
+
+      if (!id || !first_name) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID and first_name are required',
+        });
+      }
+
+      // Создаем пользователя в базе данных
+      const result = await AuthService.createDevUser({
+        telegramId: id,
+        firstName: first_name,
+        lastName: last_name || '',
+        username: username || '',
+        photoUrl: photo_url || '',
+      });
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Create dev user controller error:', error);
+      res.status(500).json({
         success: false,
         error: 'Internal server error',
       });

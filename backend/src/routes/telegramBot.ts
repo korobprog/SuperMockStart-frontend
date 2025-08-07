@@ -6,6 +6,9 @@ const router: express.Router = express.Router();
 // Создание ссылки авторизации
 router.post('/auth-url', TelegramBotController.createAuthUrl);
 
+// Создание LoginUrl объекта для Telegram Login Widget
+router.post('/login-url', TelegramBotController.createLoginUrl);
+
 // Проверка авторизации пользователя
 router.post('/verify-user', TelegramBotController.verifyUserAuth);
 

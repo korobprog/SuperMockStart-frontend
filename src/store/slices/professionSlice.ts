@@ -24,20 +24,23 @@ const initialState: ProfessionState = {
 };
 
 // Базовый URL для API
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
 // Async thunks
 export const addSelectedProfession = createAsyncThunk(
   'profession/addSelectedProfession',
-  async ({ userId, profession }: { userId: string; profession: string }) => {
+  async ({ profession }: { userId: string; profession: string }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/professions/selected`, {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch(`${API_BASE_URL}/api/professions/selected`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId, profession }),
+        body: JSON.stringify({ profession }),
       });
 
       if (!response.ok) {
@@ -57,8 +60,17 @@ export const addSelectedProfession = createAsyncThunk(
 
 export const fetchUserProfessions = createAsyncThunk(
   'profession/fetchUserProfessions',
-  async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/professions/user/${userId}`);
+  async () => {
+    const token = localStorage.getItem('authToken');
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/professions/user/professions`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -75,10 +87,15 @@ export const fetchUserProfessions = createAsyncThunk(
 export const removeSelectedProfession = createAsyncThunk(
   'profession/removeSelectedProfession',
   async (professionId: string) => {
+    const token = localStorage.getItem('authToken');
+
     const response = await fetch(
-      `${API_BASE_URL}/professions/selected/${professionId}`,
+      `${API_BASE_URL}/api/professions/selected/${professionId}`,
       {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
