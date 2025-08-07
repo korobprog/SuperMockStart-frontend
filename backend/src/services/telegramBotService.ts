@@ -12,30 +12,48 @@ export class TelegramBotService {
   static initialize(token: string) {
     this.botToken = token;
 
-    // Временно отключаем polling из-за конфликтов
+    // Используем webhook в продакшене, polling в development
     const isDevelopment = process.env.NODE_ENV === 'development';
 
-    this.bot = new TelegramBot(token, {
-      polling: isDevelopment, // Только в development
-      webHook: false, // Отключаем webhook пока не настроится
-    });
-
-    // Добавляем обработчик сообщений только для development
-    if (isDevelopment && this.bot) {
-      this.bot.on('message', async (msg) => {
-        console.log('Received message:', msg);
-        if (msg.text && msg.text.startsWith('/start')) {
-          await this.handleStartCommand(msg);
-        }
+    if (isDevelopment) {
+      // В development используем polling
+      this.bot = new TelegramBot(token, {
+        polling: true,
+        webHook: false,
       });
 
-      console.log(
-        `🤖 Telegram bot started in polling mode (${
-          isDevelopment ? 'development' : 'production'
-        })`
-      );
-    } else if (!isDevelopment) {
-      console.log('🤖 Telegram bot started in webhook mode (production)');
+      // Добавляем обработчик сообщений для development
+      if (this.bot) {
+        this.bot.on('message', async (msg) => {
+          console.log('Received message:', msg);
+          if (msg.text && msg.text.startsWith('/start')) {
+            await this.handleStartCommand(msg);
+          }
+        });
+
+        console.log('🤖 Telegram bot started in polling mode (development)');
+      }
+    } else {
+      // В продакшене используем webhook
+      this.bot = new TelegramBot(token, {
+        polling: false,
+        webHook: {
+          port: 8443,
+          host: '0.0.0.0',
+        },
+      });
+
+      // Добавляем обработчик сообщений для webhook
+      if (this.bot) {
+        this.bot.on('message', async (msg) => {
+          console.log('Received message via webhook:', msg);
+          if (msg.text && msg.text.startsWith('/start')) {
+            await this.handleStartCommand(msg);
+          }
+        });
+
+        console.log('🤖 Telegram bot started in webhook mode (production)');
+      }
     }
   }
 
