@@ -1,12 +1,7 @@
-version: '3.8'
 services:
   frontend:
     image: supermock-frontend:latest
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 5s
-        max_attempts: 3
+    restart: unless-stopped
     expose:
       - 80
     networks:
@@ -22,11 +17,7 @@ services:
 
   backend:
     image: supermock-backend:latest
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 5s
-        max_attempts: 3
+    restart: unless-stopped
     expose:
       - 3001
     environment:
@@ -54,11 +45,7 @@ services:
 
   database:
     image: postgres:16-alpine
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 5s
-        max_attempts: 3
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: krishna1284radha
