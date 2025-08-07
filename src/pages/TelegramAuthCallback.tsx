@@ -69,16 +69,48 @@ const TelegramAuthCallback: React.FC = () => {
           photo_url: photoUrl || '',
         };
 
-        // Генерируем токен авторизации
-        const token =
-          Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        // Отправляем данные на backend для получения JWT токена
+        const API_URL =
+          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-        // Сохраняем пользователя и токен
-        localStorage.setItem('telegram_user', JSON.stringify(user));
-        localStorage.setItem('telegram_token', token);
-        localStorage.setItem('auth_id', authId || '');
+        try {
+          const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user,
+              auth_date: authDate,
+              hash: hash,
+            }),
+          });
 
-        console.log('✅ User authenticated successfully:', user);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Сохраняем пользователя и JWT токен
+            localStorage.setItem('telegram_user', JSON.stringify(user));
+            localStorage.setItem('telegram_token', data.token);
+            localStorage.setItem('auth_id', authId || '');
+
+            console.log(
+              '✅ User authenticated successfully with JWT token:',
+              user
+            );
+          } else {
+            throw new Error(data.error || 'Ошибка авторизации на сервере');
+          }
+        } catch (error) {
+          console.error('❌ Error getting JWT token:', error);
+          // Fallback: сохраняем пользователя без JWT токена
+          localStorage.setItem('telegram_user', JSON.stringify(user));
+          localStorage.setItem('auth_id', authId || '');
+        }
 
         // Перенаправляем на главную страницу или следующую страницу
         setTimeout(() => {

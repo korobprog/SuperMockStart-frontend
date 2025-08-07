@@ -66,12 +66,8 @@ export class TelegramBotService {
         throw new Error('Bot not initialized');
       }
 
-      // Простая проверка - пытаемся отправить тестовое сообщение
-      await this.bot.sendMessage(userId, 'Вы авторизованны!', {
-        disable_notification: true,
-      });
-
-      // Если сообщение отправилось, возвращаем базовую информацию
+      // Вместо отправки сообщения, просто возвращаем базовую информацию
+      // Отправка сообщения может вызвать ошибку, если пользователь не начал диалог с ботом
       return {
         id: userId,
         is_bot: false,
@@ -82,7 +78,7 @@ export class TelegramBotService {
         photo_url: undefined,
       };
     } catch (error) {
-      console.error('Error checking user access:', error);
+      console.error('Error getting user info:', error);
       return null;
     }
   }
@@ -241,8 +237,9 @@ export class TelegramBotService {
         return;
       }
 
+      const userName = user.first_name || user.username || 'пользователь';
       console.log(
-        `📱 Received /start command from user ${user.id} (${user.first_name})`
+        `📱 Received /start command from user ${user.id} (${userName})`
       );
 
       // Проверяем, содержит ли команда параметры авторизации
@@ -260,17 +257,18 @@ export class TelegramBotService {
 
           if (isDevelopment) {
             // В dev режиме всегда разрешаем авторизацию, если бот может отправлять сообщения
+            const userName = user.first_name || user.username || 'пользователь';
             console.log(
-              `✅ Dev mode: allowing auth for user ${user.id} (${user.first_name})`
+              `✅ Dev mode: allowing auth for user ${user.id} (${userName})`
             );
 
             await this.bot.sendMessage(
               chatId,
-              `✅ Авторизация успешна!\n\nДобро пожаловать, ${user.first_name}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
+              `✅ Авторизация успешна!\n\nДобро пожаловать, ${userName}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
             );
 
             console.log(
-              `User ${user.id} (${user.first_name}) authenticated via bot (dev mode)`
+              `User ${user.id} (${userName}) authenticated via bot (dev mode)`
             );
 
             // Отправляем кнопку для проверки токена
@@ -278,13 +276,14 @@ export class TelegramBotService {
           } else {
             // В production режиме проверяем совпадение ID пользователя
             if (authResult.userId === user.id) {
+              const userName = user.first_name || user.username || 'пользователь';
               await this.bot.sendMessage(
                 chatId,
-                `✅ Авторизация успешна!\n\nДобро пожаловать, ${user.first_name}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: production\n✅ Безопасная авторизация`
+                `✅ Авторизация успешна!\n\nДобро пожаловать, ${userName}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: production\n✅ Безопасная авторизация`
               );
 
               console.log(
-                `User ${user.id} (${user.first_name}) authenticated via bot`
+                `User ${user.id} (${userName}) authenticated via bot`
               );
 
               // Отправляем кнопку для проверки токена
@@ -308,16 +307,17 @@ export class TelegramBotService {
       } else {
         // Обычное приветствие
         const isDevelopment = process.env.NODE_ENV === 'development';
+        const userName = user.first_name || user.username || 'пользователь';
 
         if (isDevelopment) {
           await this.bot.sendMessage(
             chatId,
-            `👋 Привет, ${user.first_name}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
+            `👋 Привет, ${userName}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: development\n⚠️ Используйте тестовые токены`
           );
         } else {
           await this.bot.sendMessage(
             chatId,
-            `👋 Привет, ${user.first_name}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: production\n✅ Безопасная авторизация`
+            `👋 Привет, ${userName}!\n\nЭто бот для авторизации в приложении SuperMock.\n\nДля авторизации перейдите в приложение и нажмите кнопку "Войти через Telegram".\n\n🌐 Среда: production\n✅ Безопасная авторизация`
           );
         }
 

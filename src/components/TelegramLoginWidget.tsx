@@ -26,8 +26,10 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     const botUsername =
       import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'SuperMock_bot';
 
-    // Создаем URL для callback
-    const callbackUrl = `${window.location.origin}/auth-callback`;
+    // Создаем URL для callback - используем полный URL с протоколом
+    const callbackUrl = `${window.location.protocol}//${window.location.host}/auth-callback`;
+
+    console.log('🔗 Telegram Login Widget callback URL:', callbackUrl);
 
     // Создаем скрипт для Telegram Login Widget
     const script = document.createElement('script');
@@ -44,20 +46,31 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     const handleAuth = (user: any) => {
       console.log('✅ Telegram Login Widget auth success:', user);
 
-      // Сохраняем пользователя
-      localStorage.setItem('telegram_user', JSON.stringify(user));
+      try {
+        // Сохраняем пользователя
+        localStorage.setItem('telegram_user', JSON.stringify(user));
 
-      // Генерируем токен
-      const token =
-        Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-      localStorage.setItem('telegram_token', token);
+        // Генерируем токен
+        const token =
+          Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        localStorage.setItem('telegram_token', token);
 
-      onAuthSuccess?.(user);
+        onAuthSuccess?.(user);
+      } catch (error) {
+        console.error('❌ Error saving user data:', error);
+        onAuthError?.('Ошибка сохранения данных пользователя');
+      }
     };
 
     // Добавляем обработчик в window
     window.TelegramLoginWidget = {
       dataOnauth: handleAuth,
+    };
+
+    // Добавляем обработчик ошибок загрузки скрипта
+    script.onerror = () => {
+      console.error('❌ Failed to load Telegram Login Widget script');
+      onAuthError?.('Не удалось загрузить виджет авторизации Telegram');
     };
 
     // Добавляем скрипт в DOM
