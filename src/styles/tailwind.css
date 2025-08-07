@@ -1,6 +1,8 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
+:root {
   /* Base colors - Light mode */
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(220 8.9% 9.8%);

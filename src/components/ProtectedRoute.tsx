@@ -20,7 +20,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   fallback,
 }) => {
-  const { loading, isAuthenticated, login, checkAuthStatus } = useTelegramAuth();
+  const { loading, isAuthenticated, checkAuthStatus } = useTelegramAuth();
   const navigate = useNavigate();
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [authCheckAttempts, setAuthCheckAttempts] = useState(0);
@@ -28,8 +28,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Проверяем авторизацию при загрузке компонента
   useEffect(() => {
     const checkAuth = async () => {
-      if (!isAuthenticated && !loading && !hasCheckedAuth && authCheckAttempts < 2) {
-        setAuthCheckAttempts(prev => prev + 1);
+      if (
+        !isAuthenticated &&
+        !loading &&
+        !hasCheckedAuth &&
+        authCheckAttempts < 2
+      ) {
+        setAuthCheckAttempts((prev) => prev + 1);
         try {
           await checkAuthStatus();
         } catch (error) {
@@ -41,7 +46,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     };
 
     checkAuth();
-  }, [isAuthenticated, loading, hasCheckedAuth, authCheckAttempts, checkAuthStatus]);
+  }, [
+    isAuthenticated,
+    loading,
+    hasCheckedAuth,
+    authCheckAttempts,
+    checkAuthStatus,
+  ]);
 
   // Если проверка завершена и пользователь не авторизован, перенаправляем на страницу авторизации
   useEffect(() => {

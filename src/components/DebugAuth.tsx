@@ -24,7 +24,7 @@ const DebugAuth: React.FC = () => {
     } catch (error) {
       setDebugInfo({
         timestamp: new Date().toISOString(),
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -32,8 +32,9 @@ const DebugAuth: React.FC = () => {
   const checkDatabaseStatus = async () => {
     try {
       setDbStatus('Проверяется...');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
-      
+      const API_URL =
+        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+
       const response = await fetch(`${API_URL}/api/auth/test`, {
         method: 'GET',
         headers: {
@@ -142,10 +143,12 @@ const DebugAuth: React.FC = () => {
               <strong>Database:</strong> {dbStatus}
             </p>
             <p>
-              <strong>API URL:</strong> {import.meta.env.VITE_API_URL || 'https://api.supermock.ru'}
+              <strong>API URL:</strong>{' '}
+              {import.meta.env.VITE_API_URL || 'https://api.supermock.ru'}
             </p>
             <p>
-              <strong>Environment:</strong> {import.meta.env.NODE_ENV || 'development'}
+              <strong>Environment:</strong>{' '}
+              {import.meta.env.NODE_ENV || 'development'}
             </p>
           </div>
         </CardContent>
