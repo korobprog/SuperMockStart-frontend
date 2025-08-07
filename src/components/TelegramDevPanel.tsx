@@ -8,7 +8,6 @@ import {
 } from './ui/card';
 import { Button } from './ui/button';
 import Avatar from './ui/avatar';
-import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 interface TelegramUser {
   id: number;

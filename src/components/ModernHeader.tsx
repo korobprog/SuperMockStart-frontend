@@ -6,20 +6,12 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from './ui/navigation-menu';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
 import { ThemeToggle } from './ThemeToggle';
-import { useAuth } from '../hooks/useAuth';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
-import { User, BookOpen, Calendar, LogOut, Menu, X } from 'lucide-react';
+import { User, BookOpen, Calendar, LogOut, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 const ModernHeader: React.FC = () => {
