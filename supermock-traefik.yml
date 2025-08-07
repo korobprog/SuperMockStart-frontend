@@ -42,12 +42,12 @@ http:
     supermock-frontend-service:
       loadBalancer:
         servers:
-          - url: http://supermock-frontend-1:80
+          - url: http://supermock_frontend:80
         passHostHeader: true
     supermock-backend-service:
       loadBalancer:
         servers:
-          - url: http://supermock-backend-1:3001
+          - url: http://supermock_backend:3001
         passHostHeader: true
   middlewares:
     redirect-to-https:
