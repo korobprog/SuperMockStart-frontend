@@ -12,16 +12,16 @@ export class TelegramBotService {
   static initialize(token: string) {
     this.botToken = token;
 
-    // Используем polling в обоих режимах, пока webhook не настроится правильно
+    // Временно отключаем polling из-за конфликтов
     const isDevelopment = process.env.NODE_ENV === 'development';
 
     this.bot = new TelegramBot(token, {
-      polling: true, // Используем polling в продакшене
+      polling: isDevelopment, // Только в development
       webHook: false, // Отключаем webhook пока не настроится
     });
 
-    // Добавляем обработчик сообщений для всех режимов
-    if (this.bot) {
+    // Добавляем обработчик сообщений только для development
+    if (isDevelopment && this.bot) {
       this.bot.on('message', async (msg) => {
         console.log('Received message:', msg);
         if (msg.text && msg.text.startsWith('/start')) {
@@ -34,6 +34,8 @@ export class TelegramBotService {
           isDevelopment ? 'development' : 'production'
         })`
       );
+    } else if (!isDevelopment) {
+      console.log('🤖 Telegram bot started in webhook mode (production)');
     }
   }
 
