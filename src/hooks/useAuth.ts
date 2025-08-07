@@ -25,7 +25,14 @@ export const useAuth = () => {
   const checkAuth = async () => {
     // Проверяем токен из Redux store
     if (auth.token) {
-      return await dispatch(verifyToken() as any);
+      try {
+        return await dispatch(verifyToken() as any);
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        // Если токен недействителен, очищаем состояние
+        dispatch(logoutAction());
+        return { meta: { requestStatus: 'rejected' } };
+      }
     }
 
     // Если токена нет в Redux, проверяем localStorage
@@ -35,15 +42,35 @@ export const useAuth = () => {
     if (storedToken && storedUser && !auth.isAuthenticated) {
       try {
         const user = JSON.parse(storedUser);
+
+        // Обновляем Redux store
         dispatch(setToken(storedToken));
         dispatch(setUser(user));
-        return await dispatch(verifyToken() as any);
+
+        // Проверяем валидность токена на сервере только если есть подключение к БД
+        try {
+          return await dispatch(verifyToken() as any);
+        } catch (error) {
+          console.error('Error verifying token from localStorage:', error);
+          // Если сервер недоступен, но у нас есть данные пользователя, считаем авторизованным
+          if (user && user.id) {
+            console.log(
+              '✅ Using cached user data due to server unavailability'
+            );
+            return { meta: { requestStatus: 'fulfilled' } };
+          }
+          return { meta: { requestStatus: 'rejected' } };
+        }
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('telegram_token');
         localStorage.removeItem('telegram_user');
+        return { meta: { requestStatus: 'rejected' } };
       }
     }
+
+    // Если нет сохраненных данных, возвращаем пустой результат
+    return { meta: { requestStatus: 'rejected' } };
   };
 
   const getTestAuth = async () => {

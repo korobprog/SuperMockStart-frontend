@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setToken, setUser } from '../store/slices/authSlice';
 import {
   Card,
   CardContent,
@@ -13,6 +15,7 @@ import BackgroundGradient from '../components/BackgroundGradient';
 const TelegramAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,15 +96,24 @@ const TelegramAuthCallback: React.FC = () => {
           const data = await response.json();
 
           if (data.success) {
-            // Сохраняем пользователя и JWT токен
+            // Сохраняем пользователя и JWT токен в localStorage
             localStorage.setItem('telegram_user', JSON.stringify(user));
-            localStorage.setItem('telegram_token', data.token);
+            localStorage.setItem('telegram_token', data.data.token);
             localStorage.setItem('auth_id', authId || '');
+
+            // Обновляем Redux store
+            dispatch(setToken(data.data.token));
+            dispatch(setUser(user));
 
             console.log(
               '✅ User authenticated successfully with JWT token:',
               user
             );
+
+            // Перенаправляем на главную страницу с небольшой задержкой
+            setTimeout(() => {
+              navigate('/');
+            }, 1000);
           } else {
             throw new Error(data.error || 'Ошибка авторизации на сервере');
           }
@@ -110,12 +122,15 @@ const TelegramAuthCallback: React.FC = () => {
           // Fallback: сохраняем пользователя без JWT токена
           localStorage.setItem('telegram_user', JSON.stringify(user));
           localStorage.setItem('auth_id', authId || '');
-        }
 
-        // Перенаправляем на главную страницу или следующую страницу
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
+          // Обновляем Redux store даже без JWT токена
+          dispatch(setUser(user));
+
+          // Перенаправляем на главную страницу
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
+        }
       } catch (error) {
         console.error('❌ Error processing auth callback:', error);
         setError('Ошибка обработки авторизации');
@@ -125,7 +140,7 @@ const TelegramAuthCallback: React.FC = () => {
     };
 
     handleAuthCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, dispatch]);
 
   if (loading) {
     return (

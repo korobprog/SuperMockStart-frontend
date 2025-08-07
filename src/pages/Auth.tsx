@@ -19,7 +19,7 @@ const Auth: React.FC = () => {
       const checkFormDataAfterAuth = async () => {
         try {
           const apiUrl =
-            import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
           const response = await fetch(`${apiUrl}/api/form`, {
             method: 'GET',
             headers: {
@@ -59,7 +59,7 @@ const Auth: React.FC = () => {
       };
 
       checkFormDataAfterAuth();
-    }, 1000); // Задержка в 1 секунду
+    }, 1500); // Увеличиваем задержку до 1.5 секунды
   };
 
   const handleAuthError = (error: string) => {

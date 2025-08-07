@@ -1,54 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { Button } from './ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const DebugAuth: React.FC = () => {
-  const [debugInfo, setDebugInfo] = useState<any>({});
-  const [loading, setLoading] = useState(false);
-  const [testResult, setTestResult] = useState<string>('');
+  const { user, token, loading, error, isAuthenticated, checkAuth, logout } =
+    useAuth();
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [dbStatus, setDbStatus] = useState<string>('Не проверено');
 
-  useEffect(() => {
-    // Собираем информацию для отладки
-    const info = {
-      userAgent: navigator.userAgent,
-      isInTelegram: !!window.Telegram?.WebApp,
-      telegramWebApp: window.Telegram?.WebApp ? 'доступен' : 'не доступен',
-      envVars: {
-        VITE_API_URL:
-          import.meta.env.VITE_API_URL || 'https://api.supermock.ru',
-        VITE_TELEGRAM_BOT_USERNAME:
-          import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'не задан',
-        NODE_ENV: import.meta.env.NODE_ENV || 'не задан',
-        DEV: import.meta.env.DEV,
-        PROD: import.meta.env.PROD,
-      },
-      localStorage: {
-        telegram_token: localStorage.getItem('telegram_token') ? 'есть' : 'нет',
-      },
-      location: {
-        href: window.location.href,
-        origin: window.location.origin,
-        pathname: window.location.pathname,
-      },
-    };
-
-    setDebugInfo(info);
-  }, []);
-
-  const testBackendConnection = async () => {
-    setLoading(true);
-    setTestResult('');
-
+  const checkAuthStatus = async () => {
     try {
-      const API_URL =
-        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+      const result = await checkAuth();
+      setDebugInfo({
+        timestamp: new Date().toISOString(),
+        result,
+        localStorage: {
+          telegram_user: localStorage.getItem('telegram_user'),
+          telegram_token: localStorage.getItem('telegram_token'),
+          auth_id: localStorage.getItem('auth_id'),
+        },
+      });
+    } catch (error) {
+      setDebugInfo({
+        timestamp: new Date().toISOString(),
+        error: error.message,
+      });
+    }
+  };
 
+  const checkDatabaseStatus = async () => {
+    try {
+      setDbStatus('Проверяется...');
+      const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+      
       const response = await fetch(`${API_URL}/api/auth/test`, {
         method: 'GET',
         headers: {
@@ -57,108 +42,49 @@ const DebugAuth: React.FC = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setTestResult(`✅ Бэкенд доступен: ${JSON.stringify(data, null, 2)}`);
+        setDbStatus('✅ Доступна');
       } else {
-        setTestResult(
-          `❌ Ошибка бэкенда: ${response.status} ${response.statusText}`
-        );
+        setDbStatus('❌ Ошибка подключения');
       }
     } catch (error) {
-      setTestResult(
-        `❌ Ошибка подключения: ${
-          error instanceof Error ? error.message : 'Неизвестная ошибка'
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const testTelegramAuth = async () => {
-    setLoading(true);
-    setTestResult('');
-
-    try {
-      if (!window.Telegram?.WebApp) {
-        setTestResult('❌ Telegram Web App не доступен');
-        setLoading(false);
-        return;
-      }
-
-      const tg = window.Telegram.WebApp;
-      const initData = tg.initData;
-      const user = tg.initDataUnsafe?.user;
-
-      setTestResult(`✅ Telegram Web App доступен:
-initData: ${initData ? 'есть' : 'нет'}
-user: ${user ? JSON.stringify(user, null, 2) : 'нет'}`);
-    } catch (error) {
-      setTestResult(
-        `❌ Ошибка Telegram: ${
-          error instanceof Error ? error.message : 'Неизвестная ошибка'
-        }`
-      );
-    } finally {
-      setLoading(false);
+      setDbStatus('❌ Недоступна');
     }
   };
 
   const clearStorage = () => {
+    localStorage.removeItem('telegram_user');
     localStorage.removeItem('telegram_token');
-    setDebugInfo((prev: any) => ({
-      ...prev,
-      localStorage: {
-        telegram_token: 'нет',
-      },
-    }));
-    setTestResult('✅ localStorage очищен');
+    localStorage.removeItem('auth_id');
+    setDebugInfo(null);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-2xl font-bold mb-4">Debug Auth</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <Card>
           <CardHeader>
-            <CardTitle>🔍 Отладка авторизации Telegram</CardTitle>
-            <CardDescription>
-              Информация для диагностики проблем с авторизацией
-            </CardDescription>
+            <CardTitle>Auth State</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  onClick={testBackendConnection}
-                  disabled={loading}
-                  className="w-full"
-                >
-                  {loading ? 'Тестирование...' : 'Тест подключения к бэкенду'}
-                </Button>
-                <Button
-                  onClick={testTelegramAuth}
-                  disabled={loading}
-                  className="w-full"
-                >
-                  {loading ? 'Тестирование...' : 'Тест Telegram Web App'}
-                </Button>
-              </div>
-
-              <Button
-                onClick={clearStorage}
-                variant="outline"
-                className="w-full"
-              >
-                Очистить localStorage
-              </Button>
-
-              {testResult && (
-                <div className="bg-gray-100 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">Результат теста:</h3>
-                  <pre className="text-sm whitespace-pre-wrap">
-                    {testResult}
-                  </pre>
-                </div>
+            <div className="space-y-2">
+              <p>
+                <strong>Loading:</strong> {loading ? 'Yes' : 'No'}
+              </p>
+              <p>
+                <strong>Authenticated:</strong> {isAuthenticated ? 'Yes' : 'No'}
+              </p>
+              <p>
+                <strong>Has Token:</strong> {token ? 'Yes' : 'No'}
+              </p>
+              <p>
+                <strong>Has User:</strong> {user ? 'Yes' : 'No'}
+              </p>
+              {error && (
+                <p>
+                  <strong>Error:</strong> {error}
+                </p>
               )}
             </div>
           </CardContent>
@@ -166,63 +92,77 @@ user: ${user ? JSON.stringify(user, null, 2) : 'нет'}`);
 
         <Card>
           <CardHeader>
-            <CardTitle>📊 Информация для отладки</CardTitle>
+            <CardTitle>User Info</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {Object.entries(debugInfo).map(([key, value]) => (
-                <div key={key}>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                    {key}:
-                  </h4>
-                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
-                    {JSON.stringify(value, null, 2)}
-                  </pre>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>💡 Возможные решения</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <strong>Если кнопки не отображаются:</strong>
-                <ul className="list-disc list-inside mt-1 ml-4">
-                  <li>
-                    Проверьте, что файл env.local создан с правильными
-                    переменными
-                  </li>
-                  <li>Убедитесь, что бэкенд запущен на порту 3001</li>
-                  <li>Проверьте консоль браузера на наличие ошибок</li>
-                </ul>
+            {user ? (
+              <div className="space-y-2">
+                <p>
+                  <strong>ID:</strong> {user.id}
+                </p>
+                <p>
+                  <strong>Name:</strong> {user.first_name} {user.last_name}
+                </p>
+                <p>
+                  <strong>Username:</strong> {user.username || 'N/A'}
+                </p>
+                <p>
+                  <strong>Photo:</strong> {user.photo_url ? 'Yes' : 'No'}
+                </p>
               </div>
-
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <strong>Если авторизация не работает:</strong>
-                <ul className="list-disc list-inside mt-1 ml-4">
-                  <li>Откройте приложение в Telegram через @SuperMock_bot</li>
-                  <li>Проверьте, что бот настроен правильно</li>
-                  <li>Убедитесь, что домен добавлен в настройки бота</li>
-                </ul>
-              </div>
-
-              <div className="p-3 bg-green-50 rounded-lg">
-                <strong>Для тестирования:</strong>
-                <ul className="list-disc list-inside mt-1 ml-4">
-                  <li>Используйте ngrok для локальной разработки</li>
-                  <li>Настройте Telegram Bot API для локального домена</li>
-                  <li>Проверьте логи бэкенда на наличие ошибок</li>
-                </ul>
-              </div>
-            </div>
+            ) : (
+              <p>No user data</p>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <Button onClick={checkAuthStatus} className="w-full">
+          Check Auth Status
+        </Button>
+        <Button onClick={checkDatabaseStatus} className="w-full">
+          Check Database
+        </Button>
+        <Button onClick={logout} variant="destructive" className="w-full">
+          Logout
+        </Button>
+        <Button onClick={clearStorage} variant="outline" className="w-full">
+          Clear Storage
+        </Button>
+      </div>
+
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>System Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <p>
+              <strong>Database:</strong> {dbStatus}
+            </p>
+            <p>
+              <strong>API URL:</strong> {import.meta.env.VITE_API_URL || 'https://api.supermock.ru'}
+            </p>
+            <p>
+              <strong>Environment:</strong> {import.meta.env.NODE_ENV || 'development'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {debugInfo && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Debug Info</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

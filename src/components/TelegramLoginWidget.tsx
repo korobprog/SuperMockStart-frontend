@@ -55,6 +55,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
           Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         localStorage.setItem('telegram_token', token);
 
+        // Вызываем callback с пользователем
         onAuthSuccess?.(user);
       } catch (error) {
         console.error('❌ Error saving user data:', error);
