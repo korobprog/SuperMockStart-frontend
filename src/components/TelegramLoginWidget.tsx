@@ -30,6 +30,10 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     const callbackUrl = `${window.location.protocol}//${window.location.host}/auth-callback`;
 
     console.log('🔗 Telegram Login Widget callback URL:', callbackUrl);
+    console.log('🤖 Bot username:', botUsername);
+    console.log('🌐 Current location:', window.location.href);
+    console.log('🔧 Protocol:', window.location.protocol);
+    console.log('🏠 Host:', window.location.host);
 
     // Создаем скрипт для Telegram Login Widget
     const script = document.createElement('script');

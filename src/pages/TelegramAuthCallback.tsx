@@ -19,22 +19,28 @@ const TelegramAuthCallback: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('🚀 TelegramAuthCallback component loaded');
+  console.log('🔗 Current URL:', window.location.href);
+  console.log('📋 Search params:', Object.fromEntries(searchParams.entries()));
+
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         // Получаем параметры из URL
-        const authId = searchParams.get('auth_id');
-        const userId = searchParams.get('id') || authId?.split('_')[0]; // Извлекаем userId из auth_id если id нет
-        const firstName = searchParams.get('first_name');
-        const lastName = searchParams.get('last_name');
+        const id = searchParams.get('id') || searchParams.get('userId');
+        const firstName =
+          searchParams.get('first_name') || searchParams.get('firstName');
+        const lastName =
+          searchParams.get('last_name') || searchParams.get('lastName');
         const username = searchParams.get('username');
-        const photoUrl = searchParams.get('photo_url');
-        const authDate = searchParams.get('auth_date');
+        const photoUrl =
+          searchParams.get('photo_url') || searchParams.get('photoUrl');
+        const authDate =
+          searchParams.get('auth_date') || searchParams.get('authDate');
         const hash = searchParams.get('hash');
 
         console.log('📥 Telegram Auth Callback received:', {
-          authId,
-          userId,
+          id,
           firstName,
           lastName,
           username,
@@ -43,30 +49,28 @@ const TelegramAuthCallback: React.FC = () => {
           hash,
         });
 
-        // Проверяем, что у нас есть хотя бы userId или authId
-        if (!userId && !authId) {
+        // Проверяем, что у нас есть необходимые параметры
+        if (!id || !firstName || !authDate || !hash) {
           setError('Отсутствуют необходимые параметры авторизации');
           setLoading(false);
           return;
         }
 
         // Проверяем, что авторизация не старше 5 минут
-        if (authDate) {
-          const authTimestamp = parseInt(authDate);
-          const currentTime = Date.now() / 1000;
-          const fiveMinutes = 5 * 60;
+        const authTimestamp = parseInt(authDate);
+        const currentTime = Date.now() / 1000;
+        const fiveMinutes = 5 * 60;
 
-          if (currentTime - authTimestamp > fiveMinutes) {
-            setError('Ссылка авторизации устарела');
-            setLoading(false);
-            return;
-          }
+        if (currentTime - authTimestamp > fiveMinutes) {
+          setError('Ссылка авторизации устарела');
+          setLoading(false);
+          return;
         }
 
-        // Создаем объект пользователя
+        // Создаем объект пользователя в правильном формате
         const user = {
-          id: userId ? parseInt(userId) : Date.now(), // Используем timestamp если userId нет
-          first_name: firstName || 'User',
+          id: parseInt(id),
+          first_name: firstName,
           last_name: lastName || '',
           username: username || '',
           photo_url: photoUrl || '',
@@ -83,23 +87,38 @@ const TelegramAuthCallback: React.FC = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              user,
-              auth_date: authDate,
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              username: user.username,
+              photo_url: user.photo_url,
+              auth_date: parseInt(authDate),
               hash: hash,
             }),
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.error || `HTTP error! status: ${response.status}`
+            );
           }
 
           const data = await response.json();
 
+          console.log('📥 Response from backend:', data);
+
           if (data.success) {
             // Сохраняем пользователя и JWT токен в localStorage
-            localStorage.setItem('telegram_user', JSON.stringify(user));
-            localStorage.setItem('telegram_token', data.data.token);
-            localStorage.setItem('auth_id', authId || '');
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('authToken', data.data.token);
+            localStorage.setItem('telegram_token', data.data.token); // Для совместимости
+
+            console.log('💾 Saved to localStorage:', {
+              user: user,
+              authToken: data.data.token ? 'present' : 'missing',
+              telegram_token: data.data.token ? 'present' : 'missing',
+            });
 
             // Обновляем Redux store
             dispatch(setToken(data.data.token));
@@ -119,22 +138,14 @@ const TelegramAuthCallback: React.FC = () => {
           }
         } catch (error) {
           console.error('❌ Error getting JWT token:', error);
-          // Fallback: сохраняем пользователя без JWT токена
-          localStorage.setItem('telegram_user', JSON.stringify(user));
-          localStorage.setItem('auth_id', authId || '');
-
-          // Обновляем Redux store даже без JWT токена
-          dispatch(setUser(user));
-
-          // Перенаправляем на главную страницу
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
+          setError(
+            error instanceof Error ? error.message : 'Ошибка авторизации'
+          );
+          setLoading(false);
         }
       } catch (error) {
         console.error('❌ Error processing auth callback:', error);
         setError('Ошибка обработки авторизации');
-      } finally {
         setLoading(false);
       }
     };

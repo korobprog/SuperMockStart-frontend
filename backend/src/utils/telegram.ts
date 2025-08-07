@@ -116,15 +116,7 @@ export class TelegramUtils {
         return false;
       }
 
-      // В продакшене временно отключаем валидацию hash для отладки
-      const isProduction = process.env.NODE_ENV === 'production';
-      
-      if (isProduction) {
-        console.log('⚠️ Hash validation disabled in production for debugging');
-        return true; // Временно пропускаем валидацию hash
-      }
-
-      // Создаем строку для проверки (исключаем hash)
+      // Создаем строку для проверки согласно документации Telegram
       const dataCheckString = Object.entries(widgetData)
         .filter(([key]) => key !== 'hash')
         .sort(([a], [b]) => a.localeCompare(b))
@@ -133,7 +125,7 @@ export class TelegramUtils {
 
       console.log('📋 Data check string:', dataCheckString);
 
-      // Для Login Widget используется другой алгоритм создания секретного ключа
+      // Создаем секретный ключ согласно документации Telegram
       const secretKey = crypto
         .createHash('sha256')
         .update(this.botToken)

@@ -5,10 +5,10 @@ interface BackgroundGradientProps {
   className?: string;
 }
 
-const BackgroundGradient: React.FC<BackgroundGradientProps> = ({
+const BackgroundGradient = ({
   children,
   className = '',
-}) => {
+}: BackgroundGradientProps) => {
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Animated background elements */}

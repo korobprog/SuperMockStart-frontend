@@ -24,6 +24,8 @@ import TestFeedback from './pages/TestFeedback';
 import TestCompleteSession from './pages/TestCompleteSession';
 import TelegramAuthFix from './pages/TelegramAuthFix';
 import ModernBordersDemo from './pages/ModernBordersDemo';
+import TailwindTest from './pages/TailwindTest';
+import CSSVariablesTest from './pages/CSSVariablesTest';
 import AuthProvider from './components/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -60,6 +62,8 @@ function App() {
               path="/modern-borders-demo"
               element={<ModernBordersDemo />}
             />
+            <Route path="/tailwind-test" element={<TailwindTest />} />
+            <Route path="/css-variables-test" element={<CSSVariablesTest />} />
             <Route
               path="/interview"
               element={

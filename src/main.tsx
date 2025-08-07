@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import App from './App.tsx';
-import './styles/tailwind.css';
-import './styles/calendar.scss';
+// import './styles/calendar.scss';
+import '/src/styles/tailwind.css';
 import { cleanupInvalidData } from './utils/auth';
 
 // Очищаем некорректные данные из localStorage при инициализации приложения

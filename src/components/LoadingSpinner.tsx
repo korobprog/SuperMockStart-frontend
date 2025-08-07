@@ -1,16 +1,14 @@
-import React from 'react';
-
 interface LoadingSpinnerProps {
   message?: string;
   size?: 'sm' | 'md' | 'lg';
   fullScreen?: boolean;
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+const LoadingSpinner = ({
   message = 'Загрузка...',
   size = 'md',
   fullScreen = false,
-}) => {
+}: LoadingSpinnerProps) => {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',

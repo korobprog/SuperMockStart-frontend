@@ -10,7 +10,6 @@ JWT_EXPIRES_IN=7d
 DATABASE_URL=postgresql://postgres:krishna1284radha@database:5432/supermock?schema=public
 
 # Server Configuration
-NODE_ENV=production
 PORT=3001
 
 # CORS Configuration

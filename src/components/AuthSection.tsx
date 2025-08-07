@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
-import TelegramAuth from './TelegramAuth';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { ModernCard } from './ui/card';
+import DevAuthWidget from './DevAuthWidget';
 import TelegramBotAuth from './TelegramBotAuth';
 import TelegramLoginWidget from './TelegramLoginWidget';
-import DevAuthWidget from './DevAuthWidget';
-import {
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  ModernCard,
-} from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import TelegramAuth from './TelegramAuth';
+import TelegramDevPanel from './TelegramDevPanel';
 
 interface AuthSectionProps {
   onAuthSuccess: (user: any, token: string) => void;
@@ -21,52 +16,44 @@ const AuthSection: React.FC<AuthSectionProps> = ({
   onAuthSuccess,
   onAuthError,
 }) => {
-  const [activeTab, setActiveTab] = useState(() => {
-    // По умолчанию в браузере выбираем Dev Auth для быстрой авторизации в dev режиме
-    return window.Telegram?.WebApp ? 'webapp' : 'dev';
-  });
-
   return (
-    <ModernCard className="max-w-2xl mx-auto shadow-elegant bg-white/80 backdrop-blur">
-      <CardHeader className="text-center px-4 sm:px-6">
-        <CardTitle className="text-2xl sm:text-3xl font-bold text-gradient">
-          Начните прямо сейчас
-        </CardTitle>
-        <CardDescription className="text-base sm:text-lg">
-          Откройте Telegram бота для регистрации и начните первое собеседование
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6">
-        {/* Проверяем, находимся ли мы в Telegram Web App */}
-        {window.Telegram?.WebApp ? (
-          // Если мы в Telegram Web App, показываем только Web App авторизацию
+    <ModernCard className="w-full max-w-4xl mx-auto">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Авторизация
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Выберите способ входа в систему
+        </p>
+      </div>
+      <div className="space-y-4">
+        {import.meta.env.VITE_NODE_ENV === 'production' ? (
           <div className="space-y-4">
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4 mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
-                <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center mr-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                 </div>
-                <span className="text-sm text-primary font-medium">
-                  Вы используете Telegram Web App
+                <span className="text-sm text-green-700 font-medium">
+                  Рекомендуемый способ авторизации
                 </span>
               </div>
             </div>
-
-            <TelegramAuth
-              onAuthSuccess={onAuthSuccess}
+            <TelegramLoginWidget
+              onAuthSuccess={(user) => {
+                const token =
+                  Math.random().toString(36).substring(2, 15) +
+                  Date.now().toString(36);
+                onAuthSuccess(user, token);
+              }}
               onAuthError={onAuthError}
             />
           </div>
         ) : (
-          // Если мы в обычном браузере, показываем выбор метода авторизации
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
+          <Tabs value="widget" className="w-full">
             <TabsList
               className={`grid w-full ${
-                import.meta.env.VITE_NODE_ENV === 'production'
+                import.meta.env.VITE_NODE_ENV !== 'production'
                   ? 'grid-cols-3'
                   : 'grid-cols-4'
               } bg-gradient-secondary`}
@@ -85,6 +72,11 @@ const AuthSection: React.FC<AuthSectionProps> = ({
               <TabsTrigger value="webapp" className="text-xs sm:text-sm">
                 Web App
               </TabsTrigger>
+              {import.meta.env.VITE_NODE_ENV !== 'production' && (
+                <TabsTrigger value="test" className="text-xs sm:text-sm">
+                  Test Panel
+                </TabsTrigger>
+              )}
             </TabsList>
             {import.meta.env.VITE_NODE_ENV !== 'production' && (
               <TabsContent value="dev" className="space-y-4 mt-4">
@@ -158,9 +150,32 @@ const AuthSection: React.FC<AuthSectionProps> = ({
                 onAuthError={onAuthError}
               />
             </TabsContent>
+            {import.meta.env.VITE_NODE_ENV !== 'production' && (
+              <TabsContent value="test" className="space-y-4 mt-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center">
+                    <div className="w-5 h-5 bg-yellow-200 rounded-full flex items-center justify-center mr-2">
+                      <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+                    </div>
+                    <span className="text-sm text-yellow-700 font-medium">
+                      Тестирование Telegram авторизации
+                    </span>
+                  </div>
+                </div>
+                <TelegramDevPanel
+                  onAuthSuccess={(user) => {
+                    const token =
+                      Math.random().toString(36).substring(2, 15) +
+                      Date.now().toString(36);
+                    onAuthSuccess(user, token);
+                  }}
+                  onAuthError={onAuthError}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         )}
-      </CardContent>
+      </div>
     </ModernCard>
   );
 };

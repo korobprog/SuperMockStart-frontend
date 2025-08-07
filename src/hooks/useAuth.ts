@@ -23,8 +23,11 @@ export const useAuth = () => {
   };
 
   const checkAuth = async () => {
+    console.log('🔍 Checking auth status...');
+
     // Проверяем токен из Redux store
     if (auth.token) {
+      console.log('🔑 Token found in Redux store');
       try {
         return await dispatch(verifyToken() as any);
       } catch (error) {
@@ -37,11 +40,18 @@ export const useAuth = () => {
 
     // Если токена нет в Redux, проверяем localStorage
     const storedToken = localStorage.getItem('telegram_token');
-    const storedUser = localStorage.getItem('telegram_user');
+    const storedUser = localStorage.getItem('user');
+
+    console.log('🔍 Checking localStorage:', {
+      storedToken: storedToken ? 'present' : 'missing',
+      storedUser: storedUser ? 'present' : 'missing',
+    });
 
     if (storedToken && storedUser && !auth.isAuthenticated) {
       try {
         const user = JSON.parse(storedUser);
+
+        console.log('✅ Found stored user:', user);
 
         // Обновляем Redux store
         dispatch(setToken(storedToken));
@@ -64,11 +74,12 @@ export const useAuth = () => {
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('telegram_token');
-        localStorage.removeItem('telegram_user');
+        localStorage.removeItem('user');
         return { meta: { requestStatus: 'rejected' } };
       }
     }
 
+    console.log('❌ No valid auth data found');
     // Если нет сохраненных данных, возвращаем пустой результат
     return { meta: { requestStatus: 'rejected' } };
   };

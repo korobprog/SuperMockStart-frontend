@@ -21,6 +21,16 @@ const ModernHeader: React.FC = () => {
   const location = useLocation();
 
   const handleLogout = () => {
+    // Запрашиваем подтверждение перед выходом
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите выйти из системы?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    console.log('🚪 Выход из системы');
     logout();
     navigate('/');
   };

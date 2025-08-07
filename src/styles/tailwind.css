@@ -1,6 +1,73 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Satoshi', 'sans-serif';
+  --breakpoint-3xl: 1920px;
+
+  /* Colors */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(220 8.9% 9.8%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 8.9% 9.8%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 8.9% 9.8%);
+  --color-primary: hsl(258 90% 66%);
+  --color-primary-foreground: hsl(0 0% 98%);
+  --color-primary-glow: hsl(258 100% 75%);
+  --color-secondary: hsl(260 15% 95%);
+  --color-secondary-foreground: hsl(258 90% 66%);
+  --color-muted: hsl(220 13% 95%);
+  --color-muted-foreground: hsl(220 8.9% 46.1%);
+  --color-accent: hsl(199 89% 48%);
+  --color-accent-foreground: hsl(0 0% 98%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 98%);
+  --color-success: hsl(142 76% 36%);
+  --color-success-foreground: hsl(0 0% 98%);
+  --color-warning: hsl(38 92% 50%);
+  --color-warning-foreground: hsl(0 0% 98%);
+  --color-border: hsl(0 0% 80%);
+  --color-input: hsl(0 0% 80%);
+  --color-ring: hsl(258 90% 66%);
+
+  /* Sidebar colors */
+  --color-sidebar-background: hsl(0 0% 98%);
+  --color-sidebar-foreground: hsl(240 5.3% 26.1%);
+  --color-sidebar-primary: hsl(240 5.9% 10%);
+  --color-sidebar-primary-foreground: hsl(0 0% 98%);
+  --color-sidebar-accent: hsl(240 4.8% 95.9%);
+  --color-sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --color-sidebar-border: hsl(220 13% 91%);
+  --color-sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(258 90% 66%),
+    hsl(199 89% 48%)
+  );
+  --gradient-secondary: linear-gradient(
+    135deg,
+    hsl(260 15% 95%),
+    hsl(220 13% 95%)
+  );
+  --gradient-dark: linear-gradient(
+    135deg,
+    hsl(220 26% 14%),
+    hsl(258 90% 66% / 0.1)
+  );
+
+  /* Shadows */
+  --shadow-elegant: 0 10px 30px -10px hsl(258 90% 66% / 0.3);
+  --shadow-glow: 0 0 40px hsl(258 100% 75% / 0.4);
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Easing */
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
 
 :root {
   /* Base colors - Light mode */
