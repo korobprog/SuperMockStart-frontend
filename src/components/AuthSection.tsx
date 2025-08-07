@@ -64,10 +64,18 @@ const AuthSection: React.FC<AuthSectionProps> = ({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-4 bg-gradient-secondary">
-              <TabsTrigger value="dev" className="text-xs sm:text-sm">
-                Dev Auth
-              </TabsTrigger>
+            <TabsList
+              className={`grid w-full ${
+                import.meta.env.VITE_NODE_ENV === 'production'
+                  ? 'grid-cols-3'
+                  : 'grid-cols-4'
+              } bg-gradient-secondary`}
+            >
+              {import.meta.env.VITE_NODE_ENV !== 'production' && (
+                <TabsTrigger value="dev" className="text-xs sm:text-sm">
+                  Dev Auth
+                </TabsTrigger>
+              )}
               <TabsTrigger value="bot" className="text-xs sm:text-sm">
                 Telegram Bot
               </TabsTrigger>
@@ -78,22 +86,24 @@ const AuthSection: React.FC<AuthSectionProps> = ({
                 Web App
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="dev" className="space-y-4 mt-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center">
-                  <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+            {import.meta.env.VITE_NODE_ENV !== 'production' && (
+              <TabsContent value="dev" className="space-y-4 mt-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center">
+                    <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                    </div>
+                    <span className="text-sm text-green-700 font-medium">
+                      Быстрая тестовая авторизация для разработки
+                    </span>
                   </div>
-                  <span className="text-sm text-green-700 font-medium">
-                    Быстрая тестовая авторизация для разработки
-                  </span>
                 </div>
-              </div>
-              <DevAuthWidget
-                onAuthSuccess={onAuthSuccess}
-                onAuthError={onAuthError}
-              />
-            </TabsContent>
+                <DevAuthWidget
+                  onAuthSuccess={onAuthSuccess}
+                  onAuthError={onAuthError}
+                />
+              </TabsContent>
+            )}
             <TabsContent value="bot" className="space-y-4 mt-4">
               <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center">

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
   fetchUserStatus,
@@ -9,10 +10,22 @@ import {
   clearError,
 } from '../store/slices/userStatusSlice';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 
 const ChooseInterview = () => {
+  // В продакшн режиме перенаправляем на главную страницу
+  const isProduction = import.meta.env.VITE_NODE_ENV === 'production';
+
+  if (isProduction) {
+    return <Navigate to="/" replace />;
+  }
+
   const dispatch = useAppDispatch();
   const { currentStatus, loading, error, availableCandidates, userInterviews } =
     useAppSelector((state) => state.userStatus);

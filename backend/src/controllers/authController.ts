@@ -190,6 +190,8 @@ export class AuthController {
    */
   static async authenticateWithTelegramWidget(req: Request, res: Response) {
     try {
+      console.log('📥 Telegram Widget auth request body:', req.body);
+
       const {
         id,
         first_name,
@@ -200,10 +202,32 @@ export class AuthController {
         hash,
       } = req.body;
 
+      console.log('📋 Parsed fields:', {
+        id,
+        first_name,
+        last_name,
+        username,
+        photo_url,
+        auth_date,
+        hash,
+      });
+
       if (!id || !first_name || !auth_date || !hash) {
+        console.error('❌ Missing required fields:', {
+          id,
+          first_name,
+          auth_date,
+          hash,
+        });
         return res.status(400).json({
           success: false,
           error: 'Required fields are missing',
+          missing: {
+            id: !id,
+            first_name: !first_name,
+            auth_date: !auth_date,
+            hash: !hash,
+          },
         } as ApiResponse);
       }
 
@@ -217,16 +241,20 @@ export class AuthController {
         hash,
       });
 
+      console.log('🔍 AuthService result:', result);
+
       if (!result.success) {
         return res.status(401).json(result);
       }
 
       res.json(result);
     } catch (error) {
-      console.error('Telegram Widget authentication error:', error);
+      console.error('❌ Telegram Widget authentication error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
       } as ApiResponse);
     }
   }
@@ -310,6 +338,14 @@ export class AuthController {
    */
   static async getTestToken(req: Request, res: Response) {
     try {
+      // В продакшн режиме не выдаем тестовые токены
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({
+          success: false,
+          error: 'Test tokens are not available in production',
+        } as ApiResponse);
+      }
+
       const result = AuthService.getTestToken();
 
       if (!result.success) {

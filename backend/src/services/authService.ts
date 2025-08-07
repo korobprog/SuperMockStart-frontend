@@ -231,6 +231,14 @@ export class AuthService {
    */
   static getTestToken(): ApiResponse<{ token: string; user: TelegramUser }> {
     try {
+      // В продакшн режиме не выдаем тестовые токены
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          error: 'Test tokens are not available in production',
+        };
+      }
+
       const token = JwtUtils.generateTestToken();
       const testUser: TelegramUser = {
         id: 123456789,

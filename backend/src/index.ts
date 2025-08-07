@@ -78,28 +78,44 @@ app.use(
   })
 );
 
-// Rate limiting - только в продакшене
-if (process.env.NODE_ENV === 'production') {
-  const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // максимум 100 запросов
-    message: {
-      success: false,
-      error: 'Too many requests from this IP, please try again later.',
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    // Правильная обработка IP адресов за прокси
-    keyGenerator: (req: express.Request) => {
-      return req.ip || req.connection.remoteAddress || 'unknown';
-    },
-  });
+// Rate limiting - более мягкие настройки для API
+const baseLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '200'), // увеличили до 200 запросов
+  message: {
+    success: false,
+    error: 'Too many requests from this IP, please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Пропускаем успешные запросы
+  // Правильная обработка IP адресов за прокси
+  keyGenerator: (req: express.Request) => {
+    return req.ip || req.connection.remoteAddress || 'unknown';
+  },
+});
 
-  app.use(limiter);
-  console.log('🔒 Rate limiting enabled (production mode)');
-} else {
-  console.log('🚀 Rate limiting disabled (development mode)');
-}
+// Более мягкий rate limiter для API endpoints
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 500, // 500 запросов за 15 минут для API
+  message: {
+    success: false,
+    error: 'API rate limit exceeded. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Пропускаем успешные запросы
+  keyGenerator: (req: express.Request) => {
+    return req.ip || req.connection.remoteAddress || 'unknown';
+  },
+});
+
+// Применяем rate limiting
+app.use(baseLimiter);
+app.use('/api', apiLimiter);
+
+console.log('🔒 Rate limiting enabled with API-specific limits');
 
 // Парсинг JSON
 app.use(express.json({ limit: '10mb' }));

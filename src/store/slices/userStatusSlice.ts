@@ -46,14 +46,24 @@ export const fetchUserStatus = createAsyncThunk(
     let token = getAuthToken(state);
 
     if (!token) {
-      // Если токена нет, пробуем получить тестовый токен через authSlice
-      try {
-        const authResult = await dispatch({ type: 'auth/getTestToken' });
-        if ((authResult as any).meta?.requestStatus === 'fulfilled') {
-          token = (authResult as any).payload?.token;
+      // В продакшн режиме не загружаем тестовый токен автоматически
+      const isProduction = import.meta.env.VITE_NODE_ENV === 'production';
+
+      if (!isProduction) {
+        // Если токена нет, пробуем получить тестовый токен через authSlice только в dev режиме
+        try {
+          const authResult = await dispatch({ type: 'auth/getTestToken' });
+          if ((authResult as any).meta?.requestStatus === 'fulfilled') {
+            token = (authResult as any).payload?.token;
+          }
+        } catch (error) {
+          console.error('Ошибка получения тестового токена:', error);
         }
-      } catch (error) {
-        console.error('Ошибка получения тестового токена:', error);
+      } else {
+        // В продакшне просто выбрасываем ошибку, если токена нет
+        throw new Error(
+          'Authentication required. Please login through Telegram.'
+        );
       }
     }
 
