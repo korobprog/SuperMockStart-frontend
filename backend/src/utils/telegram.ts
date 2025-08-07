@@ -16,6 +16,21 @@ export class TelegramUtils {
 
   static initialize(token: string) {
     this.botToken = token;
+    console.log(
+      '🔧 TelegramUtils initialized with token length:',
+      token ? token.length : 0
+    );
+  }
+
+  /**
+   * Проверяет, инициализирован ли бот токен
+   */
+  private static isInitialized(): boolean {
+    if (!this.botToken) {
+      console.error('❌ TelegramUtils not initialized with bot token');
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -89,6 +104,12 @@ export class TelegramUtils {
    */
   static validateWidgetData(widgetData: TelegramWidgetData): boolean {
     try {
+      // Проверяем инициализацию
+      if (!this.isInitialized()) {
+        console.error('❌ TelegramUtils not initialized');
+        return false;
+      }
+
       console.log('🔍 Validating Telegram Widget data:', {
         id: widgetData.id,
         first_name: widgetData.first_name,
@@ -173,6 +194,11 @@ export class TelegramUtils {
    */
   static async getUserInfo(userId: number): Promise<TelegramUser | null> {
     try {
+      if (!this.isInitialized()) {
+        console.error('❌ TelegramUtils not initialized for getUserInfo');
+        return null;
+      }
+
       const response = await fetch(
         `https://api.telegram.org/bot${this.botToken}/getChat?chat_id=${userId}`
       );

@@ -179,6 +179,53 @@ export const getTestToken = createAsyncThunk(
   }
 );
 
+export const loginWithTelegramWidget = createAsyncThunk(
+  'auth/loginWithTelegramWidget',
+  async (widgetData: any) => {
+    const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+
+    console.log('🔍 Sending loginWithTelegramWidget request:', widgetData);
+
+    const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(widgetData),
+    });
+
+    const data = await response.json();
+    console.log('🔍 loginWithTelegramWidget response:', data);
+
+    if (!response.ok) {
+      console.error('❌ Backend auth error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: data.error,
+      });
+      throw new Error(data.error || 'Invalid Telegram Widget data');
+    }
+
+    // Обрабатываем пользователя с аватаркой
+    if (data.data?.user || data.user) {
+      const user = data.data?.user || data.user;
+      const isDev = isDevMode();
+      const userWithAvatar = createUserWithAvatar(user, isDev);
+
+      return {
+        ...data,
+        data: data.data
+          ? { ...data.data, user: userWithAvatar }
+          : { ...data, user: userWithAvatar },
+        user: userWithAvatar,
+      };
+    }
+
+    // Возвращаем весь ответ от сервера
+    return data;
+  }
+);
+
 // Slice
 const authSlice = createSlice({
   name: 'auth',
@@ -398,6 +445,100 @@ const authSlice = createSlice({
       .addCase(loginWithTelegram.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Telegram authentication failed';
+      });
+
+    // loginWithTelegramWidget
+    builder
+      .addCase(loginWithTelegramWidget.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithTelegramWidget.fulfilled, (state, action) => {
+        state.loading = false;
+
+        console.log(
+          '🔍 loginWithTelegramWidget.fulfilled payload:',
+          action.payload
+        );
+
+        // Проверяем структуру ответа
+        if (action.payload && typeof action.payload === 'object') {
+          // Если payload содержит data с токеном и пользователем
+          if (
+            action.payload.data &&
+            action.payload.data.token &&
+            action.payload.data.user
+          ) {
+            const { token, user } = action.payload.data;
+            if (user && user.id && user.first_name) {
+              state.token = token;
+              state.user = user;
+              state.isAuthenticated = true;
+              setStoredToken(token);
+              setStoredUser(user);
+              console.log('✅ Telegram Widget авторизация успешна:', user);
+            } else {
+              console.error(
+                '❌ Некорректные данные пользователя в loginWithTelegramWidget:',
+                user
+              );
+              state.user = null;
+              state.isAuthenticated = false;
+            }
+          }
+          // Если payload напрямую содержит токен и пользователя (для обратной совместимости)
+          else if (action.payload.token && action.payload.user) {
+            const { token, user } = action.payload;
+            if (user && user.id && user.first_name) {
+              state.token = token;
+              state.user = user;
+              state.isAuthenticated = true;
+              setStoredToken(token);
+              setStoredUser(user);
+              console.log(
+                '✅ Telegram Widget авторизация успешна (legacy):',
+                user
+              );
+            } else {
+              console.error(
+                '❌ Некорректные данные пользователя в loginWithTelegramWidget (legacy):',
+                user
+              );
+              state.user = null;
+              state.isAuthenticated = false;
+            }
+          }
+          // Если payload содержит success: false
+          else if (action.payload.success === false) {
+            console.error(
+              '❌ Telegram Widget авторизация не удалась:',
+              action.payload.error
+            );
+            state.user = null;
+            state.isAuthenticated = false;
+          }
+          // Неизвестная структура payload
+          else {
+            console.error(
+              '❌ Неизвестная структура payload в loginWithTelegramWidget:',
+              action.payload
+            );
+            state.user = null;
+            state.isAuthenticated = false;
+          }
+        } else {
+          console.error(
+            '❌ Некорректный payload из loginWithTelegramWidget:',
+            action.payload
+          );
+          state.user = null;
+          state.isAuthenticated = false;
+        }
+      })
+      .addCase(loginWithTelegramWidget.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Telegram Widget authentication failed';
       });
 
     // getTestToken

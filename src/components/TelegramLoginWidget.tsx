@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { loginWithTelegramWidget } from '../store/slices/authSlice';
 
 interface TelegramLoginWidgetProps {
   onAuthSuccess?: (user: any) => void;
@@ -20,6 +22,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
   className = '',
 }) => {
   const widgetRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Получаем имя бота из переменной окружения
@@ -54,7 +57,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     script.setAttribute('data-lang', 'ru');
 
     // Обработчик успешной авторизации
-    const handleAuth = (user: any) => {
+    const handleAuth = async (user: any) => {
       console.log('✅ Telegram Login Widget auth success:', user);
 
       // Проверяем, что user является объектом
@@ -72,19 +75,19 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
           return;
         }
 
-        // Сохраняем пользователя
-        localStorage.setItem('telegram_user', JSON.stringify(user));
+        // Отправляем данные на сервер через Redux
+        const result = await dispatch(loginWithTelegramWidget(user) as any);
 
-        // Генерируем токен
-        const token =
-          Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-        localStorage.setItem('telegram_token', token);
-
-        // Вызываем callback с пользователем
-        onAuthSuccess?.(user);
+        if (result.meta?.requestStatus === 'fulfilled') {
+          console.log('✅ Telegram Widget authentication successful');
+          onAuthSuccess?.(user);
+        } else {
+          console.error('❌ Telegram Widget authentication failed');
+          onAuthError?.('Ошибка авторизации через Telegram Widget');
+        }
       } catch (error) {
-        console.error('❌ Error saving user data:', error);
-        onAuthError?.('Ошибка сохранения данных пользователя');
+        console.error('❌ Error during Telegram Widget authentication:', error);
+        onAuthError?.('Ошибка авторизации через Telegram Widget');
       }
     };
 
@@ -119,7 +122,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       }
       (window as any).TelegramLoginWidget = undefined;
     };
-  }, [onAuthSuccess, onAuthError]);
+  }, [onAuthSuccess, onAuthError, dispatch]);
 
   return (
     <div className={`telegram-login-widget ${className}`}>
@@ -129,7 +132,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
           Нажмите кнопку ниже для авторизации через Telegram
         </p>
       </div>
-      <div ref={widgetRef} className="flex justify-center"></div>
+      <div ref={widgetRef} className="flex justify-center" />
     </div>
   );
 };

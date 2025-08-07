@@ -27,12 +27,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Инициализируем утилиты
-TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
-TelegramBotService.initialize(process.env.TELEGRAM_TOKEN || '');
-JwtUtils.initialize(
-  process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  process.env.JWT_EXPIRES_IN || '7d'
+const telegramToken = process.env.TELEGRAM_TOKEN || '';
+const jwtSecret =
+  process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+console.log('🔧 Initializing services with:');
+console.log(
+  '  - Telegram token length:',
+  telegramToken ? telegramToken.length : 0
 );
+console.log('  - JWT secret length:', jwtSecret ? jwtSecret.length : 0);
+console.log('  - JWT expires in:', jwtExpiresIn);
+
+TelegramUtils.initialize(telegramToken);
+TelegramBotService.initialize(telegramToken);
+JwtUtils.initialize(jwtSecret, jwtExpiresIn);
 
 // Middleware безопасности
 app.use(helmet());
