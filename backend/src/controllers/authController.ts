@@ -276,7 +276,6 @@ export class AuthController {
         username: username || `user_${id}`,
         firstName: first_name,
         lastName: last_name,
-        photoUrl: photo_url,
       });
 
       if (!userResult.success || !userResult.data) {
@@ -287,7 +286,7 @@ export class AuthController {
       }
 
       // Генерируем JWT токен
-      const token = JwtUtils.generateExtendedToken(userResult.data);
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
 
       res.json({
         success: true,
@@ -619,7 +618,7 @@ export class AuthController {
         firstName: first_name,
         lastName: last_name || '',
         username: username || '',
-        photoUrl: photo_url || '',
+        photoUrl: '', // photoUrl не используется в UserService, но требуется в AuthService
       });
 
       if (!result.success) {
