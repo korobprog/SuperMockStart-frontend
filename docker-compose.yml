@@ -1,19 +1,31 @@
 services:
   frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=https://api.supermock.ru
+        - VITE_TELEGRAM_BOT_USERNAME=SuperMock_bot
     image: supermock-frontend:latest
     restart: unless-stopped
     expose:
       - 80
     networks:
       - dokploy-network
+    depends_on:
+      - backend
     environment:
       - NODE_ENV=production
     labels:
       - traefik.enable=true
+      - traefik.http.routers.supermock-frontend-web.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-frontend-web.entrypoints=web
+      - traefik.http.routers.supermock-frontend-web.middlewares=redirect-to-https@file
       - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`)
       - traefik.http.routers.supermock-frontend.entrypoints=websecure
       - traefik.http.routers.supermock-frontend.tls.certResolver=letsencrypt
       - traefik.http.services.supermock-frontend.loadbalancer.server.port=80
+      - traefik.docker.network=dokploy-network
 
   backend:
     image: supermock-backend:latest
@@ -34,14 +46,21 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=100
     networks:
       - dokploy-network
+    depends_on:
+      database:
+        condition: service_healthy
     volumes:
       - ../files/backend-logs:/app/logs
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.supermock-backend-web.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-backend-web.entrypoints=web
+      - traefik.http.routers.supermock-backend-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
       - traefik.http.routers.supermock-backend.entrypoints=websecure
       - traefik.http.routers.supermock-backend.tls.certResolver=letsencrypt
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3001
+      - traefik.docker.network=dokploy-network
 
   database:
     image: postgres:16-alpine
