@@ -44,10 +44,33 @@ router.get('/check-url', (req, res) => {
 });
 
 // Webhook для Telegram
-router.post('/webhook', (req, res) => {
-  // Обработка webhook от Telegram
-  console.log('📥 Webhook received:', req.body);
-  res.sendStatus(200);
+router.post('/webhook', async (req, res) => {
+  try {
+    // Обработка webhook от Telegram
+    console.log('📥 Webhook received:', req.body);
+    
+    const update = req.body;
+    
+    // Обрабатываем сообщения
+    if (update.message) {
+      const { TelegramBotService } = await import('../services/telegramBotService.js');
+      
+      // Обрабатываем команду /start
+      if (update.message.text && update.message.text.startsWith('/start')) {
+        await TelegramBotService.handleStartCommand(update.message);
+      }
+    }
+    
+    // Обрабатываем callback queries
+    if (update.callback_query) {
+      console.log('📥 Callback query received:', update.callback_query);
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('❌ Webhook error:', error);
+    res.sendStatus(500);
+  }
 });
 
 export default router;
