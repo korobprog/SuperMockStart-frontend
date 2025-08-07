@@ -29,11 +29,18 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     // Создаем URL для callback - используем полный URL с протоколом
     const callbackUrl = `${window.location.protocol}//${window.location.host}/auth-callback`;
 
-    console.log('🔗 Telegram Login Widget callback URL:', callbackUrl);
+    // Для production используем HTTPS
+    const finalCallbackUrl =
+      import.meta.env.VITE_NODE_ENV === 'production'
+        ? callbackUrl.replace('http://', 'https://')
+        : callbackUrl;
+
+    console.log('🔗 Telegram Login Widget callback URL:', finalCallbackUrl);
     console.log('🤖 Bot username:', botUsername);
     console.log('🌐 Current location:', window.location.href);
     console.log('🔧 Protocol:', window.location.protocol);
     console.log('🏠 Host:', window.location.host);
+    console.log('🌍 Environment:', import.meta.env.VITE_NODE_ENV);
 
     // Создаем скрипт для Telegram Login Widget
     const script = document.createElement('script');
@@ -41,7 +48,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
     script.setAttribute('data-telegram-login', botUsername);
     script.setAttribute('data-size', 'large');
-    script.setAttribute('data-auth-url', callbackUrl);
+    script.setAttribute('data-auth-url', finalCallbackUrl);
     script.setAttribute('data-request-access', 'write');
     script.setAttribute('data-userpic', 'false');
     script.setAttribute('data-lang', 'ru');
@@ -50,7 +57,21 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     const handleAuth = (user: any) => {
       console.log('✅ Telegram Login Widget auth success:', user);
 
+      // Проверяем, что user является объектом
+      if (!user || typeof user !== 'object') {
+        console.error('❌ Invalid user data received:', user);
+        onAuthError?.('Получены некорректные данные пользователя');
+        return;
+      }
+
       try {
+        // Проверяем обязательные поля
+        if (!user.id || !user.first_name) {
+          console.error('❌ Missing required user fields:', user);
+          onAuthError?.('Отсутствуют обязательные данные пользователя');
+          return;
+        }
+
         // Сохраняем пользователя
         localStorage.setItem('telegram_user', JSON.stringify(user));
 
@@ -67,9 +88,17 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       }
     };
 
-    // Добавляем обработчик в window
+    // Добавляем обработчик в window с проверкой
     window.TelegramLoginWidget = {
-      dataOnauth: handleAuth,
+      dataOnauth: (user: any) => {
+        // Дополнительная проверка перед вызовом handleAuth
+        if (user && typeof user === 'object') {
+          handleAuth(user);
+        } else {
+          console.error('❌ Invalid user data in dataOnauth:', user);
+          onAuthError?.('Некорректные данные авторизации');
+        }
+      },
     };
 
     // Добавляем обработчик ошибок загрузки скрипта

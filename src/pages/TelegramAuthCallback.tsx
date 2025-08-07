@@ -80,28 +80,45 @@ const TelegramAuthCallback: React.FC = () => {
         const API_URL =
           import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
+        // Создаем объект с данными для отправки на сервер
+        const authData = {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name || '',
+          username: user.username || '',
+          photo_url: user.photo_url || '',
+          auth_date: parseInt(authDate),
+          hash: hash,
+        };
+
+        console.log('📤 Sending auth data to backend:', authData);
+
         try {
           const response = await fetch(`${API_URL}/api/auth/telegram-widget`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              id: user.id,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              username: user.username,
-              photo_url: user.photo_url,
-              auth_date: parseInt(authDate),
-              hash: hash,
-            }),
+            body: JSON.stringify(authData),
           });
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-              errorData.error || `HTTP error! status: ${response.status}`
-            );
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+              const errorData = await response.json();
+              errorMessage =
+                errorData.error || errorData.message || errorMessage;
+            } catch (parseError) {
+              console.error('Failed to parse error response:', parseError);
+            }
+
+            console.error('❌ Backend auth error:', {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorMessage,
+            });
+
+            throw new Error(errorMessage);
           }
 
           const data = await response.json();
