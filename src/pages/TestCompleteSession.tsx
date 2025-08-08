@@ -17,10 +17,6 @@ const TestCompleteSession = () => {
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
   const sessionId = 'test-session-1';
 
-  // Тестовый расширенный токен
-  const TEST_TOKEN =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEyMzQ1Njc4OSwidXNlcm5hbWUiOiJ0ZXN0XzEyMzQ1Njc4OSIsImZpcnN0TmFtZSI6IlRlc3QiLCJsYXN0TmFtZSI6IlVzZXIiLCJhdXRoVHlwZSI6InRlbGVncmFtIiwiaWF0IjoxNzU0Mjg2OTgwLCJleHAiOjE3NTQ4OTE3ODB9.lXnXWkzEEmbDJHdoYhwyQAyXkF3C8an2HvgSsC1W6A4';
-
   const handleCompleteSession = async () => {
     setLoading(true);
     setError(null);
