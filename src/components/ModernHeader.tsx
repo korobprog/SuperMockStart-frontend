@@ -16,23 +16,22 @@ import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 const ModernHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useTelegramAuth();
+  const { user, isAuthenticated, logout, login, checkAuthStatus } = useTelegramAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    // Запрашиваем подтверждение перед выходом
-    const confirmed = window.confirm(
-      'Вы уверены, что хотите выйти из системы?'
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    console.log('🚪 Выход из системы');
+    const confirmed = window.confirm('Вы уверены, что хотите выйти из системы?');
+    if (!confirmed) return;
     logout();
     navigate('/');
+  };
+
+  const handleLogin = async () => {
+    try {
+      await login();
+      await checkAuthStatus();
+    } catch {}
   };
 
   const menuItems = [
@@ -43,14 +42,11 @@ const ModernHeader: React.FC = () => {
     { href: '/about', label: 'О проекте', showWhenAuth: false },
   ];
 
-  // Фильтруем элементы меню в зависимости от статуса авторизации
   const filteredMenuItems = menuItems.filter((item) => {
     if (isAuthenticated) {
-      // Если пользователь авторизован, показываем только элементы с showWhenAuth: true
       return item.showWhenAuth === true;
     } else {
-      // Если пользователь не авторизован, показываем все элементы
-      return true;
+      return !item.showWhenAuth;
     }
   });
 
@@ -72,9 +68,7 @@ const ModernHeader: React.FC = () => {
                 <Link
                   to={item.href}
                   className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(item.href)
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
+                    isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   {item.label}
@@ -146,12 +140,7 @@ const ModernHeader: React.FC = () => {
               </NavigationMenu>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/auth')}
-              className="hidden md:flex"
-            >
+            <Button variant="outline" size="sm" onClick={handleLogin} className="hidden md:flex">
               Войти
             </Button>
           )}
@@ -159,12 +148,7 @@ const ModernHeader: React.FC = () => {
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setIsOpen(true)}
-              >
+              <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsOpen(true)}>
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -175,9 +159,7 @@ const ModernHeader: React.FC = () => {
                     key={item.href}
                     to={item.href}
                     className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                      isActive(item.href)
-                        ? 'text-primary'
-                        : 'text-muted-foreground'
+                      isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -191,9 +173,7 @@ const ModernHeader: React.FC = () => {
                       <div className="text-sm font-medium">
                         {user.first_name || user.username || 'Пользователь'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        @{user.username}
-                      </div>
+                      <div className="text-xs text-muted-foreground">@{user.username}</div>
                     </div>
                     <Button
                       variant="ghost"
@@ -245,7 +225,7 @@ const ModernHeader: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      navigate('/auth');
+                      handleLogin();
                       setIsOpen(false);
                     }}
                   >

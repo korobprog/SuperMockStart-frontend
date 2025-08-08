@@ -13,26 +13,13 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import ChooseInterview from './pages/Chooseinterview';
 import CollectingContacts from './pages/Collectingcontacts';
-import Auth from './pages/Auth';
-import DebugAuth from './components/DebugAuth';
-import AuthDemo from './pages/AuthDemo';
-import TelegramAuthCallback from './pages/TelegramAuthCallback';
-import TelegramBotAuth from './pages/TelegramBotAuth';
-import BotAuthTest from './pages/BotAuthTest';
-import TestButtons from './pages/TestButtons';
-import TokenDebug from './pages/TokenDebug';
-import TokenCheck from './pages/TokenCheck';
-import TokenDebugPage from './pages/TokenDebugPage';
-import TokenTest from './pages/TokenTest';
 import Feedback from './pages/Feedback';
 import FeedbackHistory from './pages/FeedbackHistory';
 import TestFeedback from './pages/TestFeedback';
 import TestCompleteSession from './pages/TestCompleteSession';
-import TelegramAuthFix from './pages/TelegramAuthFix';
 import ModernBordersDemo from './pages/ModernBordersDemo';
 import TailwindTest from './pages/TailwindTest';
 import CSSVariablesTest from './pages/CSSVariablesTest';
-import TelegramConfigTest from './pages/TelegramConfigTest';
 import AuthProvider from './components/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -49,7 +36,6 @@ const ConditionalHeader = () => {
     '/profile',
     '/dashboard',
     '/test-complete-session',
-    '/auth',
     '/collectingcontacts',
     '/modern-borders-demo',
   ].includes(location.pathname);
@@ -65,12 +51,10 @@ function App() {
           <ConditionalHeader />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/modern-borders-demo"
-              element={<ModernBordersDemo />}
-            />
+            <Route path="/modern-borders-demo" element={<ModernBordersDemo />} />
             <Route path="/tailwind-test" element={<TailwindTest />} />
             <Route path="/css-variables-test" element={<CSSVariablesTest />} />
+
             <Route
               path="/interview"
               element={
@@ -79,7 +63,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route path="/about" element={<About />} />
+
             <Route
               path="/profile"
               element={
@@ -88,6 +74,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/dashboard"
               element={
@@ -96,6 +83,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/chooseinterview"
               element={
@@ -104,6 +92,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/collectingcontacts"
               element={
@@ -112,18 +101,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/debug-auth" element={<DebugAuth />} />
-            <Route path="/auth-demo" element={<AuthDemo />} />
-            <Route path="/auth-callback" element={<TelegramAuthCallback />} />
-            <Route path="/bot-auth" element={<TelegramBotAuth />} />
-            <Route path="/bot-auth-test" element={<BotAuthTest />} />
-            <Route path="/test-buttons" element={<TestButtons />} />
-            <Route path="/token-debug" element={<TokenDebug />} />
-            <Route path="/token-check" element={<TokenCheck />} />
-            <Route path="/token-debug-page" element={<TokenDebugPage />} />
-            <Route path="/token-test" element={<TokenTest />} />
-            <Route path="/auth-fix" element={<TelegramAuthFix />} />
+
             <Route
               path="/feedback/:sessionId"
               element={
@@ -132,6 +110,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/feedback-history"
               element={
@@ -140,15 +119,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route path="/test-feedback" element={<TestFeedback />} />
-            <Route
-              path="/test-complete-session"
-              element={<TestCompleteSession />}
-            />
-            <Route
-              path="/telegram-config-test"
-              element={<TelegramConfigTest />}
-            />
+            <Route path="/test-complete-session" element={<TestCompleteSession />} />
           </Routes>
         </div>
       </AuthProvider>

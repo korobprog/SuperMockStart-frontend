@@ -611,8 +611,9 @@ const Interview = () => {
       try {
         const token = getAuthToken();
         if (!token) {
-          console.log('❌ Токен не найден, перенаправляем на аутентификацию');
-          navigate('/auth');
+          console.log('❌ Токен не найден, защищенный маршрут обеспечит авторизацию');
+          setRegistrationIncomplete(true);
+          setCheckingRegistration(false);
           return;
         }
 

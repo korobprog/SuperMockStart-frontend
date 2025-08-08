@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -11,24 +11,23 @@ import {
 } from '../components/ui/card';
 import BackgroundGradient from '../components/BackgroundGradient';
 import Footer from '../components/Footer';
-import {
-  MessageSquare,
-  Shield,
-  Zap,
-  Users,
-  ArrowRight,
-  CheckCircle,
-} from 'lucide-react';
+import { MessageSquare, Shield, Zap, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, login, checkAuthStatus } = useTelegramAuth();
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     if (isAuthenticated) {
       navigate('/collectingcontacts');
     } else {
-      navigate('/auth');
+      try {
+        await login();
+        await checkAuthStatus();
+        navigate('/collectingcontacts');
+      } catch {
+        // stay on page; ProtectedRoute will handle gated routes
+      }
     }
   };
 
@@ -40,9 +39,7 @@ const Home: React.FC = () => {
             <MessageSquare className="w-12 h-12 text-white" />
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-bold mb-6 text-gradient">
-            SuperMock
-          </h1>
+          <h1 className="text-4xl sm:text-6xl font-bold mb-6 text-gradient">SuperMock</h1>
 
           <p className="text-xl sm:text-2xl text-muted-foreground mb-8">
             Платформа для проведения технических интервью с использованием Telegram
