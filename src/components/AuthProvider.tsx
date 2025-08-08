@@ -7,7 +7,7 @@ interface AuthProviderProps {
 }
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { checkAuth, token, isAuthenticated } = useAuth();
+  const { checkAuth, token, isAuthenticated, login } = useAuth();
 
   useEffect(() => {
     // При загрузке приложения проверяем аутентификацию
@@ -25,16 +25,29 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Сначала проверяем существующий токен
         const authResult = await checkAuth();
 
-        // Если токена нет или он невалиден, НЕ получаем тестовый токен автоматически
-        // Пользователь должен авторизоваться через Telegram
+        // Если токена нет или он невалиден, попробуем тихую авторизацию в Telegram WebApp
         if (
-          !authResult ||
-          (authResult as any).meta?.requestStatus === 'rejected'
+          (!authResult || (authResult as any).meta?.requestStatus === 'rejected') &&
+          typeof window !== 'undefined' &&
+          !!window.Telegram?.WebApp?.initData
         ) {
+          try {
+            const initData = window.Telegram.WebApp.initData;
+            if (initData && initData.length > 0) {
+              console.log('🤖 Silent Telegram WebApp auth using initData');
+              await login(initData);
+              return;
+            }
+          } catch (e) {
+            console.warn('Silent Telegram auth failed:', e);
+          }
+        }
+
+        // Если токена нет или он невалиден и не получилось авто‑логиниться
+        if (!authResult || (authResult as any).meta?.requestStatus === 'rejected') {
           console.log(
             '🔑 Токен не найден или невалиден, пользователь должен авторизоваться через Telegram'
           );
-          // Не вызываем getTestAuth() автоматически
         }
       } catch (error) {
         console.error('❌ Ошибка инициализации аутентификации:', error);
