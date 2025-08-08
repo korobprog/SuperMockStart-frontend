@@ -6,6 +6,7 @@ import {
   setStoredUser,
   getStoredUser,
 } from '../utils/auth';
+import { getBotUsername } from '../utils/telegramConfig';
 
 interface TelegramUser {
   id: number;
@@ -59,6 +60,22 @@ async function exchangeTelegramInitData(initData: string) {
     throw new Error('Invalid auth response');
   }
   return { token, user } as { token: string; user: TelegramUser };
+}
+
+// Opens Telegram to start the login process when not inside the Mini App
+function openTelegramAuthDeepLink() {
+  const bot = getBotUsername() || 'SuperMock_bot';
+  const returnUrl = window.location.href;
+
+  // Prefer deep link for installed Telegram apps, fallback to web link
+  const tgDeepLink = `tg://resolve?domain=${bot}&start=${encodeURIComponent(returnUrl)}`;
+  const webLink = `https://t.me/${bot}?start=${encodeURIComponent(returnUrl)}`;
+
+  // Try to open the deep link first; if blocked or no handler, open web link
+  const opened = window.open(tgDeepLink, '_blank');
+  if (!opened) {
+    window.open(webLink, '_blank');
+  }
 }
 
 export const useTelegramAuth = (): UseTelegramAuthReturn => {
@@ -136,7 +153,9 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
       // First try silent login (Mini App)
       const didLogin = await trySilentTelegramLogin();
       if (!didLogin) {
-        throw new Error('Откройте приложение внутри Telegram Mini App для входа');
+        // Fallback: open Telegram bot to start login flow
+        openTelegramAuthDeepLink();
+        throw new Error('Откройте бота Telegram для входа через Mini App');
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed');
