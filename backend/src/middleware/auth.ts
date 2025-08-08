@@ -81,17 +81,23 @@ export const authenticateExtendedToken = async (
     );
 
     const authHeader = req.headers.authorization;
+    const cookieToken = (req as any).cookies?.sm_sess as string | undefined;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('❌ No valid Authorization header');
+    let token: string | undefined;
+    if (cookieToken) {
+      token = cookieToken;
+    } else if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
+    if (!token) {
+      console.log('❌ No token provided (neither cookie nor header)');
       return res.status(401).json({
         success: false,
-        error: 'No valid authorization header',
+        error: 'No valid authorization token',
       });
     }
 
-    const token = authHeader.substring(7);
-    console.log('🔍 Token extracted:', token.substring(0, 20) + '...');
     console.log('🔍 Token length:', token.length);
     console.log('🔍 Token format check:', {
       isJWT: token.split('.').length === 3,
@@ -211,7 +217,9 @@ export const optionalExtendedAuth = async (
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+  const cookieToken = (req as any).cookies?.sm_sess as string | undefined;
+  const headerToken = authHeader && authHeader.split(' ')[1];
+  const token = cookieToken || headerToken;
 
   if (token) {
     try {

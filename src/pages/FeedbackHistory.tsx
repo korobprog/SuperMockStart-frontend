@@ -49,12 +49,7 @@ const FeedbackHistory = () => {
 
         const response = await fetch(
           `${API_URL}/api/feedback/user?type=${type}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          { credentials: 'include' }
         );
 
         if (response.ok) {

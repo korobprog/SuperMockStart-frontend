@@ -321,14 +321,7 @@ const Interview = () => {
 
   // Получаем токен из localStorage
   const getAuthToken = () => {
-    // Используем новую утилиту для получения токена
-    const token = getStoredToken();
-
-    if (token) {
-      console.log('🔑 Valid token found:', token.substring(0, 20) + '...');
-      return token;
-    }
-
+    // Cookie-based auth now; keep for backward logs
     console.log('❌ No valid token found in localStorage');
     return null;
   };
@@ -455,12 +448,7 @@ const Interview = () => {
 
         const response = await fetch(
           `${API_URL}/api/calendar/slots/${profession}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          { credentials: 'include' }
         );
 
         if (response.ok) {
@@ -492,10 +480,7 @@ const Interview = () => {
 
       console.log('🔍 Проверяем статус очереди...');
       const response = await fetch(`${API_URL}/api/calendar/queue/status`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        credentials: 'include',
       });
 
       console.log(
@@ -528,10 +513,7 @@ const Interview = () => {
 
       console.log('🔍 Загружаем завершенные сессии...');
       const response = await fetch(`${API_URL}/api/calendar/sessions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        credentials: 'include',
       });
 
       console.log(
@@ -570,10 +552,7 @@ const Interview = () => {
 
       console.log('🔍 Обновляем статус пользователя...');
       const response = await fetch(`${API_URL}/api/form`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        credentials: 'include',
       });
 
       console.log(
@@ -618,10 +597,7 @@ const Interview = () => {
         }
 
         const response = await fetch(`${API_URL}/api/form`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          credentials: 'include',
         });
 
         if (response.ok) {
@@ -690,10 +666,7 @@ const Interview = () => {
       setLoadingProfession(true);
       try {
         const response = await fetch(`${API_URL}/api/form`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          credentials: 'include',
         });
 
         if (response.ok) {
@@ -902,9 +875,9 @@ const Interview = () => {
       const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           profession: value,
           preferredDateTime: selectedTimeSlot.toISOString(),
@@ -952,10 +925,7 @@ const Interview = () => {
       const token = getAuthToken();
       const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -979,9 +949,10 @@ const Interview = () => {
         {
           method: 'PATCH',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
+          body: JSON.stringify({ rating, comment }),
         }
       );
 

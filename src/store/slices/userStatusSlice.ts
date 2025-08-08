@@ -60,9 +60,7 @@ export const fetchUserStatus = createAsyncThunk(
     }
 
     const response = await fetch(`${API_BASE_URL}/api/user-status/status`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -87,8 +85,8 @@ export const updateUserStatus = createAsyncThunk(
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ userId, status }),
     });
 
@@ -111,9 +109,7 @@ export const fetchAvailableCandidates = createAsyncThunk(
     }
 
     const response = await fetch(`${API_BASE_URL}/api/user-status/candidates`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -135,9 +131,7 @@ export const fetchUserInterviews = createAsyncThunk(
     }
 
     const response = await fetch(`${API_BASE_URL}/api/user-status/interviews`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {

@@ -16,13 +16,9 @@ const TelegramAuthFix: React.FC = () => {
   const validateToken = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/api/auth/validate-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch(`${API_URL}/api/auth/session`, {
+        method: 'GET',
+        credentials: 'include',
       });
       const data = await response.json();
       setMessage(JSON.stringify(data));
@@ -36,7 +32,7 @@ const TelegramAuthFix: React.FC = () => {
   const getTestToken = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/auth/test-token`);
+      const response = await fetch(`${API_URL}/api/auth/test-token`, { credentials: 'include' });
       const data = await response.json();
       setMessage(JSON.stringify(data));
     } catch (e) {
@@ -53,8 +49,9 @@ const TelegramAuthFix: React.FC = () => {
           <CardTitle>Auth Fix</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <div className="text-xs text-muted-foreground">Session is cookie-based (HttpOnly). Use buttons below to check.</div>
           <Button onClick={validateToken} disabled={loading}>
-            Validate Token
+            Validate Session
           </Button>
           <Button onClick={getTestToken} variant="outline" disabled={loading}>
             Get Test Token

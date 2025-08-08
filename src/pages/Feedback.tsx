@@ -88,12 +88,7 @@ const Feedback = () => {
         // Загружаем информацию о сессии
         const sessionResponse = await fetch(
           `${API_URL}/api/calendar/sessions/${sessionId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          { credentials: 'include' }
         );
 
         if (sessionResponse.ok) {
@@ -104,12 +99,7 @@ const Feedback = () => {
         // Загружаем существующие отзывы
         const feedbackResponse = await fetch(
           `${API_URL}/api/feedback/sessions/${sessionId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          { credentials: 'include' }
         );
 
         if (feedbackResponse.ok) {
@@ -172,9 +162,9 @@ const Feedback = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             rating,
             comment,

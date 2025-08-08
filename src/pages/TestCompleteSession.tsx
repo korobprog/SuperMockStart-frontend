@@ -32,9 +32,9 @@ const TestCompleteSession = () => {
         {
           method: 'PATCH',
           headers: {
-            Authorization: `Bearer ${TEST_TOKEN}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
         }
       );
 

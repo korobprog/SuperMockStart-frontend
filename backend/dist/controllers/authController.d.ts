@@ -57,6 +57,14 @@ export declare class AuthController {
      */
     static checkAuthStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     /**
+     * Session endpoint using cookies
+     */
+    static session(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    /**
+     * Logout clears session cookie
+     */
+    static logout(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    /**
      * Валидация JWT токена
      */
     static validateToken(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;

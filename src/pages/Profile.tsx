@@ -73,7 +73,9 @@ const Profile: React.FC = () => {
   const handleGetTestToken = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/auth/test-token`);
+      const response = await fetch(`${apiUrl}/api/auth/test-token`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('authToken', data.data.token);
@@ -112,9 +114,7 @@ const Profile: React.FC = () => {
       console.log('🔍 loadFormData - making request to:', `${apiUrl}/api/form`);
 
       const response = await fetch(`${apiUrl}/api/form`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       console.log('🔍 loadFormData - response status:', response.status);
@@ -205,15 +205,14 @@ const Profile: React.FC = () => {
       console.log('🔍 Making request to:', `${apiUrl}/api/form`);
       console.log('🔍 Request headers:', {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       });
 
       const response = await fetch(`${apiUrl}/api/form`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
