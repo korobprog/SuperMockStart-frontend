@@ -68,14 +68,14 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       }
 
       try {
-        // Проверяем обязательные поля
-        if (!user.id || !user.first_name) {
+        // Проверяем обязательные поля согласно документации Telegram
+        if (!user.id || !user.first_name || !user.auth_date || !user.hash) {
           console.error('❌ Missing required user fields:', user);
           onAuthError?.('Отсутствуют обязательные данные пользователя');
           return;
         }
 
-        // Отправляем данные на сервер через Redux
+        // Отправляем данные на сервер через Redux в правильном формате
         const result = await dispatch(loginWithTelegramWidget(user) as any);
 
         if (result.meta?.requestStatus === 'fulfilled') {

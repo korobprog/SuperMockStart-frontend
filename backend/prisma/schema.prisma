@@ -7,153 +7,128 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                        String               @id @default(cuid())
-  telegramId                String               @unique
-  username                  String?
-  firstName                 String?
-  lastName                  String?
-  status                    UserStatus           @default(INTERVIEWER)
-  role                      UserRole             @default(USER)
-  createdAt                 DateTime             @default(now())
-  updatedAt                 DateTime             @updatedAt
-  receivedInterviews        Interview[]          @relation("CandidateInterviews")
-  conductedInterviews       Interview[]          @relation("InterviewerInterviews")
-  selectedProfessions       SelectedProfession[]
-  formData                  UserFormData[]
-  queueEntries              InterviewQueue[]
-  candidateSessionsReceived InterviewSession[]   @relation("CandidateSessionsReceived")
-  interviewerSessionsConducted InterviewSession[] @relation("InterviewerSessionsConducted")
-  notifications             Notification[]
-  feedbackGiven             Feedback[]           @relation("FeedbackGiven")
-  feedbackReceived          Feedback[]           @relation("FeedbackReceived")
+model feedback {
+  id                               String             @id
+  sessionId                        String
+  fromUserId                       String
+  toUserId                         String
+  rating                           Int
+  comment                          String?
+  skills                           Json?
+  createdAt                        DateTime           @default(now())
+  users_feedback_fromUserIdTousers users              @relation("feedback_fromUserIdTousers", fields: [fromUserId], references: [id], onDelete: Cascade)
+  interview_sessions               interview_sessions @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  users_feedback_toUserIdTousers   users              @relation("feedback_toUserIdTousers", fields: [toUserId], references: [id], onDelete: Cascade)
 
-  @@map("users")
+  @@unique([sessionId, fromUserId])
 }
 
-model Interview {
-  id                 String          @id @default(cuid())
-  interviewerId      String
-  candidateId        String
-  status             InterviewStatus @default(PENDING)
-  feedback           String?
-  feedbackReceivedAt DateTime?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  candidate          User            @relation("CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
-  interviewer        User            @relation("InterviewerInterviews", fields: [interviewerId], references: [id], onDelete: Cascade)
-  session            InterviewSession? // Связь с конкретной встречей
-
-  @@map("interviews")
+model interview_queue {
+  id                 String              @id
+  userId             String
+  profession         String
+  preferredDateTime  DateTime
+  timeFlexibility    Int                 @default(30)
+  status             QueueStatus         @default(WAITING)
+  queueType          QueueType
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime
+  matchedSessionId   String?
+  language           String
+  interview_sessions interview_sessions? @relation(fields: [matchedSessionId], references: [id])
+  users              users               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model InterviewQueue {
-  id                String          @id @default(cuid())
-  userId            String
-  profession        String
-  language          String          // Язык собеседования
-  preferredDateTime DateTime
-  timeFlexibility   Int             @default(30) // минут гибкости (±30 минут)
-  status            QueueStatus     @default(WAITING)
-  queueType         QueueType       // CANDIDATE или INTERVIEWER
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  matchedSession    InterviewSession? @relation(fields: [matchedSessionId], references: [id])
-  matchedSessionId  String?
-
-  @@map("interview_queue")
+model interview_sessions {
+  id                                            String            @id
+  interviewId                                   String            @unique
+  scheduledDateTime                             DateTime
+  profession                                    String
+  meetingLink                                   String
+  status                                        SessionStatus     @default(SCHEDULED)
+  candidateId                                   String
+  interviewerId                                 String
+  createdAt                                     DateTime          @default(now())
+  updatedAt                                     DateTime
+  language                                      String
+  feedback                                      feedback[]
+  interview_queue                               interview_queue[]
+  users_interview_sessions_candidateIdTousers   users             @relation("interview_sessions_candidateIdTousers", fields: [candidateId], references: [id], onDelete: Cascade)
+  interviews                                    interviews        @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  users_interview_sessions_interviewerIdTousers users             @relation("interview_sessions_interviewerIdTousers", fields: [interviewerId], references: [id], onDelete: Cascade)
+  notifications                                 notifications[]
 }
 
-model InterviewSession {
-  id                String              @id @default(cuid())
-  interviewId       String              @unique
-  scheduledDateTime DateTime
-  profession        String
-  language          String              // Язык собеседования
-  meetingLink       String              // Ссылка на видеоконференцию
-  status            SessionStatus       @default(SCHEDULED)
-  candidateId       String
-  interviewerId     String
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  interview         Interview           @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  candidate         User                @relation("CandidateSessionsReceived", fields: [candidateId], references: [id], onDelete: Cascade)
-  interviewer       User                @relation("InterviewerSessionsConducted", fields: [interviewerId], references: [id], onDelete: Cascade)
-  queueEntries      InterviewQueue[]
-  notifications     Notification[]
-  feedbacks         Feedback[]
-
-  @@map("interview_sessions")
+model interviews {
+  id                                    String              @id
+  interviewerId                         String
+  candidateId                           String
+  status                                InterviewStatus     @default(PENDING)
+  feedback                              String?
+  feedbackReceivedAt                    DateTime?
+  createdAt                             DateTime            @default(now())
+  updatedAt                             DateTime
+  interview_sessions                    interview_sessions?
+  users_interviews_candidateIdTousers   users               @relation("interviews_candidateIdTousers", fields: [candidateId], references: [id], onDelete: Cascade)
+  users_interviews_interviewerIdTousers users               @relation("interviews_interviewerIdTousers", fields: [interviewerId], references: [id], onDelete: Cascade)
 }
 
-model Notification {
-  id        String            @id @default(cuid())
-  userId    String
-  sessionId String?
-  type      NotificationType
-  title     String
-  message   String
-  scheduled DateTime?         // Когда отправить уведомление
-  sent      Boolean           @default(false)
-  sentAt    DateTime?
-  createdAt DateTime          @default(now())
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session   InterviewSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
+model notifications {
+  id                 String              @id
+  userId             String
+  sessionId          String?
+  type               NotificationType
+  title              String
+  message            String
+  scheduled          DateTime?
+  sent               Boolean             @default(false)
+  sentAt             DateTime?
+  createdAt          DateTime            @default(now())
+  interview_sessions interview_sessions? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  users              users               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Feedback {
-  id        String           @id @default(cuid())
-  sessionId String
-  fromUserId String
-  toUserId  String
-  rating    Int              // 1-5 звезд
-  comment   String?
-  skills    Json?            // Оценки по навыкам
-  createdAt DateTime         @default(now())
-  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  fromUser  User             @relation("FeedbackGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser    User             @relation("FeedbackReceived", fields: [toUserId], references: [id], onDelete: Cascade)
-
-  @@unique([sessionId, fromUserId]) // Один фидбек от пользователя на сессию
-  @@map("feedback")
-}
-
-model SelectedProfession {
-  id         String   @id @default(cuid())
+model selected_professions {
+  id         String   @id
   userId     String
   profession String
   createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("selected_professions")
+  users      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model UserFormData {
-  id         String   @id @default(cuid())
+model user_form_data {
+  id         String   @id
   userId     String
   profession String
   country    String
-  language   String   // Язык на основе страны
   experience String
   email      String?
   phone      String?
   createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_form_data")
+  language   String
+  users      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum UserStatus {
-  INTERVIEWER
-  CANDIDATE
-}
-
-enum UserRole {
-  USER
-  ADMIN
+model users {
+  id                                                         String                 @id
+  telegramId                                                 String                 @unique
+  username                                                   String?
+  firstName                                                  String?
+  lastName                                                   String?
+  status                                                     UserStatus             @default(INTERVIEWER)
+  createdAt                                                  DateTime               @default(now())
+  updatedAt                                                  DateTime
+  role                                                       UserRole               @default(USER)
+  feedback_feedback_fromUserIdTousers                        feedback[]             @relation("feedback_fromUserIdTousers")
+  feedback_feedback_toUserIdTousers                          feedback[]             @relation("feedback_toUserIdTousers")
+  interview_queue                                            interview_queue[]
+  interview_sessions_interview_sessions_candidateIdTousers   interview_sessions[]   @relation("interview_sessions_candidateIdTousers")
+  interview_sessions_interview_sessions_interviewerIdTousers interview_sessions[]   @relation("interview_sessions_interviewerIdTousers")
+  interviews_interviews_candidateIdTousers                   interviews[]           @relation("interviews_candidateIdTousers")
+  interviews_interviews_interviewerIdTousers                 interviews[]           @relation("interviews_interviewerIdTousers")
+  notifications                                              notifications[]
+  selected_professions                                       selected_professions[]
+  user_form_data                                             user_form_data[]
 }
 
 enum InterviewStatus {
@@ -162,31 +137,41 @@ enum InterviewStatus {
   FEEDBACK_RECEIVED
 }
 
+enum NotificationType {
+  INTERVIEW_CONFIRMED
+  INTERVIEW_REMINDER
+  INTERVIEW_CANCELLED
+  FEEDBACK_REQUEST
+  FEEDBACK_REMINDER
+  ROLE_CHANGED
+}
+
 enum QueueStatus {
-  WAITING      // Ожидает матчинга
-  MATCHED      // Найден партнер
-  CANCELLED    // Отменен пользователем
-  EXPIRED      // Истек по времени
+  WAITING
+  MATCHED
+  CANCELLED
+  EXPIRED
 }
 
 enum QueueType {
-  CANDIDATE    // Ищет интервьюера
-  INTERVIEWER  // Ищет кандидата
+  CANDIDATE
+  INTERVIEWER
 }
 
 enum SessionStatus {
-  SCHEDULED    // Запланирована
-  IN_PROGRESS  // В процессе
-  COMPLETED    // Завершена
-  CANCELLED    // Отменена
-  NO_SHOW      // Кто-то не явился
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }
 
-enum NotificationType {
-  INTERVIEW_CONFIRMED    // Собеседование подтверждено
-  INTERVIEW_REMINDER     // Напоминание за 30 минут
-  INTERVIEW_CANCELLED    // Собеседование отменено
-  FEEDBACK_REQUEST       // Просьба оставить фидбек
-  FEEDBACK_REMINDER      // Напоминание о незаполненном фидбеке
-  ROLE_CHANGED          // Роли поменяны местами
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  INTERVIEWER
+  CANDIDATE
 }
