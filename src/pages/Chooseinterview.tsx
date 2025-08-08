@@ -43,18 +43,14 @@ const ChooseInterview = () => {
     try {
       // Получаем ID пользователя из базы данных по Telegram ID
       const response = await fetch(`${API_URL}/api/user-status/status`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
+        credentials: 'include',
       });
 
       if (response.ok) {
         // Для обновления статуса нам нужен ID из базы данных, а не Telegram ID
         // Получаем пользователя по Telegram ID, чтобы получить его ID в базе
         const userResponse = await fetch(`${API_URL}/api/user-status/status`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
+          credentials: 'include',
         });
 
         if (userResponse.ok) {

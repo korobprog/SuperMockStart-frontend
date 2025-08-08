@@ -178,8 +178,8 @@ export const hasValidToken = (): boolean => {
  * Получает заголовки для авторизованных запросов
  */
 export const getAuthHeaders = (): Record<string, string> => {
-  const token = getStoredToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  console.warn('getAuthHeaders is deprecated. Using cookie-based auth; include credentials in fetch instead.');
+  return {};
 };
 
 /**

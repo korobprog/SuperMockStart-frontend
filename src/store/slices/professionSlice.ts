@@ -38,8 +38,8 @@ export const addSelectedProfession = createAsyncThunk(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ profession }),
       });
 
@@ -66,9 +66,7 @@ export const fetchUserProfessions = createAsyncThunk(
     const response = await fetch(
       `${API_BASE_URL}/api/professions/user/professions`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       }
     );
 
@@ -93,9 +91,7 @@ export const removeSelectedProfession = createAsyncThunk(
       `${API_BASE_URL}/api/professions/selected/${professionId}`,
       {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       }
     );
 

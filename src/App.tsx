@@ -22,6 +22,7 @@ import TailwindTest from './pages/TailwindTest';
 import CSSVariablesTest from './pages/CSSVariablesTest';
 import AuthProvider from './components/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 
 // Component to conditionally render header
 const ConditionalHeader = () => {
@@ -122,6 +123,7 @@ function App() {
 
             <Route path="/test-feedback" element={<TestFeedback />} />
             <Route path="/test-complete-session" element={<TestCompleteSession />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </div>
       </AuthProvider>

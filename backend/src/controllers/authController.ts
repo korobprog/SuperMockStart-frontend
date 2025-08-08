@@ -175,6 +175,19 @@ export class AuthController {
         return res.status(401).json(result);
       }
 
+      // Issue HttpOnly session cookie with extended token
+      const token = result.data?.token;
+      if (token) {
+        res.cookie('sm_sess', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+          domain: process.env.COOKIE_DOMAIN || undefined,
+        });
+      }
+
       res.json(result);
     } catch (error) {
       console.error('Authentication error:', error);
@@ -247,6 +260,19 @@ export class AuthController {
         return res.status(401).json(result);
       }
 
+      // Issue HttpOnly session cookie
+      const token = result.data?.token;
+      if (token) {
+        res.cookie('sm_sess', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+          domain: process.env.COOKIE_DOMAIN || undefined,
+        });
+      }
+
       res.json(result);
     } catch (error) {
       console.error('❌ Telegram Widget authentication error:', error);
@@ -254,7 +280,7 @@ export class AuthController {
         success: false,
         error: 'Internal server error',
         details:
-          process.env.NODE_ENV === 'development' ? error.message : undefined,
+          process.env.NODE_ENV === 'development' ? (error as any).message : undefined,
       } as ApiResponse);
     }
   }
@@ -325,6 +351,16 @@ export class AuthController {
 
       // Генерируем JWT токен
       const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
+
+      // Set session cookie
+      res.cookie('sm_sess', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        domain: process.env.COOKIE_DOMAIN || undefined,
+      });
 
       res.json({
         success: true,
@@ -553,8 +589,11 @@ export class AuthController {
    */
   static async checkAuthStatus(req: Request, res: Response) {
     try {
+      // Prefer cookie session if present
+      const cookieToken = (req as any).cookies?.sm_sess as string | undefined;
       const authHeader = req.headers.authorization;
-      const token = authHeader && authHeader.split(' ')[1];
+      const headerToken = authHeader && authHeader.split(' ')[1];
+      const token = cookieToken || headerToken;
 
       if (!token) {
         return res.status(200).json({
@@ -567,28 +606,25 @@ export class AuthController {
         });
       }
 
-      // Проверяем, есть ли расширенный пользователь (установлен optionalExtendedAuth middleware)
-      if (req.extendedUser) {
+      const result = await AuthService.verifyExtendedToken(token);
+      if (result.success && result.data) {
         return res.status(200).json({
           success: true,
           data: {
             authenticated: true,
-            user: req.extendedUser,
+            user: result.data,
           },
           message: 'User is authenticated',
         });
       }
 
-      // Fallback к старому методу для обратной совместимости
-      const isValid = AuthService.isTokenValid(token);
-
       return res.status(200).json({
         success: true,
         data: {
-          authenticated: isValid,
-          user: isValid ? req.user || null : null,
+          authenticated: false,
+          user: null,
         },
-        message: isValid ? 'Token is valid' : 'Token is invalid or expired',
+        message: 'Token is invalid or expired',
       });
     } catch (error) {
       console.error('Auth status check error:', error);
@@ -596,6 +632,47 @@ export class AuthController {
         success: false,
         error: 'Internal server error',
       });
+    }
+  }
+
+  /**
+   * Session endpoint using cookies
+   */
+  static async session(req: Request, res: Response) {
+    try {
+      const token = (req as any).cookies?.sm_sess as string | undefined;
+      if (!token) {
+        return res.status(200).json({ success: true, data: { authenticated: false, user: null } });
+      }
+      const result = await AuthService.verifyExtendedToken(token);
+      return res.status(200).json({
+        success: true,
+        data: {
+          authenticated: !!(result.success && result.data),
+          user: result.success ? result.data : null,
+        },
+      });
+    } catch (error) {
+      console.error('Session error:', error);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Logout clears session cookie
+   */
+  static async logout(req: Request, res: Response) {
+    try {
+      res.clearCookie('sm_sess', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN || undefined,
+      });
+      return res.status(200).json({ success: true, message: 'Logged out' });
+    } catch (error) {
+      return res.status(500).json({ success: false, error: 'Internal server error' });
     }
   }
 

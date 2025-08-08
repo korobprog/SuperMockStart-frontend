@@ -105,6 +105,9 @@ router.put('/refresh-user-info', authenticateToken, AuthController.refreshUserIn
  * @access Public
  */
 router.get('/status', optionalExtendedAuth, AuthController.checkAuthStatus);
+// Cookie-based session endpoints
+router.get('/session', AuthController.session);
+router.post('/logout', AuthController.logout);
 /**
  * @route POST /api/auth/link-telegram
  * @desc Привязка Telegram аккаунта к существующему пользователю

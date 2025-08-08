@@ -8,6 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import ms from 'ms';
+import cookieParser from 'cookie-parser';
 import { TelegramUtils } from './utils/telegram.js';
 import { JwtUtils } from './utils/jwt.js';
 import { TelegramBotService } from './services/telegramBotService.js';
@@ -130,6 +131,7 @@ console.log('🔒 Rate limiting enabled with API-specific limits');
 // Парсинг JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Логирование запросов
 app.use(
