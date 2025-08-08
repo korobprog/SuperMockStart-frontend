@@ -6,7 +6,7 @@ export class FeedbackService {
      */
     static async submitFeedback(data) {
         // Получаем информацию о сессии
-        const session = await prisma.interviewSession.findUnique({
+        const session = await prisma.interview_sessions.findUnique({
             where: { id: data.sessionId },
             include: {
                 candidate: true,
@@ -106,7 +106,7 @@ export class FeedbackService {
      */
     static async getSessionFeedback(sessionId, userId) {
         // Проверяем доступ к сессии
-        const session = await prisma.interviewSession.findUnique({
+        const session = await prisma.interview_sessions.findUnique({
             where: { id: sessionId },
         });
         if (!session) {
@@ -143,19 +143,19 @@ export class FeedbackService {
     static async swapUserRoles(candidateId, interviewerId) {
         // Получаем текущие статусы
         const [candidate, interviewer] = await Promise.all([
-            prisma.user.findUnique({ where: { id: candidateId } }),
-            prisma.user.findUnique({ where: { id: interviewerId } }),
+            prisma.users.findUnique({ where: { id: candidateId } }),
+            prisma.users.findUnique({ where: { id: interviewerId } }),
         ]);
         if (!candidate || !interviewer) {
             throw new Error('Users not found');
         }
         // Меняем роли: кандидат становится интервьюером, интервьюер становится кандидатом
         await Promise.all([
-            prisma.user.update({
+            prisma.users.update({
                 where: { id: candidateId },
                 data: { status: 'INTERVIEWER' },
             }),
-            prisma.user.update({
+            prisma.users.update({
                 where: { id: interviewerId },
                 data: { status: 'CANDIDATE' },
             }),

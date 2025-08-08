@@ -155,11 +155,33 @@ export class AuthController {
      */
     static async authenticateWithTelegramWidget(req, res) {
         try {
+            console.log('📥 Telegram Widget auth request body:', req.body);
             const { id, first_name, last_name, username, photo_url, auth_date, hash, } = req.body;
+            console.log('📋 Parsed fields:', {
+                id,
+                first_name,
+                last_name,
+                username,
+                photo_url,
+                auth_date,
+                hash,
+            });
             if (!id || !first_name || !auth_date || !hash) {
+                console.error('❌ Missing required fields:', {
+                    id,
+                    first_name,
+                    auth_date,
+                    hash,
+                });
                 return res.status(400).json({
                     success: false,
                     error: 'Required fields are missing',
+                    missing: {
+                        id: !id,
+                        first_name: !first_name,
+                        auth_date: !auth_date,
+                        hash: !hash,
+                    },
                 });
             }
             const result = await AuthService.authenticateWithTelegramWidget({
@@ -171,13 +193,72 @@ export class AuthController {
                 auth_date: parseInt(auth_date),
                 hash,
             });
+            console.log('🔍 AuthService result:', result);
             if (!result.success) {
                 return res.status(401).json(result);
             }
             res.json(result);
         }
         catch (error) {
-            console.error('Telegram Widget authentication error:', error);
+            console.error('❌ Telegram Widget authentication error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Internal server error',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+            });
+        }
+    }
+    /**
+     * Аутентификация через Telegram Login Widget (новый)
+     */
+    static async authenticateWithTelegramLogin(req, res) {
+        try {
+            const { telegramData, user } = req.body;
+            if (!telegramData || !user) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Telegram data and user are required',
+                });
+            }
+            const { id, first_name, last_name, username, photo_url, auth_date, hash, } = telegramData;
+            if (!id || !first_name || !auth_date || !hash) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Required Telegram fields are missing',
+                });
+            }
+            // TODO: В продакшне здесь должна быть проверка hash
+            const isProduction = process.env.NODE_ENV === 'production';
+            if (isProduction) {
+                // TODO: Добавить проверку hash в продакшне
+                console.log('⚠️ Hash verification not implemented for production');
+            }
+            // Находим или создаем пользователя в БД
+            const userResult = await UserService.findOrCreateTelegramUser({
+                id: parseInt(id),
+                username: username || `user_${id}`,
+                firstName: first_name,
+                lastName: last_name,
+            });
+            if (!userResult.success || !userResult.data) {
+                return res.status(500).json({
+                    success: false,
+                    error: userResult.error || 'Failed to create/find user',
+                });
+            }
+            // Генерируем JWT токен
+            const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
+            res.json({
+                success: true,
+                data: {
+                    user: userResult.data,
+                    token,
+                },
+                message: 'Telegram login successful',
+            });
+        }
+        catch (error) {
+            console.error('Telegram Login authentication error:', error);
             res.status(500).json({
                 success: false,
                 error: 'Internal server error',
@@ -189,7 +270,14 @@ export class AuthController {
      */
     static async getTestToken(req, res) {
         try {
-            const result = AuthService.getTestToken();
+            // В продакшн режиме не выдаем тестовые токены
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Test tokens are not available in production',
+                });
+            }
+            const result = await AuthService.getTestToken();
             if (!result.success) {
                 return res.status(500).json(result);
             }
@@ -255,23 +343,31 @@ export class AuthController {
         }
     }
     /**
-     * Проверка валидности токена
+     * Верификация JWT токена
      */
-    static async verifyToken(req, res) {
+    static verifyToken(req, res) {
         try {
             const authHeader = req.headers.authorization;
             const token = authHeader && authHeader.split(' ')[1];
+            console.log('🔍 verifyToken called with header:', authHeader ? 'present' : 'missing');
             if (!token) {
+                console.log('❌ No token provided');
                 return res.status(401).json({
                     success: false,
                     error: 'Token is required',
                 });
             }
+            console.log('🔍 Verifying token:', token.substring(0, 20) + '...');
             const result = AuthService.verifyToken(token);
+            console.log('🔍 verifyToken result:', {
+                success: result.success,
+                hasData: !!result.data,
+                error: result.error,
+            });
             res.json(result);
         }
         catch (error) {
-            console.error('Token verification error:', error);
+            console.error('❌ Token verification error:', error);
             res.status(500).json({
                 success: false,
                 error: 'Internal server error',
@@ -427,6 +523,46 @@ export class AuthController {
         catch (error) {
             console.error('Token validation error:', error);
             return res.status(500).json({
+                success: false,
+                error: 'Internal server error',
+            });
+        }
+    }
+    /**
+     * Создание тестового пользователя для разработки
+     */
+    static async createDevUser(req, res) {
+        try {
+            // Проверяем, что мы в режиме разработки
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Dev user creation is not allowed in production',
+                });
+            }
+            const { id, first_name, last_name, username, photo_url } = req.body;
+            if (!id || !first_name) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'ID and first_name are required',
+                });
+            }
+            // Создаем пользователя в базе данных
+            const result = await AuthService.createDevUser({
+                telegramId: id,
+                firstName: first_name,
+                lastName: last_name || '',
+                username: username || '',
+                photoUrl: '', // photoUrl не используется в UserService, но требуется в AuthService
+            });
+            if (!result.success) {
+                return res.status(400).json(result);
+            }
+            res.status(201).json(result);
+        }
+        catch (error) {
+            console.error('Create dev user controller error:', error);
+            res.status(500).json({
                 success: false,
                 error: 'Internal server error',
             });

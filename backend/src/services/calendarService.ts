@@ -23,58 +23,80 @@ export class CalendarService {
    * Получить доступные слоты времени для профессии
    */
   static async getAvailableSlots(profession: string, date?: Date) {
-    const startDate = date || new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 14); // На 2 недели вперед
-
-    // Получаем существующие сессии
-    const existingSessions = await prisma.interviewSession.findMany({
-      where: {
+    try {
+      console.log('🔍 CalendarService.getAvailableSlots called with:', {
         profession,
-        scheduledDateTime: {
-          gte: startDate,
-          lte: endDate,
+        date,
+      });
+
+      // Проверяем подключение к базе данных
+      console.log('🔍 Testing database connection...');
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('✅ Database connection successful');
+
+      const startDate = date || new Date();
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 14); // На 2 недели вперед
+
+      console.log('🔍 Date range:', { startDate, endDate });
+
+      // Получаем существующие сессии
+      const existingSessions = await prisma.interview_sessions.findMany({
+        where: {
+          profession,
+          scheduledDateTime: {
+            gte: startDate,
+            lte: endDate,
+          },
+          status: {
+            in: ['SCHEDULED', 'IN_PROGRESS'] as any[],
+          },
         },
-        status: {
-          in: [SessionStatus.SCHEDULED, SessionStatus.IN_PROGRESS],
+        select: {
+          scheduledDateTime: true,
         },
-      },
-      select: {
-        scheduledDateTime: true,
-      },
-    });
+      });
 
-    // Генерируем доступные слоты (каждый час 24/7)
-    const slots = [];
-    const current = new Date(startDate);
-    current.setHours(0, 0, 0, 0);
+      console.log('🔍 Existing sessions found:', existingSessions.length);
 
-    while (current <= endDate) {
-      // Убираем ограничение на выходные - доступно 7 дней в неделю
-      // Убираем ограничение на рабочее время - доступно 24 часа в сутки
-      for (let hour = 0; hour < 24; hour++) {
-        current.setHours(hour, 0, 0, 0);
+      // Генерируем доступные слоты (каждый час 24/7)
+      const slots = [];
+      const current = new Date(startDate);
+      current.setHours(0, 0, 0, 0);
 
-        // Проверяем, что слот не занят
-        const isOccupied = existingSessions.some(
-          (session) =>
-            Math.abs(session.scheduledDateTime.getTime() - current.getTime()) <
-            60 * 60 * 1000 // В пределах часа
-        );
+      while (current <= endDate) {
+        // Убираем ограничение на выходные - доступно 7 дней в неделю
+        // Убираем ограничение на рабочее время - доступно 24 часа в сутки
+        for (let hour = 0; hour < 24; hour++) {
+          current.setHours(hour, 0, 0, 0);
 
-        if (!isOccupied) {
-          slots.push({
-            datetime: new Date(current),
-            available: true,
-          });
+          // Проверяем, что слот не занят
+          const isOccupied = existingSessions.some(
+            (session: any) =>
+              Math.abs(
+                session.scheduledDateTime.getTime() - current.getTime()
+              ) <
+              60 * 60 * 1000 // В пределах часа
+          );
+
+          if (!isOccupied) {
+            slots.push({
+              datetime: new Date(current),
+              available: true,
+            });
+          }
         }
+
+        // Переходим к следующему дню
+        current.setDate(current.getDate() + 1);
       }
 
-      // Переходим к следующему дню
-      current.setDate(current.getDate() + 1);
+      console.log('🔍 Generated slots:', slots.length);
+      return slots;
+    } catch (error) {
+      console.error('❌ Error in getAvailableSlots:', error);
+      throw error;
     }
-
-    return slots;
   }
 
   /**
@@ -85,8 +107,9 @@ export class CalendarService {
     await this.leaveQueue(data.userId);
 
     // Добавляем новую запись в очередь
-    const queueEntry = await prisma.interviewQueue.create({
+    const queueEntry = await prisma.interview_queue.create({
       data: {
+        id: uuidv4(),
         userId: data.userId,
         profession: data.profession,
         language: data.language,
@@ -95,9 +118,10 @@ export class CalendarService {
         timeFlexibility: data.timeFlexibility || 30,
         status:
           QueueStatus.WAITING as (typeof QueueStatus)[keyof typeof QueueStatus],
+        updatedAt: new Date(),
       },
       include: {
-        user: true,
+        users: true,
       },
     });
 
@@ -108,19 +132,22 @@ export class CalendarService {
    * Получить статус пользователя в очереди
    */
   static async getQueueStatus(userId: string) {
-    const queueEntry = await prisma.interviewQueue.findFirst({
+    const queueEntry = await prisma.interview_queue.findFirst({
       where: {
         userId,
         status: {
-          in: [QueueStatus.WAITING, QueueStatus.MATCHED] as typeof QueueStatus[keyof typeof QueueStatus][],
+          in: [
+            QueueStatus.WAITING,
+            QueueStatus.MATCHED,
+          ] as (typeof QueueStatus)[keyof typeof QueueStatus][],
         },
       },
       include: {
-        user: true,
-        matchedSession: {
+        users: true,
+        interview_sessions: {
           include: {
-            candidate: true,
-            interviewer: true,
+            users_interview_sessions_candidateIdTousers: true,
+            users_interview_sessions_interviewerIdTousers: true,
           },
         },
       },
@@ -134,36 +161,41 @@ export class CalendarService {
     }
 
     // Если есть матч, возвращаем информацию о сессии
-    if (queueEntry.matchedSession) {
+    if (queueEntry.interview_sessions) {
       return {
         id: queueEntry.id,
-        status: 'MATCHED' as typeof QueueStatus[keyof typeof QueueStatus],
+        status: 'MATCHED' as (typeof QueueStatus)[keyof typeof QueueStatus],
         profession: queueEntry.profession,
         language: queueEntry.language,
         preferredDateTime: queueEntry.preferredDateTime,
         matchedSession: {
-          id: queueEntry.matchedSession.id,
-          scheduledDateTime: queueEntry.matchedSession.scheduledDateTime,
-          meetingLink: queueEntry.matchedSession.meetingLink,
-          profession: queueEntry.matchedSession.profession,
-          language: queueEntry.matchedSession.language,
-          candidate: queueEntry.matchedSession.candidate,
-          interviewer: queueEntry.matchedSession.interviewer,
+          id: queueEntry.interview_sessions.id,
+          scheduledDateTime: queueEntry.interview_sessions.scheduledDateTime,
+          meetingLink: queueEntry.interview_sessions.meetingLink,
+          profession: queueEntry.interview_sessions.profession,
+          language: queueEntry.interview_sessions.language,
+          candidate:
+            queueEntry.interview_sessions
+              .users_interview_sessions_candidateIdTousers,
+          interviewer:
+            queueEntry.interview_sessions
+              .users_interview_sessions_interviewerIdTousers,
         },
       };
     }
 
     // Проверяем количество пользователей в очереди с тем же языком
-    const usersInQueueWithSameLanguage = await prisma.interviewQueue.count({
+    const usersInQueueWithSameLanguage = await prisma.interview_queue.count({
       where: {
         language: queueEntry.language,
-        status: QueueStatus.WAITING as typeof QueueStatus[keyof typeof QueueStatus],
+        status:
+          QueueStatus.WAITING as (typeof QueueStatus)[keyof typeof QueueStatus],
       },
     });
 
     return {
       id: queueEntry.id,
-      status: 'WAITING' as typeof QueueStatus[keyof typeof QueueStatus],
+      status: 'WAITING' as (typeof QueueStatus)[keyof typeof QueueStatus],
       profession: queueEntry.profession,
       language: queueEntry.language,
       preferredDateTime: queueEntry.preferredDateTime,
@@ -175,15 +207,19 @@ export class CalendarService {
    * Покинуть очередь
    */
   static async leaveQueue(userId: string) {
-    await prisma.interviewQueue.updateMany({
+    await prisma.interview_queue.updateMany({
       where: {
         userId,
         status: {
-          in: [QueueStatus.WAITING, QueueStatus.MATCHED] as typeof QueueStatus[keyof typeof QueueStatus][],
+          in: [
+            QueueStatus.WAITING,
+            QueueStatus.MATCHED,
+          ] as (typeof QueueStatus)[keyof typeof QueueStatus][],
         },
       },
       data: {
-        status: QueueStatus.CANCELLED as typeof QueueStatus[keyof typeof QueueStatus],
+        status:
+          QueueStatus.CANCELLED as (typeof QueueStatus)[keyof typeof QueueStatus],
       },
     });
   }
@@ -195,16 +231,19 @@ export class CalendarService {
     const meetingLink = this.generateMeetingLink();
 
     // Создаем Interview записи
-    const candidateInterview = await prisma.interview.create({
+    const candidateInterview = await prisma.interviews.create({
       data: {
+        id: uuidv4(),
         candidateId: match.candidateEntry.userId,
         interviewerId: match.interviewerEntry.userId,
+        updatedAt: new Date(),
       },
     });
 
     // Создаем InterviewSession
-    const session = await prisma.interviewSession.create({
+    const session = await prisma.interview_sessions.create({
       data: {
+        id: uuidv4(),
         interviewId: candidateInterview.id,
         scheduledDateTime: match.scheduledDateTime,
         profession: match.candidateEntry.profession,
@@ -212,22 +251,24 @@ export class CalendarService {
         meetingLink,
         candidateId: match.candidateEntry.userId,
         interviewerId: match.interviewerEntry.userId,
+        updatedAt: new Date(),
       },
       include: {
-        candidate: true,
-        interviewer: true,
+        users_interview_sessions_candidateIdTousers: true,
+        users_interview_sessions_interviewerIdTousers: true,
       },
     });
 
     // Обновляем статус очередей
-    await prisma.interviewQueue.updateMany({
+    await prisma.interview_queue.updateMany({
       where: {
         id: {
           in: [match.candidateEntry.id, match.interviewerEntry.id],
         },
       },
       data: {
-        status: QueueStatus.MATCHED as typeof QueueStatus[keyof typeof QueueStatus],
+        status:
+          QueueStatus.MATCHED as (typeof QueueStatus)[keyof typeof QueueStatus],
         matchedSessionId: session.id,
       },
     });
@@ -239,28 +280,44 @@ export class CalendarService {
    * Получить сессии пользователя
    */
   static async getUserSessions(userId: string) {
-    const sessions = await prisma.interviewSession.findMany({
-      where: {
-        OR: [{ candidateId: userId }, { interviewerId: userId }],
-      },
-      include: {
-        candidate: true,
-        interviewer: true,
-        interview: true,
-      },
-      orderBy: {
-        scheduledDateTime: 'asc',
-      },
-    });
+    try {
+      console.log(
+        '🔍 CalendarService.getUserSessions called with userId:',
+        userId
+      );
 
-    return sessions;
+      // Проверяем подключение к базе данных
+      console.log('🔍 Testing database connection...');
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('✅ Database connection successful');
+
+      const sessions = await prisma.interview_sessions.findMany({
+        where: {
+          OR: [{ candidateId: userId }, { interviewerId: userId }],
+        },
+        include: {
+          users_interview_sessions_candidateIdTousers: true,
+          users_interview_sessions_interviewerIdTousers: true,
+          interviews: true,
+        },
+        orderBy: {
+          scheduledDateTime: 'asc',
+        },
+      });
+
+      console.log('🔍 Found sessions:', sessions.length);
+      return sessions;
+    } catch (error) {
+      console.error('❌ Error in getUserSessions:', error);
+      throw error;
+    }
   }
 
   /**
    * Отменить сессию
    */
   static async cancelSession(sessionId: string, userId: string) {
-    const session = await prisma.interviewSession.findFirst({
+    const session = await prisma.interview_sessions.findFirst({
       where: {
         id: sessionId,
         OR: [{ candidateId: userId }, { interviewerId: userId }],
@@ -271,9 +328,9 @@ export class CalendarService {
       throw new Error('Session not found or access denied');
     }
 
-    await prisma.interviewSession.update({
+    await prisma.interview_sessions.update({
       where: { id: sessionId },
-      data: { status: SessionStatus.CANCELLED },
+      data: { status: 'CANCELLED' as any },
     });
 
     // Создаем уведомления для обеих сторон
@@ -282,8 +339,9 @@ export class CalendarService {
         ? session.interviewerId
         : session.candidateId;
 
-    await prisma.notification.create({
+    await prisma.notifications.create({
       data: {
+        id: uuidv4(),
         userId: otherUserId,
         sessionId: sessionId,
         type: NotificationType.INTERVIEW_CANCELLED,
@@ -297,7 +355,7 @@ export class CalendarService {
    * Завершить сессию
    */
   static async completeSession(sessionId: string, userId: string) {
-    const session = await prisma.interviewSession.findFirst({
+    const session = await prisma.interview_sessions.findFirst({
       where: {
         id: sessionId,
         OR: [{ candidateId: userId }, { interviewerId: userId }],
@@ -308,13 +366,13 @@ export class CalendarService {
       throw new Error('Session not found or access denied');
     }
 
-    await prisma.interviewSession.update({
+    await prisma.interview_sessions.update({
       where: { id: sessionId },
-      data: { status: SessionStatus.COMPLETED },
+      data: { status: 'COMPLETED' as any },
     });
 
     // Очищаем статус очереди для обоих участников
-    await prisma.interviewQueue.updateMany({
+    await prisma.interview_queue.updateMany({
       where: {
         OR: [
           { userId: session.candidateId },
@@ -337,20 +395,21 @@ export class CalendarService {
    * Создать запрос на обратную связь
    */
   static async createFeedbackRequest(sessionId: string) {
-    const session = await prisma.interviewSession.findUnique({
+    const session = await prisma.interview_sessions.findUnique({
       where: { id: sessionId },
       include: {
-        candidate: true,
-        interviewer: true,
+        users_interview_sessions_candidateIdTousers: true,
+        users_interview_sessions_interviewerIdTousers: true,
       },
     });
 
     if (!session) return;
 
     // Создаем уведомления о запросе фидбека
-    await prisma.notification.createMany({
+    await prisma.notifications.createMany({
       data: [
         {
+          id: uuidv4(),
           userId: session.candidateId,
           sessionId: sessionId,
           type: NotificationType.FEEDBACK_REQUEST,
@@ -358,6 +417,7 @@ export class CalendarService {
           message: 'Пожалуйста, оставьте отзыв о прошедшем собеседовании.',
         },
         {
+          id: uuidv4(),
           userId: session.interviewerId,
           sessionId: sessionId,
           type: NotificationType.FEEDBACK_REQUEST,

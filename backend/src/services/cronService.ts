@@ -10,6 +10,8 @@ export class CronService {
    * Запустить все cron задачи
    */
   static startAll() {
+    console.log('🕒 Starting all cron tasks...');
+
     this.startNotificationSender();
     this.startBatchMatching();
     this.startQueueCleaner();

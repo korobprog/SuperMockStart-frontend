@@ -9,6 +9,14 @@ import {
   setUser,
   clearError,
 } from '../store/slices/authSlice';
+import {
+  getStoredToken,
+  setStoredToken,
+  removeStoredToken,
+  getStoredUser,
+  setStoredUser,
+  isValidToken,
+} from '../utils/auth';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -26,12 +34,12 @@ export const useAuth = () => {
     console.log('🔍 Checking auth status...');
 
     // Проверяем токен из Redux store
-    if (auth.token) {
-      console.log('🔑 Token found in Redux store');
+    if (auth.token && isValidToken(auth.token)) {
+      console.log('🔑 Valid token found in Redux store');
       try {
         return await dispatch(verifyToken() as any);
       } catch (error) {
-        console.error('Error verifying token:', error);
+        console.error('Error verifying token from Redux:', error);
         // Если токен недействителен, очищаем состояние
         dispatch(logoutAction());
         return { meta: { requestStatus: 'rejected' } };
@@ -39,8 +47,8 @@ export const useAuth = () => {
     }
 
     // Если токена нет в Redux, проверяем localStorage
-    const storedToken = localStorage.getItem('telegram_token');
-    const storedUser = localStorage.getItem('user');
+    const storedToken = getStoredToken();
+    const storedUser = getStoredUser();
 
     console.log('🔍 Checking localStorage:', {
       storedToken: storedToken ? 'present' : 'missing',
@@ -49,21 +57,19 @@ export const useAuth = () => {
 
     if (storedToken && storedUser && !auth.isAuthenticated) {
       try {
-        const user = JSON.parse(storedUser);
-
-        console.log('✅ Found stored user:', user);
+        console.log('✅ Found stored user:', storedUser);
 
         // Обновляем Redux store
         dispatch(setToken(storedToken));
-        dispatch(setUser(user));
+        dispatch(setUser(storedUser));
 
-        // Проверяем валидность токена на сервере только если есть подключение к БД
+        // Проверяем валидность токена на сервере
         try {
           return await dispatch(verifyToken() as any);
         } catch (error) {
           console.error('Error verifying token from localStorage:', error);
           // Если сервер недоступен, но у нас есть данные пользователя, считаем авторизованным
-          if (user && user.id) {
+          if (storedUser && storedUser.id) {
             console.log(
               '✅ Using cached user data due to server unavailability'
             );
@@ -72,15 +78,13 @@ export const useAuth = () => {
           return { meta: { requestStatus: 'rejected' } };
         }
       } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('telegram_token');
-        localStorage.removeItem('user');
+        console.error('Error processing stored auth data:', error);
+        removeStoredToken();
         return { meta: { requestStatus: 'rejected' } };
       }
     }
 
     console.log('❌ No valid auth data found');
-    // Если нет сохраненных данных, возвращаем пустой результат
     return { meta: { requestStatus: 'rejected' } };
   };
 
@@ -89,11 +93,21 @@ export const useAuth = () => {
   };
 
   const updateToken = (token: string) => {
-    dispatch(setToken(token));
+    if (isValidToken(token)) {
+      dispatch(setToken(token));
+      setStoredToken(token);
+    } else {
+      console.error('Invalid token provided to updateToken:', token);
+    }
   };
 
   const updateUser = (user: any) => {
-    dispatch(setUser(user));
+    if (user && typeof user === 'object') {
+      dispatch(setUser(user));
+      setStoredUser(user);
+    } else {
+      console.error('Invalid user provided to updateUser:', user);
+    }
   };
 
   const clearAuthError = () => {
@@ -101,14 +115,11 @@ export const useAuth = () => {
   };
 
   return {
-    // Состояние
-    user: auth.user,
     token: auth.token,
+    user: auth.user,
+    isAuthenticated: auth.isAuthenticated,
     loading: auth.loading,
     error: auth.error,
-    isAuthenticated: auth.isAuthenticated,
-
-    // Действия
     login,
     logout,
     checkAuth,

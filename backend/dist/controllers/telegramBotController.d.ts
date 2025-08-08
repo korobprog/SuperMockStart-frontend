@@ -5,6 +5,10 @@ export declare class TelegramBotController {
      */
     static createAuthUrl(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
+     * Создает LoginUrl объект для авторизации через Telegram Login Widget
+     */
+    static createLoginUrl(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    /**
      * Проверяет авторизацию пользователя через бота
      */
     static verifyUserAuth(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;

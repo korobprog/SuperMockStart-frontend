@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Настройка тестового токена</title>
+   <style>
+      body {
+         font-family: Arial, sans-serif;
+         max-width: 800px;
+         margin: 0 auto;
+         padding: 20px;
+         background-color: #f5f5f5;
+      }
+
+      .container {
+         background: white;
+         padding: 30px;
+         border-radius: 10px;
+         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      button {
+         background: #007bff;
+         color: white;
+         border: none;
+         padding: 10px 20px;
+         border-radius: 5px;
+         cursor: pointer;
+         margin: 10px 5px;
+      }
+
+      button:hover {
+         background: #0056b3;
+      }
+
+      .success {
+         color: green;
+         font-weight: bold;
+      }
+
+      .error {
+         color: red;
+         font-weight: bold;
+      }
+
+      pre {
+         background: #f8f9fa;
+         padding: 15px;
+         border-radius: 5px;
+         overflow-x: auto;
+      }
+   </style>
+</head>
+
+<body>
+   <div class="container">
+      <h1>🔧 Настройка тестового токена</h1>
+      <p>Этот инструмент поможет получить тестовый токен и сохранить его в localStorage для разработки.</p>
+
+      <div>
+         <button onclick="getTestToken()">Получить тестовый токен</button>
+         <button onclick="clearTokens()">Очистить все токены</button>
+         <button onclick="showCurrentTokens()">Показать текущие токены</button>
+      </div>
+
+      <div id="result"></div>
+
+      <h3>Инструкции:</h3>
+      <ol>
+         <li>Нажмите "Получить тестовый токен"</li>
+         <li>Если токен получен успешно, он будет сохранен в localStorage</li>
+         <li>Перейдите на страницу приложения и обновите её</li>
+         <li>Теперь аутентификация должна работать</li>
+      </ol>
+
+      <h3>Текущие токены в localStorage:</h3>
+      <pre id="tokens"></pre>
+   </div>
+
+   <script>
+      const API_URL = 'http://localhost:3001/api';
+
+      async function getTestToken() {
+         const resultDiv = document.getElementById('result');
+         resultDiv.innerHTML = '<p>🔄 Получаем тестовый токен...</p>';
+
+         try {
+            const response = await fetch(`${API_URL}/auth/test-token`, {
+               method: 'GET',
+               headers: {
+                  'Content-Type': 'application/json',
+               },
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.data?.token) {
+               // Сохраняем токен в localStorage
+               localStorage.setItem('extended_token', data.data.token);
+               localStorage.setItem('telegram_token', data.data.token);
+               localStorage.setItem('authToken', data.data.token);
+               localStorage.setItem('token', data.data.token);
+
+               // Сохраняем пользователя
+               localStorage.setItem('user', JSON.stringify(data.data.user));
+
+               resultDiv.innerHTML = `
+                        <p class="success">✅ Тестовый токен получен и сохранен!</p>
+                        <p><strong>Токен:</strong> ${data.data.token.substring(0, 50)}...</p>
+                        <p><strong>Пользователь:</strong> ${data.data.user.firstName} ${data.data.user.lastName}</p>
+                    `;
+
+               showCurrentTokens();
+            } else {
+               resultDiv.innerHTML = `<p class="error">❌ Ошибка: ${data.error}</p>`;
+            }
+         } catch (error) {
+            resultDiv.innerHTML = `<p class="error">❌ Ошибка сети: ${error.message}</p>`;
+         }
+      }
+
+      function clearTokens() {
+         localStorage.removeItem('extended_token');
+         localStorage.removeItem('telegram_token');
+         localStorage.removeItem('authToken');
+         localStorage.removeItem('token');
+         localStorage.removeItem('user');
+
+         document.getElementById('result').innerHTML = '<p class="success">✅ Все токены очищены!</p>';
+         showCurrentTokens();
+      }
+
+      function showCurrentTokens() {
+         const tokensDiv = document.getElementById('tokens');
+         const tokens = {
+            'extended_token': localStorage.getItem('extended_token'),
+            'telegram_token': localStorage.getItem('telegram_token'),
+            'authToken': localStorage.getItem('authToken'),
+            'token': localStorage.getItem('token'),
+            'user': localStorage.getItem('user')
+         };
+
+         tokensDiv.textContent = JSON.stringify(tokens, null, 2);
+      }
+
+      // Показываем текущие токены при загрузке
+      showCurrentTokens();
+   </script>
+</body>
+
+</html>

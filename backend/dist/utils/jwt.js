@@ -24,6 +24,11 @@ export class JwtUtils {
      * Создает расширенный JWT токен для пользователя
      */
     static generateExtendedToken(user, authType) {
+        console.log('🔍 generateExtendedToken called with:', {
+            userId: user.id,
+            telegramId: user.telegramId,
+            authType,
+        });
         const payload = {
             userId: authType === 'telegram'
                 ? parseInt(user.telegramId || '0')
@@ -36,8 +41,12 @@ export class JwtUtils {
             // Добавляем ID пользователя из базы данных для всех типов авторизации
             userDbId: user.id,
         };
+        console.log('🔍 JWT payload:', payload);
         const options = { expiresIn: this.expiresIn };
-        return jwt.sign(payload, this.secret, options);
+        const token = jwt.sign(payload, this.secret, options);
+        console.log('🔍 Generated token:', token.substring(0, 20) + '...');
+        console.log('🔍 Token length:', token.length);
+        return token;
     }
     /**
      * Создает JWT токен для пользователя Telegram
@@ -65,11 +74,15 @@ export class JwtUtils {
             last_name: 'User',
             username: 'testuser',
         };
+        // Создаем расширенный токен для совместимости с middleware
         const payload = {
             userId: testUser.id,
             username: testUser.username,
             firstName: testUser.first_name,
             lastName: testUser.last_name,
+            role: 'USER',
+            authType: 'telegram',
+            userDbId: 'test-user-id', // Тестовый ID пользователя
         };
         const options = { expiresIn: '30d' }; // Тестовый токен на 30 дней
         return jwt.sign(payload, this.secret, options);
@@ -92,11 +105,22 @@ export class JwtUtils {
      */
     static verifyExtendedToken(token) {
         try {
+            console.log('🔍 JwtUtils.verifyExtendedToken called');
+            console.log('🔍 token format check:', {
+                isJWT: token.split('.').length === 3,
+                parts: token.split('.').length,
+            });
             const decoded = jwt.verify(token, this.secret);
+            console.log('🔍 JWT decoded successfully:', {
+                userId: decoded.userId,
+                userDbId: decoded.userDbId,
+                authType: decoded.authType,
+                role: decoded.role,
+            });
             return decoded;
         }
         catch (error) {
-            console.error('Extended JWT verification failed:', error);
+            console.error('❌ Extended JWT verification failed:', error);
             return null;
         }
     }

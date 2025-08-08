@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { TelegramBotService } from '../services/telegramBotService.js';
 import { AuthService } from '../services/authService.js';
+import { UserService } from '../services/userService.js';
+import { JwtUtils } from '../utils/jwt.js';
 import { ApiResponse } from '../types/index.js';
 
 export class TelegramBotController {
@@ -99,13 +101,28 @@ export class TelegramBotController {
         } as ApiResponse);
       }
 
-      // Генерируем JWT токен
-      const token = AuthService.generateTokenForUser(userInfo);
+      // Создаем или находим пользователя в базе данных
+      const userResult = await UserService.findOrCreateTelegramUser({
+        id: userInfo.id,
+        username: userInfo.username,
+        firstName: userInfo.first_name,
+        lastName: userInfo.last_name,
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return res.status(500).json({
+          success: false,
+          error: userResult.error || 'Failed to create user in database',
+        } as ApiResponse);
+      }
+
+      // Генерируем расширенный JWT токен
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
 
       res.json({
         success: true,
         data: {
-          user: userInfo,
+          user: userResult.data,
           token,
           canSendMessage,
         },

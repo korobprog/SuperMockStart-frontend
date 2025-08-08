@@ -30,7 +30,9 @@ async function testFormAPI() {
   try {
     // Получаем тестовый токен
     const tokenResponse = await makeRequest(
-      'http://localhost:3001/api/auth/test-token',
+      `${
+        process.env.VITE_API_URL || 'http://localhost:3001'
+      }/api/auth/test-token`,
       {
         method: 'GET',
       }
@@ -53,14 +55,17 @@ async function testFormAPI() {
       email: 'test@example.com',
     };
 
-    const formResponse = await makeRequest('http://localhost:3001/api/form', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(formData),
-    });
+    const formResponse = await makeRequest(
+      `${process.env.VITE_API_URL || 'http://localhost:3001'}/api/form`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      }
+    );
 
     console.log('Статус ответа:', formResponse.status);
     console.log('Результат:', JSON.stringify(formResponse.data, null, 2));

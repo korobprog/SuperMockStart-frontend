@@ -1,18 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import path from 'path';
+
+// Функция для получения переменных окружения
+const getApiUrl = () => {
+  return process.env.VITE_API_URL;
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'automatic',
-      // Включаем development режим для React
-      fastRefresh: true,
-    }),
-    tailwindcss({
-      config: './tailwind.config.js',
     }),
   ],
   // Отключаем минификацию для получения подробных ошибок
@@ -37,7 +35,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: getApiUrl(),
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {

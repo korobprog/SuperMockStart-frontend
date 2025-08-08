@@ -1,29 +1,23 @@
-# Dockerfile для разработки бэкенда
-FROM node:20-alpine
+FROM node:18-alpine
 
-# Настраиваем pnpm
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-# Suppress deprecation warnings during build
-ENV NPM_CONFIG_LOGLEVEL=error
-ENV PNPM_LOG_LEVEL=error
-RUN corepack enable
+# Устанавливаем необходимые пакеты
+RUN apk add --no-cache bash curl
 
 WORKDIR /app
 
-# Копируем файлы зависимостей
-COPY package.json pnpm-lock.yaml ./
-
-# Копируем Prisma схему до установки зависимостей
-COPY prisma ./prisma
-
-# Устанавливаем зависимости (postinstall скрипт теперь найдет schema.prisma)
-RUN pnpm install --frozen-lockfile --silent
-
-# Копируем исходный код
+# Копируем все файлы проекта
 COPY . .
 
-# Открываем порт для разработки
+# Устанавливаем pnpm глобально
+RUN npm install -g pnpm
+
+# Устанавливаем зависимости
+RUN pnpm install --frozen-lockfile
+
+# Генерируем Prisma клиент
+RUN npx prisma generate
+
+# Открываем порт
 EXPOSE 3001
 
 # Запускаем в режиме разработки

@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
 import { NotificationService } from './notificationService.js';
+import crypto from 'crypto';
 
 export interface SubmitFeedbackData {
   sessionId: string;
@@ -15,11 +16,11 @@ export class FeedbackService {
    */
   static async submitFeedback(data: SubmitFeedbackData) {
     // Получаем информацию о сессии
-    const session = await prisma.interviewSession.findUnique({
+    const session = await prisma.interview_sessions.findUnique({
       where: { id: data.sessionId },
       include: {
-        candidate: true,
-        interviewer: true,
+        users_interview_sessions_candidateIdTousers: true,
+        users_interview_sessions_interviewerIdTousers: true,
       },
     });
 
@@ -58,6 +59,7 @@ export class FeedbackService {
     // Создаем отзыв
     const feedback = await prisma.feedback.create({
       data: {
+        id: crypto.randomUUID(),
         sessionId: data.sessionId,
         fromUserId: data.fromUserId,
         toUserId,
@@ -66,9 +68,9 @@ export class FeedbackService {
         skills: data.skills,
       },
       include: {
-        fromUser: true,
-        toUser: true,
-        session: true,
+        users_feedback_fromUserIdTousers: true,
+        users_feedback_toUserIdTousers: true,
+        interview_sessions: true,
       },
     });
 
@@ -108,21 +110,21 @@ export class FeedbackService {
     const feedback = await prisma.feedback.findMany({
       where,
       include: {
-        fromUser: {
+        users_feedback_fromUserIdTousers: {
           select: {
             firstName: true,
             lastName: true,
             username: true,
           },
         },
-        toUser: {
+        users_feedback_toUserIdTousers: {
           select: {
             firstName: true,
             lastName: true,
             username: true,
           },
         },
-        session: {
+        interview_sessions: {
           select: {
             profession: true,
             scheduledDateTime: true,
@@ -142,7 +144,7 @@ export class FeedbackService {
    */
   static async getSessionFeedback(sessionId: string, userId: string) {
     // Проверяем доступ к сессии
-    const session = await prisma.interviewSession.findUnique({
+    const session = await prisma.interview_sessions.findUnique({
       where: { id: sessionId },
     });
 
@@ -158,14 +160,14 @@ export class FeedbackService {
     const feedback = await prisma.feedback.findMany({
       where: { sessionId },
       include: {
-        fromUser: {
+        users_feedback_fromUserIdTousers: {
           select: {
             firstName: true,
             lastName: true,
             username: true,
           },
         },
-        toUser: {
+        users_feedback_toUserIdTousers: {
           select: {
             firstName: true,
             lastName: true,
@@ -187,8 +189,8 @@ export class FeedbackService {
   ) {
     // Получаем текущие статусы
     const [candidate, interviewer] = await Promise.all([
-      prisma.user.findUnique({ where: { id: candidateId } }),
-      prisma.user.findUnique({ where: { id: interviewerId } }),
+      prisma.users.findUnique({ where: { id: candidateId } }),
+      prisma.users.findUnique({ where: { id: interviewerId } }),
     ]);
 
     if (!candidate || !interviewer) {
@@ -197,11 +199,11 @@ export class FeedbackService {
 
     // Меняем роли: кандидат становится интервьюером, интервьюер становится кандидатом
     await Promise.all([
-      prisma.user.update({
+      prisma.users.update({
         where: { id: candidateId },
         data: { status: 'INTERVIEWER' },
       }),
-      prisma.user.update({
+      prisma.users.update({
         where: { id: interviewerId },
         data: { status: 'CANDIDATE' },
       }),

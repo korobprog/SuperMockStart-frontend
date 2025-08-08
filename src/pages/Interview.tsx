@@ -53,6 +53,7 @@ import {
 
 import { getLanguageName, getCountryFlag } from '../utils/language';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import { getStoredToken } from '../utils/auth';
 
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -315,8 +316,30 @@ interface QueueStatus {
 }
 
 const Interview = () => {
-  const {} = useTelegramAuth();
+  const { isAuthenticated, user } = useTelegramAuth();
   const navigate = useNavigate();
+
+  // Получаем токен из localStorage
+  const getAuthToken = () => {
+    // Используем новую утилиту для получения токена
+    const token = getStoredToken();
+
+    if (token) {
+      console.log('🔑 Valid token found:', token.substring(0, 20) + '...');
+      return token;
+    }
+
+    console.log('❌ No valid token found in localStorage');
+    return null;
+  };
+
+  // Отладочная информация
+  console.log('🔍 Interview component state:', {
+    isAuthenticated,
+    user: user ? 'present' : 'missing',
+    token: getAuthToken() ? 'present' : 'missing',
+  });
+
   const [userStatus, setUserStatus] = useState<'CANDIDATE' | 'INTERVIEWER'>(
     'CANDIDATE' // Changed default value
   );
@@ -418,26 +441,6 @@ const Interview = () => {
   const { loading: professionLoading } = useAppSelector(
     (state) => state.profession
   );
-
-  // Получаем токен из localStorage
-  const getAuthToken = () => {
-    // Сначала пробуем расширенный токен
-    const extendedToken = localStorage.getItem('extended_token');
-    if (extendedToken) {
-      return extendedToken;
-    }
-
-    // Fallback на обычный токен
-    const token = localStorage.getItem('telegram_token');
-    if (token) {
-      try {
-        JSON.parse(atob(token.split('.')[1]));
-      } catch (error) {
-        console.error('❌ Ошибка декодирования токена:', error);
-      }
-    }
-    return token;
-  };
 
   const loadAvailableSlots = useCallback(
     async (profession: string) => {
@@ -1241,7 +1244,7 @@ const Interview = () => {
                     <div>
                       <p className="font-medium text-sm">Профессия</p>
                       <p className="text-sm text-muted-foreground">
-                        {queueStatus.matchedSession.profession}
+                        {queueStatus.matchedSession?.profession || 'Не указана'}
                       </p>
                     </div>
                   </div>
@@ -1255,19 +1258,20 @@ const Interview = () => {
                     </p>
                   </div>
                   <a
-                    href={queueStatus.matchedSession.meetingLink}
+                    href={queueStatus.matchedSession?.meetingLink || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 underline break-all text-sm"
                   >
-                    {queueStatus.matchedSession.meetingLink}
+                    {queueStatus.matchedSession?.meetingLink ||
+                      'Ссылка недоступна'}
                   </a>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button asChild className="flex-1">
                     <a
-                      href={queueStatus.matchedSession.meetingLink}
+                      href={queueStatus.matchedSession?.meetingLink || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -1278,7 +1282,7 @@ const Interview = () => {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      if (queueStatus.matchedSession) {
+                      if (queueStatus.matchedSession?.id) {
                         completeSession(queueStatus.matchedSession.id);
                       }
                     }}
@@ -1554,7 +1558,8 @@ const Interview = () => {
                     className="bg-primary/10 text-primary"
                   >
                     <Users className="w-3 h-3 mr-1" />
-                    {itPositions.find((pos) => pos.value === value)?.label}
+                    {itPositions.find((pos) => pos.value === value)?.label ||
+                      'Не выбрана'}
                   </Badge>
                   <Badge variant="outline">
                     {userStatus === 'INTERVIEWER' ? 'Интервьюер' : 'Кандидат'}
@@ -1802,22 +1807,25 @@ const Interview = () => {
                   <div className="space-y-3">
                     {completedSessions.map((session) => (
                       <div
-                        key={session.id}
+                        key={session?.id || 'unknown'}
                         className="flex items-center justify-between p-3 border rounded-lg"
                       >
                         <div className="flex-1">
-                          <p className="font-medium">{session.profession}</p>
+                          <p className="font-medium">
+                            {session?.profession || 'Не указана'}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {format(
-                              session.scheduledDateTime,
-                              'dd MMMM yyyy, HH:mm',
-                              { locale: ru }
-                            )}
+                            {session?.scheduledDateTime &&
+                              format(
+                                new Date(session.scheduledDateTime),
+                                'dd MMMM yyyy, HH:mm',
+                                { locale: ru }
+                              )}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm" asChild>
-                            <Link to={`/feedback/${session.id}`}>
+                            <Link to={`/feedback/${session?.id || ''}`}>
                               <MessageSquare className="h-4 w-4 mr-1" />
                               Отзыв
                             </Link>
@@ -1885,7 +1893,9 @@ const Interview = () => {
               </p>
               <p className="text-xs sm:text-sm font-medium">
                 <strong>Профессия:</strong>{' '}
-                {value && itPositions.find((pos) => pos.value === value)?.label}
+                {(value &&
+                  itPositions.find((pos) => pos.value === value)?.label) ||
+                  'Не выбрана'}
               </p>
             </div>
           </div>
@@ -1937,10 +1947,10 @@ const Interview = () => {
               {notificationModal.type === 'info' && (
                 <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
               )}
-              {notificationModal.title}
+              {notificationModal.title || ''}
             </DialogTitle>
             <DialogDescription className="text-sm whitespace-pre-line">
-              {notificationModal.message}
+              {notificationModal.message || ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

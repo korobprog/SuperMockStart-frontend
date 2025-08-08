@@ -12,6 +12,10 @@ export declare class TelegramUtils {
     private static botToken;
     static initialize(token: string): void;
     /**
+     * Проверяет, инициализирован ли бот токен
+     */
+    private static isInitialized;
+    /**
      * Валидирует данные от Telegram Web App
      */
     static validateWebAppData(initData: string): TelegramWebAppData | null;

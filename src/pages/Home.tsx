@@ -25,9 +25,15 @@ const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
 
   const handleGetStarted = () => {
+    console.log('🔍 handleGetStarted called');
+    console.log('🔍 isAuthenticated:', isAuthenticated);
+    console.log('🔍 user:', user);
+
     if (isAuthenticated) {
+      console.log('🔍 Navigating to /collectingcontacts');
       navigate('/collectingcontacts');
     } else {
+      console.log('🔍 Navigating to /auth');
       navigate('/auth');
     }
   };
@@ -61,14 +67,32 @@ const Home: React.FC = () => {
             </Button>
 
             {!isAuthenticated && (
-              <Button
-                onClick={() => navigate('/auth')}
-                variant="outline"
-                size="lg"
-                className="font-semibold text-lg py-4 px-8 rounded-xl"
-              >
-                Войти через Telegram
-              </Button>
+              <>
+                <Button
+                  onClick={() => navigate('/bot-auth-test')}
+                  variant="outline"
+                  size="lg"
+                  className="font-semibold text-lg py-4 px-8 rounded-xl"
+                >
+                  Войти через Telegram бота
+                </Button>
+                <Button
+                  onClick={() => navigate('/test-buttons')}
+                  variant="outline"
+                  size="sm"
+                  className="text-sm"
+                >
+                  🧪 Тест кнопок
+                </Button>
+                <Button
+                  onClick={() => navigate('/bot-auth?userId=1736594064')}
+                  variant="outline"
+                  size="sm"
+                  className="text-sm"
+                >
+                  🔐 Тест авторизации
+                </Button>
+              </>
             )}
           </div>
 

@@ -15,13 +15,13 @@ export class UserService {
       const telegramId = telegramData.id.toString();
 
       // Ищем существующего пользователя
-      let user = await prisma.user.findUnique({
+      let user = await prisma.users.findUnique({
         where: { telegramId },
       });
 
       if (user) {
         // Обновляем данные пользователя
-        user = await prisma.user.update({
+        user = await prisma.users.update({
           where: { id: user.id },
           data: {
             username: telegramData.username || user.username,
@@ -50,13 +50,15 @@ export class UserService {
       }
 
       // Создаем нового пользователя
-      const newUser = await prisma.user.create({
+      const newUser = await prisma.users.create({
         data: {
+          id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           telegramId,
           username: telegramData.username,
           firstName: telegramData.firstName,
           lastName: telegramData.lastName,
           status: UserStatus.INTERVIEWER,
+          updatedAt: new Date(),
         },
       });
 
@@ -91,11 +93,18 @@ export class UserService {
    */
   static async getUserById(id: string | number): Promise<ApiResponse<User>> {
     try {
-      const user = await prisma.user.findUnique({
+      console.log('🔍 getUserById called with id:', id);
+      console.log('🔍 id type:', typeof id);
+      console.log('🔍 id.toString():', id.toString());
+
+      const user = await prisma.users.findUnique({
         where: { id: id.toString() },
       });
 
+      console.log('🔍 Database query result:', user);
+
       if (!user) {
+        console.log('❌ User not found in database');
         return {
           success: false,
           error: 'Пользователь не найден',
@@ -114,12 +123,14 @@ export class UserService {
         updatedAt: user.updatedAt,
       };
 
+      console.log('✅ User found and converted:', userResponse);
+
       return {
         success: true,
         data: userResponse,
       };
     } catch (error) {
-      console.error('Get user by ID error:', error);
+      console.error('❌ Get user by ID error:', error);
       return {
         success: false,
         error: 'Ошибка при получении пользователя',
@@ -134,7 +145,7 @@ export class UserService {
     telegramId: string
   ): Promise<ApiResponse<User>> {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { telegramId },
       });
 
@@ -178,7 +189,7 @@ export class UserService {
     status: UserStatus
   ): Promise<ApiResponse<User>> {
     try {
-      const user = await prisma.user.update({
+      const user = await prisma.users.update({
         where: { id: userId },
         data: { status },
       });
@@ -220,7 +231,7 @@ export class UserService {
     status: UserStatus;
   }): Promise<ApiResponse<User>> {
     try {
-      const user = await prisma.user.update({
+      const user = await prisma.users.update({
         where: { telegramId },
         data: { status },
       });
@@ -256,7 +267,7 @@ export class UserService {
    */
   static async getAllUsers(): Promise<ApiResponse<User[]>> {
     try {
-      const users = await prisma.user.findMany({
+      const users = await prisma.users.findMany({
         orderBy: { createdAt: 'desc' },
       });
 
@@ -290,7 +301,7 @@ export class UserService {
    */
   static async deleteUser(userId: string): Promise<ApiResponse<boolean>> {
     try {
-      await prisma.user.delete({
+      await prisma.users.delete({
         where: { id: userId },
       });
 
@@ -389,7 +400,7 @@ export class UserService {
     userData: { username?: string; firstName?: string; lastName?: string }
   ): Promise<ApiResponse<User>> {
     try {
-      const user = await prisma.user.update({
+      const user = await prisma.users.update({
         where: { id: userId },
         data: { telegramId },
       });
@@ -493,7 +504,7 @@ export class UserService {
    */
   static async getAvailableCandidates(): Promise<ApiResponse<User[]>> {
     try {
-      const candidates = await prisma.user.findMany({
+      const candidates = await prisma.users.findMany({
         where: { status: UserStatus.CANDIDATE },
         orderBy: { createdAt: 'desc' },
       });

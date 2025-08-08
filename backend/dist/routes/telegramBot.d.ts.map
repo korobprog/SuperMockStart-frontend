@@ -1,1 +1,1 @@
-{"version":3,"file":"telegramBot.d.ts","sourceRoot":"","sources":["../../src/routes/telegramBot.ts"],"names":[],"mappings":"AAAA,OAAO,OAAO,MAAM,SAAS,CAAC;AAG9B,QAAA,MAAM,MAAM,EAAE,OAAO,CAAC,MAAyB,CAAC;AA8ChD,eAAe,MAAM,CAAC"}
+{"version":3,"file":"telegramBot.d.ts","sourceRoot":"","sources":["../../src/routes/telegramBot.ts"],"names":[],"mappings":"AAAA,OAAO,OAAO,MAAM,SAAS,CAAC;AAG9B,QAAA,MAAM,MAAM,EAAE,OAAO,CAAC,MAAyB,CAAC;AA0EhD,eAAe,MAAM,CAAC"}

@@ -8,22 +8,32 @@ export class CalendarController {
      */
     static async getAvailableSlots(req, res) {
         try {
+            console.log('🔍 CalendarController.getAvailableSlots called');
+            console.log('🔍 req.params:', req.params);
+            console.log('🔍 req.query:', req.query);
             const { profession } = req.params;
             const { date } = req.query;
+            console.log('🔍 Extracted data:', { profession, date });
             if (!profession) {
+                console.log('❌ Profession is required');
                 return res.status(400).json({
                     success: false,
                     error: 'Profession is required',
                 });
             }
+            console.log('🔍 Calling CalendarService.getAvailableSlots with:', {
+                profession,
+                date,
+            });
             const slots = await CalendarService.getAvailableSlots(profession, date ? new Date(date) : undefined);
+            console.log('🔍 CalendarService.getAvailableSlots returned:', slots.length, 'slots');
             res.json({
                 success: true,
                 data: slots,
             });
         }
         catch (error) {
-            console.error('Error getting available slots:', error);
+            console.error('❌ Error in CalendarController.getAvailableSlots:', error);
             res.status(500).json({
                 success: false,
                 error: 'Failed to get available slots',
@@ -55,7 +65,7 @@ export class CalendarController {
                 });
             }
             // Получаем пользователя с его языком из последней формы
-            const user = await prisma.user.findFirst({
+            const user = await prisma.users.findFirst({
                 where: { id: userId },
                 include: {
                     formData: {
@@ -119,22 +129,28 @@ export class CalendarController {
      */
     static async getQueueStatus(req, res) {
         try {
+            console.log('🔍 CalendarController.getQueueStatus called');
+            console.log('🔍 req.extendedUser:', req.extendedUser);
             // Используем extendedUser.id (userDbId) из расширенного токена
             const userId = req.extendedUser?.id;
+            console.log('🔍 userId from extendedUser:', userId);
             if (!userId) {
+                console.log('❌ User not authenticated');
                 return res.status(401).json({
                     success: false,
                     error: 'User not authenticated',
                 });
             }
+            console.log('🔍 Calling CalendarService.getQueueStatus with userId:', userId);
             const queueStatus = await CalendarService.getQueueStatus(userId);
+            console.log('🔍 CalendarService.getQueueStatus returned:', queueStatus);
             res.json({
                 success: true,
                 data: queueStatus,
             });
         }
         catch (error) {
-            console.error('Error getting queue status:', error);
+            console.error('❌ Error in CalendarController.getQueueStatus:', error);
             res.status(500).json({
                 success: false,
                 error: 'Failed to get queue status',
@@ -173,22 +189,28 @@ export class CalendarController {
      */
     static async getUserSessions(req, res) {
         try {
+            console.log('🔍 CalendarController.getUserSessions called');
+            console.log('🔍 req.extendedUser:', req.extendedUser);
             // Используем extendedUser.id (userDbId) из расширенного токена
             const userId = req.extendedUser?.id;
+            console.log('🔍 userId from extendedUser:', userId);
             if (!userId) {
+                console.log('❌ User not authenticated');
                 return res.status(401).json({
                     success: false,
                     error: 'User not authenticated',
                 });
             }
+            console.log('🔍 Calling CalendarService.getUserSessions with userId:', userId);
             const sessions = await CalendarService.getUserSessions(userId);
+            console.log('🔍 CalendarService.getUserSessions returned:', sessions.length, 'sessions');
             res.json({
                 success: true,
                 data: sessions,
             });
         }
         catch (error) {
-            console.error('Error getting user sessions:', error);
+            console.error('❌ Error in CalendarController.getUserSessions:', error);
             res.status(500).json({
                 success: false,
                 error: 'Failed to get user sessions',
@@ -272,7 +294,7 @@ export class CalendarController {
                     error: 'User not authenticated',
                 });
             }
-            const session = await prisma.interviewSession.findFirst({
+            const session = await prisma.interview_sessions.findFirst({
                 where: {
                     id: sessionId,
                     OR: [{ candidateId: userId }, { interviewerId: userId }],

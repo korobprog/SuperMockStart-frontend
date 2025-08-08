@@ -1,7 +1,8 @@
-import prisma from './prisma.js';
+import { PrismaClient } from '@prisma/client';
 import pkg from '@prisma/client';
 const { NotificationType } = pkg;
 import { TelegramBotService } from './telegramBotService.js';
+const prisma = new PrismaClient();
 export class NotificationService {
     /**
      * Отправить уведомление о подтвержденном собеседовании
@@ -24,7 +25,7 @@ export class NotificationService {
             },
         ];
         // Сохраняем уведомления в БД
-        await prisma.notification.createMany({
+        await prisma.notifications.createMany({
             data: notifications,
         });
         // Отправляем через Telegram
@@ -60,7 +61,7 @@ export class NotificationService {
                     scheduled: reminderTime,
                 },
             ];
-            await prisma.notification.createMany({
+            await prisma.notifications.createMany({
                 data: reminderNotifications,
             });
         }
@@ -70,7 +71,7 @@ export class NotificationService {
      */
     static async sendScheduledNotifications() {
         const now = new Date();
-        const notifications = await prisma.notification.findMany({
+        const notifications = await prisma.notifications.findMany({
             where: {
                 scheduled: { lte: now },
                 sent: false,
@@ -82,7 +83,7 @@ export class NotificationService {
         for (const notification of notifications) {
             try {
                 await this.sendTelegramNotification(notification.userId, notification.title, notification.message);
-                await prisma.notification.update({
+                await prisma.notifications.update({
                     where: { id: notification.id },
                     data: {
                         sent: true,
@@ -99,7 +100,7 @@ export class NotificationService {
      * Отправить уведомление о просьбе обратной связи
      */
     static async sendFeedbackRequest(sessionId) {
-        const session = await prisma.interviewSession.findUnique({
+        const session = await prisma.interview_sessions.findUnique({
             where: { id: sessionId },
             include: {
                 candidate: true,
@@ -124,7 +125,7 @@ export class NotificationService {
                 message: 'Пожалуйста, поделитесь своим опытом прошедшего собеседования. Ваш отзыв поможет улучшить систему.',
             },
         ];
-        await prisma.notification.createMany({
+        await prisma.notifications.createMany({
             data: notifications,
         });
         for (const notification of notifications) {
@@ -136,7 +137,7 @@ export class NotificationService {
      */
     static async sendFeedbackReminders() {
         // Находим завершенные сессии без обратной связи старше 24 часов
-        const sessionsNeedingFeedback = await prisma.interviewSession.findMany({
+        const sessionsNeedingFeedback = await prisma.interview_sessions.findMany({
             where: {
                 status: 'COMPLETED',
                 updatedAt: {
@@ -164,7 +165,7 @@ export class NotificationService {
      * Уведомить о смене ролей
      */
     static async notifyRoleChange(userId, newRole) {
-        await prisma.notification.create({
+        await prisma.notifications.create({
             data: {
                 userId,
                 type: NotificationType.ROLE_CHANGED,
@@ -179,7 +180,7 @@ export class NotificationService {
      */
     static async sendTelegramNotification(userId, title, message) {
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.users.findUnique({
                 where: { id: userId },
             });
             if (user?.telegramId) {
@@ -207,7 +208,7 @@ export class NotificationService {
      * Получить уведомления пользователя
      */
     static async getUserNotifications(userId, limit = 50) {
-        return await prisma.notification.findMany({
+        return await prisma.notifications.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
             take: limit,
@@ -225,7 +226,7 @@ export class NotificationService {
      * Отметить уведомления как прочитанные
      */
     static async markNotificationsAsRead(userId, notificationIds) {
-        await prisma.notification.updateMany({
+        await prisma.notifications.updateMany({
             where: {
                 id: { in: notificationIds },
                 userId,

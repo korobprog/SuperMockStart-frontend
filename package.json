@@ -46,6 +46,7 @@
   "devDependencies": {
     "@hookform/resolvers": "^3.3.2",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/node": "^24.2.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",

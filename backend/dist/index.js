@@ -22,9 +22,16 @@ const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Инициализируем утилиты
-TelegramUtils.initialize(process.env.TELEGRAM_TOKEN || '');
-TelegramBotService.initialize(process.env.TELEGRAM_TOKEN || '');
-JwtUtils.initialize(process.env.JWT_SECRET || 'your-secret-key-change-in-production', process.env.JWT_EXPIRES_IN || '7d');
+const telegramToken = process.env.TELEGRAM_TOKEN || '';
+const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+console.log('🔧 Initializing services with:');
+console.log('  - Telegram token length:', telegramToken ? telegramToken.length : 0);
+console.log('  - JWT secret length:', jwtSecret ? jwtSecret.length : 0);
+console.log('  - JWT expires in:', jwtExpiresIn);
+TelegramUtils.initialize(telegramToken);
+TelegramBotService.initialize(telegramToken);
+JwtUtils.initialize(jwtSecret, jwtExpiresIn);
 // Middleware безопасности
 app.use(helmet());
 // Доверяем прокси (для работы с Traefik)
@@ -60,28 +67,41 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-// Rate limiting - только в продакшене
-if (process.env.NODE_ENV === 'production') {
-    const limiter = rateLimit({
-        windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
-        max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // максимум 100 запросов
-        message: {
-            success: false,
-            error: 'Too many requests from this IP, please try again later.',
-        },
-        standardHeaders: true,
-        legacyHeaders: false,
-        // Правильная обработка IP адресов за прокси
-        keyGenerator: (req) => {
-            return req.ip || req.connection.remoteAddress || 'unknown';
-        },
-    });
-    app.use(limiter);
-    console.log('🔒 Rate limiting enabled (production mode)');
-}
-else {
-    console.log('🚀 Rate limiting disabled (development mode)');
-}
+// Rate limiting - более мягкие настройки для API
+const baseLimiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 минут
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '200'), // увеличили до 200 запросов
+    message: {
+        success: false,
+        error: 'Too many requests from this IP, please try again later.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // Пропускаем успешные запросы
+    // Правильная обработка IP адресов за прокси
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+    },
+});
+// Более мягкий rate limiter для API endpoints
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 минут
+    max: 500, // 500 запросов за 15 минут для API
+    message: {
+        success: false,
+        error: 'API rate limit exceeded. Please try again later.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // Пропускаем успешные запросы
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+    },
+});
+// Применяем rate limiting
+app.use(baseLimiter);
+app.use('/api', apiLimiter);
+console.log('🔒 Rate limiting enabled with API-specific limits');
 // Парсинг JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -131,12 +151,14 @@ catch (error) {
 process.on('SIGTERM', async () => {
     console.log('SIGTERM received, shutting down gracefully');
     CronService.stopAll();
+    TelegramBotService.stop();
     await prisma.$disconnect();
     process.exit(0);
 });
 process.on('SIGINT', async () => {
     console.log('SIGINT received, shutting down gracefully');
     CronService.stopAll();
+    TelegramBotService.stop();
     await prisma.$disconnect();
     process.exit(0);
 });

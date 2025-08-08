@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Функция для получения переменных окружения
+const getApiUrl = () => {
+  return process.env.VITE_API_URL;
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -34,7 +39,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: getApiUrl(),
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {

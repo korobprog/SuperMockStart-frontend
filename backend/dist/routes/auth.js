@@ -65,6 +65,12 @@ router.post('/telegram', validateTelegramData, AuthController.authenticateWithTe
  */
 router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
 /**
+ * @route POST /api/auth/telegram-login
+ * @desc Аутентификация через Telegram Login Widget (новый)
+ * @access Public
+ */
+router.post('/telegram-login', AuthController.authenticateWithTelegramLogin);
+/**
  * @route GET /api/auth/test-token
  * @desc Получение тестового токена для разработки
  * @access Public
@@ -118,5 +124,11 @@ router.get('/status', optionalExtendedAuth, AuthController.checkAuthStatus);
  * @access Private
  */
 router.post('/link-telegram', authenticateExtendedToken, AuthController.linkTelegram);
+/**
+ * @route POST /api/auth/dev-user
+ * @desc Создание тестового пользователя для разработки
+ * @access Public (только в dev режиме)
+ */
+router.post('/dev-user', AuthController.createDevUser);
 export default router;
 //# sourceMappingURL=auth.js.map

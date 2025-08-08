@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const API_URL = 'http://localhost:3001';
+const API_URL = process.env.VITE_API_URL || 'http://localhost:3001';
 
 async function testBotAuth() {
   try {

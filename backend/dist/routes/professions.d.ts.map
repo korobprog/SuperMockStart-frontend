@@ -1,1 +1,1 @@
-{"version":3,"file":"professions.d.ts","sourceRoot":"","sources":["../../src/routes/professions.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,SAAS,CAAC;AAGjC,QAAA,MAAM,MAAM,EAAE,MAAiB,CAAC;AAiBhC,eAAe,MAAM,CAAC"}
+{"version":3,"file":"professions.d.ts","sourceRoot":"","sources":["../../src/routes/professions.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,SAAS,CAAC;AAIjC,QAAA,MAAM,MAAM,EAAE,MAAiB,CAAC;AAqChC,eAAe,MAAM,CAAC"}

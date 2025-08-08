@@ -19,7 +19,7 @@ export const saveFormData = async (req, res) => {
             });
         }
         // Находим пользователя по userId (database ID)
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
             where: { id: userId },
         });
         if (!user) {
@@ -29,15 +29,19 @@ export const saveFormData = async (req, res) => {
             });
         }
         // Сохраняем выбранную профессию
-        await prisma.selectedProfession.create({
+        await prisma.selected_professions.create({
             data: {
+                id: `profession-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .substr(2, 9)}`,
                 userId: user.id,
                 profession,
             },
         });
         // Сохраняем полные данные формы
-        await prisma.userFormData.create({
+        await prisma.user_form_data.create({
             data: {
+                id: `form-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 userId: user.id,
                 profession,
                 country,
@@ -71,9 +75,22 @@ export const saveFormData = async (req, res) => {
 };
 export const updateFormData = async (req, res) => {
     try {
+        console.log('🔍 updateFormData called');
+        console.log('🔍 req.body:', req.body);
+        console.log('🔍 req.extendedUser:', req.extendedUser);
         const { profession, country, language, experience, email, phone, } = req.body;
         const userId = req.extendedUser?.id;
+        console.log('🔍 userId:', userId);
+        console.log('🔍 form data:', {
+            profession,
+            country,
+            language,
+            experience,
+            email,
+            phone,
+        });
         if (!userId) {
+            console.log('❌ User ID not found');
             return res.status(401).json({
                 success: false,
                 error: 'Unauthorized - User ID not found',
@@ -81,35 +98,52 @@ export const updateFormData = async (req, res) => {
         }
         // Валидация обязательных полей
         if (!profession || !country || !language || !experience) {
+            console.log('❌ Missing required fields:', {
+                profession,
+                country,
+                language,
+                experience,
+            });
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields: profession, country, language, experience',
             });
         }
+        console.log('🔍 Looking for user with ID:', userId);
         // Находим пользователя по userId
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
             where: { id: userId },
         });
+        console.log('🔍 User found:', !!user);
+        console.log('🔍 User data:', user);
         if (!user) {
+            console.log('❌ User not found in database');
             return res.status(404).json({
                 success: false,
                 error: 'User not found',
             });
         }
+        console.log('🔍 Creating selected_professions record');
         // Создаем новую запись профессии (история выбора)
-        await prisma.selectedProfession.create({
+        await prisma.selected_professions.create({
             data: {
+                id: `profession-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .substr(2, 9)}`,
                 userId: user.id,
                 profession,
             },
         });
+        console.log('🔍 selected_professions record created');
         // Обновляем или создаем данные формы
-        const existingFormData = await prisma.userFormData.findFirst({
+        const existingFormData = await prisma.user_form_data.findFirst({
             where: { userId: user.id },
             orderBy: { createdAt: 'desc' },
         });
+        console.log('🔍 existingFormData found:', !!existingFormData);
         if (existingFormData) {
-            await prisma.userFormData.update({
+            console.log('🔍 Updating existing form data');
+            await prisma.user_form_data.update({
                 where: { id: existingFormData.id },
                 data: {
                     profession,
@@ -122,8 +156,10 @@ export const updateFormData = async (req, res) => {
             });
         }
         else {
-            await prisma.userFormData.create({
+            console.log('🔍 Creating new form data');
+            await prisma.user_form_data.create({
                 data: {
+                    id: `form-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     userId: user.id,
                     profession,
                     country,
@@ -134,6 +170,7 @@ export const updateFormData = async (req, res) => {
                 },
             });
         }
+        console.log('✅ Form data updated successfully');
         res.status(200).json({
             success: true,
             message: 'Form data updated successfully',
@@ -148,7 +185,8 @@ export const updateFormData = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error updating form data:', error);
+        console.error('❌ Error updating form data:', error);
+        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
         res.status(500).json({
             success: false,
             error: 'Internal server error',
@@ -165,30 +203,30 @@ export const getFormData = async (req, res) => {
                 error: 'Unauthorized - User ID not found',
             });
         }
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
             where: { id: userId },
             include: {
-                selectedProfessions: {
+                selected_professions: {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
                 },
-                formData: {
+                user_form_data: {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
                 },
             },
         });
         console.log('🔍 getFormData - user found:', !!user);
-        console.log('🔍 getFormData - user.formData:', user?.formData);
-        console.log('🔍 getFormData - user.selectedProfessions:', user?.selectedProfessions);
+        console.log('🔍 getFormData - user.user_form_data:', user?.user_form_data);
+        console.log('🔍 getFormData - user.selected_professions:', user?.selected_professions);
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found',
             });
         }
-        const latestProfession = user.selectedProfessions[0];
-        const latestFormData = user.formData[0];
+        const latestProfession = user.selected_professions[0];
+        const latestFormData = user.user_form_data[0];
         // Проверяем, может ли пользователь быть кандидатом (получал ли он обратную связь)
         const feedbackReceived = await prisma.feedback.findFirst({
             where: {

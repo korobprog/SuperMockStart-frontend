@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ModernCard } from './ui/card';
 import DevAuthWidget from './DevAuthWidget';
-import TelegramBotAuth from './TelegramBotAuth';
+import TelegramBotAuthButton from './TelegramBotAuthButton';
 import TelegramLoginWidget from './TelegramLoginWidget';
 import TelegramAuth from './TelegramAuth';
 import TelegramDevPanel from './TelegramDevPanel';
@@ -107,8 +107,16 @@ const AuthSection: React.FC<AuthSectionProps> = ({
                   </span>
                 </div>
               </div>
-              <TelegramBotAuth
-                onAuthSuccess={onAuthSuccess}
+              <TelegramBotAuthButton
+                onAuthSuccess={(userId, token) => {
+                  // Создаем объект пользователя для совместимости
+                  const user = {
+                    id: userId,
+                    first_name: 'User',
+                    is_bot: false,
+                  };
+                  onAuthSuccess(user, token);
+                }}
                 onAuthError={onAuthError}
               />
             </TabsContent>

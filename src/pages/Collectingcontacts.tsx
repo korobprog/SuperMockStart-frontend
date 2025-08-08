@@ -140,8 +140,7 @@ const CollectingContacts = memo(() => {
           return;
         }
 
-        const apiUrl =
-          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         const response = await fetch(`${apiUrl}/api/form`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -201,8 +200,7 @@ const CollectingContacts = memo(() => {
           return;
         }
 
-        const apiUrl =
-          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         console.log('🌐 API URL:', apiUrl);
 
         const response = await fetch(`${apiUrl}/api/form`, {

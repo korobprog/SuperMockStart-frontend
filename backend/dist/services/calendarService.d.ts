@@ -33,25 +33,25 @@ export declare class CalendarService {
      * Добавить пользователя в очередь
      */
     static joinQueue(data: JoinQueueData): Promise<{
-        user: {
+        users: {
             id: string;
             username: string | null;
+            firstName: string | null;
+            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
-            firstName: string | null;
-            lastName: string | null;
         };
     } & {
         id: string;
         userId: string;
         createdAt: Date;
         profession: string;
-        language: string;
         status: pkg.$Enums.QueueStatus;
         updatedAt: Date;
+        language: string;
         preferredDateTime: Date;
         timeFlexibility: number;
         queueType: pkg.$Enums.QueueType;
@@ -75,24 +75,24 @@ export declare class CalendarService {
             candidate: {
                 id: string;
                 username: string | null;
+                firstName: string | null;
+                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
-                firstName: string | null;
-                lastName: string | null;
             };
             interviewer: {
                 id: string;
                 username: string | null;
+                firstName: string | null;
+                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
-                firstName: string | null;
-                lastName: string | null;
             };
         };
         usersInQueueWithSameLanguage?: undefined;
@@ -113,27 +113,27 @@ export declare class CalendarService {
      * Создать сессию собеседования из матча
      */
     static createInterviewSession(match: MatchResult): Promise<{
-        candidate: {
+        users_interview_sessions_candidateIdTousers: {
             id: string;
             username: string | null;
+            firstName: string | null;
+            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
-            firstName: string | null;
-            lastName: string | null;
         };
-        interviewer: {
+        users_interview_sessions_interviewerIdTousers: {
             id: string;
             username: string | null;
+            firstName: string | null;
+            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
-            firstName: string | null;
-            lastName: string | null;
         };
     } & {
         id: string;
@@ -141,18 +141,29 @@ export declare class CalendarService {
         interviewId: string;
         scheduledDateTime: Date;
         profession: string;
-        language: string;
         meetingLink: string;
         status: pkg.$Enums.SessionStatus;
         candidateId: string;
         interviewerId: string;
         updatedAt: Date;
+        language: string;
     }>;
     /**
      * Получить сессии пользователя
      */
     static getUserSessions(userId: string): Promise<({
-        interview: {
+        users_interview_sessions_candidateIdTousers: {
+            id: string;
+            username: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            role: pkg.$Enums.UserRole;
+            createdAt: Date;
+            status: pkg.$Enums.UserStatus;
+            updatedAt: Date;
+            telegramId: string;
+        };
+        interviews: {
             id: string;
             createdAt: Date;
             status: pkg.$Enums.InterviewStatus;
@@ -162,27 +173,16 @@ export declare class CalendarService {
             feedback: string | null;
             feedbackReceivedAt: Date | null;
         };
-        candidate: {
+        users_interview_sessions_interviewerIdTousers: {
             id: string;
             username: string | null;
+            firstName: string | null;
+            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
-            firstName: string | null;
-            lastName: string | null;
-        };
-        interviewer: {
-            id: string;
-            username: string | null;
-            role: pkg.$Enums.UserRole;
-            createdAt: Date;
-            status: pkg.$Enums.UserStatus;
-            updatedAt: Date;
-            telegramId: string;
-            firstName: string | null;
-            lastName: string | null;
         };
     } & {
         id: string;
@@ -190,12 +190,12 @@ export declare class CalendarService {
         interviewId: string;
         scheduledDateTime: Date;
         profession: string;
-        language: string;
         meetingLink: string;
         status: pkg.$Enums.SessionStatus;
         candidateId: string;
         interviewerId: string;
         updatedAt: Date;
+        language: string;
     })[]>;
     /**
      * Отменить сессию

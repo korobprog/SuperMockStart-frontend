@@ -1,7 +1,7 @@
-// Утилиты для работы с аутентификацией
-
+// Константы для ключей localStorage
 export const AUTH_TOKEN_KEY = 'authToken';
 export const TELEGRAM_TOKEN_KEY = 'telegram_token';
+export const EXTENDED_TOKEN_KEY = 'extended_token';
 export const USER_KEY = 'user';
 export const USER_ID_KEY = 'userId';
 
@@ -24,26 +24,32 @@ export const cleanupInvalidData = (): void => {
 };
 
 /**
- * Получает токен из localStorage
+ * Получает токен из localStorage с приоритетом extended_token
  */
 export const getStoredToken = (): string | null => {
   try {
-    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
-    const telegramToken = localStorage.getItem(TELEGRAM_TOKEN_KEY);
+    // Приоритет: extended_token > telegram_token > authToken > token
+    const tokens = [
+      { key: EXTENDED_TOKEN_KEY, name: 'extended_token' },
+      { key: TELEGRAM_TOKEN_KEY, name: 'telegram_token' },
+      { key: AUTH_TOKEN_KEY, name: 'authToken' },
+      { key: 'token', name: 'token' },
+    ];
 
-    // Проверяем, что токен не является 'undefined' или 'null'
-    if (authToken && authToken !== 'undefined' && authToken !== 'null') {
-      return authToken;
+    for (const { key, name } of tokens) {
+      const token = localStorage.getItem(key);
+      if (
+        token &&
+        token !== 'undefined' &&
+        token !== 'null' &&
+        token.trim() !== ''
+      ) {
+        console.log(`✅ Found valid ${name}:`, token.substring(0, 20) + '...');
+        return token;
+      }
     }
 
-    if (
-      telegramToken &&
-      telegramToken !== 'undefined' &&
-      telegramToken !== 'null'
-    ) {
-      return telegramToken;
-    }
-
+    console.log('❌ No valid token found in localStorage');
     return null;
   } catch (error) {
     console.error('Ошибка при получении токена из localStorage:', error);
@@ -52,23 +58,40 @@ export const getStoredToken = (): string | null => {
 };
 
 /**
- * Сохраняет токен в localStorage
+ * Сохраняет токен в localStorage во все ключи для совместимости
  */
 export const setStoredToken = (token: string): void => {
   try {
-    if (token && token !== 'undefined' && token !== 'null') {
+    console.log(
+      '🔍 setStoredToken called with token:',
+      token.substring(0, 20) + '...'
+    );
+    console.log('🔍 token length:', token.length);
+    console.log('🔍 token format check:', {
+      isJWT: token.split('.').length === 3,
+      parts: token.split('.').length,
+    });
+
+    if (
+      token &&
+      token !== 'undefined' &&
+      token !== 'null' &&
+      token.trim() !== ''
+    ) {
+      // Сохраняем во все ключи для максимальной совместимости
+      localStorage.setItem(EXTENDED_TOKEN_KEY, token);
+      localStorage.setItem(TELEGRAM_TOKEN_KEY, token);
       localStorage.setItem(AUTH_TOKEN_KEY, token);
-      localStorage.setItem(TELEGRAM_TOKEN_KEY, token); // Для совместимости
+      localStorage.setItem('token', token);
+      console.log('✅ Token saved to all localStorage keys');
     } else {
       // Если токен некорректный, удаляем из localStorage
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(TELEGRAM_TOKEN_KEY);
+      removeStoredToken();
+      console.log('❌ Invalid token, removed from localStorage');
     }
   } catch (error) {
     console.error('Ошибка при сохранении токена в localStorage:', error);
-    // Очищаем некорректные данные
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(TELEGRAM_TOKEN_KEY);
+    removeStoredToken();
   }
 };
 
@@ -76,46 +99,49 @@ export const setStoredToken = (token: string): void => {
  * Удаляет токен из localStorage
  */
 export const removeStoredToken = (): void => {
-  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(EXTENDED_TOKEN_KEY);
   localStorage.removeItem(TELEGRAM_TOKEN_KEY);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem('token');
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem(USER_ID_KEY);
+  console.log('✅ All tokens removed from localStorage');
+};
+
+/**
+ * Проверяет валидность токена
+ */
+export const isValidToken = (token: string): boolean => {
+  if (
+    !token ||
+    token === 'undefined' ||
+    token === 'null' ||
+    token.trim() === ''
+  ) {
+    return false;
+  }
+
+  // Проверяем формат JWT токена
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return false;
+  }
+
+  return true;
 };
 
 /**
  * Получает пользователя из localStorage
  */
-export const getStoredUser = (): any | null => {
+export const getStoredUser = (): any => {
   try {
     const userStr = localStorage.getItem(USER_KEY);
-    if (!userStr || userStr === 'undefined' || userStr === 'null') {
-      return null;
+    if (userStr) {
+      return JSON.parse(userStr);
     }
-
-    const parsedUser = JSON.parse(userStr);
-
-    // Дополнительная проверка на валидность объекта пользователя
-    if (!parsedUser || typeof parsedUser !== 'object') {
-      console.error('Некорректный объект пользователя:', parsedUser);
-      localStorage.removeItem(USER_KEY);
-      return null;
-    }
-
-    // Проверяем наличие обязательных полей
-    if (!parsedUser.id || !parsedUser.first_name) {
-      console.error(
-        'Объект пользователя не содержит обязательные поля:',
-        parsedUser
-      );
-      localStorage.removeItem(USER_KEY);
-      return null;
-    }
-
-    return parsedUser;
+    return null;
   } catch (error) {
-    console.error('Ошибка при парсинге пользователя из localStorage:', error);
-    // Очищаем некорректные данные
-    localStorage.removeItem(USER_KEY);
+    console.error('Ошибка при получении пользователя из localStorage:', error);
     return null;
   }
 };
@@ -125,40 +151,19 @@ export const getStoredUser = (): any | null => {
  */
 export const setStoredUser = (user: any): void => {
   try {
-    if (user && user !== undefined && user !== null) {
-      // Проверяем валидность объекта пользователя
-      if (typeof user !== 'object') {
-        console.error('Некорректный тип пользователя:', typeof user);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(USER_ID_KEY);
-        return;
-      }
-
-      // Проверяем наличие обязательных полей
-      if (!user.id || !user.first_name) {
-        console.error(
-          'Объект пользователя не содержит обязательные поля:',
-          user
-        );
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(USER_ID_KEY);
-        return;
-      }
-
+    if (user && typeof user === 'object') {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       if (user.id) {
         localStorage.setItem(USER_ID_KEY, user.id.toString());
       }
+      console.log('✅ User saved to localStorage');
     } else {
-      // Если пользователь null или undefined, удаляем из localStorage
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(USER_ID_KEY);
+      console.log('❌ Invalid user, removed from localStorage');
     }
   } catch (error) {
     console.error('Ошибка при сохранении пользователя в localStorage:', error);
-    // Очищаем некорректные данные
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(USER_ID_KEY);
   }
 };
 

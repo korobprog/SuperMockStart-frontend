@@ -69,6 +69,83 @@ const Profile: React.FC = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [formData, setFormData] = useState<any>(null);
 
+  // Функция для получения тестового токена
+  const handleGetTestToken = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/auth/test-token`);
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('authToken', data.data.token);
+        localStorage.setItem('userId', data.data.user.id.toString());
+        console.log(
+          '✅ Тестовый токен получен:',
+          data.data.token.substring(0, 20) + '...'
+        );
+        // Перезагружаем данные формы
+        await loadFormData();
+      } else {
+        console.error('❌ Ошибка получения тестового токена');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка получения тестового токена:', error);
+    }
+  };
+
+  // Функция загрузки данных формы
+  const loadFormData = async () => {
+    if (!isAuthenticated) return;
+
+    try {
+      // Используем тот же подход, что и в Chooseinterview.tsx
+      const token = localStorage.getItem('authToken');
+
+      console.log('🔍 loadFormData - token:', token ? 'present' : 'missing');
+      console.log(
+        '🔍 loadFormData - token value:',
+        token ? token.substring(0, 20) + '...' : 'none'
+      );
+
+      if (!token) return;
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      console.log('🔍 loadFormData - making request to:', `${apiUrl}/api/form`);
+
+      const response = await fetch(`${apiUrl}/api/form`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('🔍 loadFormData - response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🔍 loadFormData - response data:', data);
+        if (data.success) {
+          setFormData(data.data);
+          // Заполняем форму существующими данными
+          reset({
+            profession: data.data.profession || '',
+            country: data.data.country || '',
+            language: data.data.language || '',
+            experience: data.data.experience || '',
+            email: data.data.email || '',
+            phone: data.data.phone || '',
+          });
+        }
+      } else {
+        console.error(
+          '🔍 loadFormData - error response:',
+          response.status,
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки данных формы:', error);
+    }
+  };
+
   // Настройка формы редактирования
   const {
     control,
@@ -89,57 +166,48 @@ const Profile: React.FC = () => {
 
   // Получение данных формы пользователя
   useEffect(() => {
-    const loadFormData = async () => {
-      if (!isAuthenticated) return;
-
-      try {
-        const token =
-          localStorage.getItem('extended_token') ||
-          localStorage.getItem('telegram_token');
-
-        if (!token) return;
-
-        const apiUrl =
-          import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
-        const response = await fetch(`${apiUrl}/api/form`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setFormData(data.data);
-            // Заполняем форму существующими данными
-            reset({
-              profession: data.data.profession || '',
-              country: data.data.country || '',
-              language: data.data.language || '',
-              experience: data.data.experience || '',
-              email: data.data.email || '',
-              phone: data.data.phone || '',
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Ошибка загрузки данных формы:', error);
-      }
-    };
-
     loadFormData();
   }, [isAuthenticated, reset]);
 
   // Обновление данных формы
   const onSubmit = async (data: EditProfileFormData) => {
     try {
-      const token =
-        localStorage.getItem('extended_token') ||
-        localStorage.getItem('telegram_token');
+      // Используем тот же подход, что и в Chooseinterview.tsx
+      const token = localStorage.getItem('authToken');
 
-      if (!token) return;
+      console.log('🔍 Debug token:', {
+        token: token ? 'present' : 'missing',
+        tokenValue: token ? token.substring(0, 20) + '...' : 'none',
+        tokenLength: token ? token.length : 0,
+        isJWT: token ? token.split('.').length === 3 : false,
+      });
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+      // Проверяем все токены в localStorage
+      console.log('🔍 All localStorage tokens:', {
+        authToken: localStorage.getItem('authToken'),
+        extended_token: localStorage.getItem('extended_token'),
+        telegram_token: localStorage.getItem('telegram_token'),
+        token: localStorage.getItem('token'),
+      });
+
+      if (!token) {
+        console.error('❌ No valid token found');
+        return;
+      }
+
+      // Проверяем, что токен не является строкой "undefined" или "null"
+      if (token === 'undefined' || token === 'null') {
+        console.error('❌ Token is invalid string:', token);
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      console.log('🔍 Making request to:', `${apiUrl}/api/form`);
+      console.log('🔍 Request headers:', {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      });
+
       const response = await fetch(`${apiUrl}/api/form`, {
         method: 'PUT',
         headers: {
@@ -148,6 +216,9 @@ const Profile: React.FC = () => {
         },
         body: JSON.stringify(data),
       });
+
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response statusText:', response.statusText);
 
       if (response.ok) {
         const result = await response.json();
@@ -329,6 +400,26 @@ const Profile: React.FC = () => {
                       поиска собеседований.
                     </DialogDescription>
                   </DialogHeader>
+
+                  {/* Кнопка для получения тестового токена (только в dev режиме) */}
+                  {import.meta.env.DEV && (
+                    <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-yellow-800">
+                          <strong>Dev режим:</strong> Если возникают проблемы с
+                          токеном, получите тестовый токен
+                        </div>
+                        <Button
+                          onClick={handleGetTestToken}
+                          size="sm"
+                          variant="outline"
+                          className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                        >
+                          Получить токен
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* Профессия */}

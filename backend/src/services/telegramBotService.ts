@@ -10,6 +10,28 @@ export class TelegramBotService {
   >();
 
   static initialize(token: string) {
+    // Проверяем, не инициализирован ли уже бот
+    if (this.bot) {
+      console.log('🤖 Telegram bot already initialized, skipping...');
+      return;
+    }
+
+    // Проверяем, что токен не пустой
+    if (!token || token.trim() === '') {
+      console.error('❌ Telegram token is empty or invalid');
+      return;
+    }
+
+    console.log('🤖 Initializing Telegram bot...');
+    console.log(`  - Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`  - Token length: ${token.length}`);
+
+    // Проверяем, что токен не пустой
+    if (!token || token.trim() === '') {
+      console.error('❌ Telegram token is empty or invalid');
+      return;
+    }
+
     this.botToken = token;
 
     // Используем webhook в продакшене, polling в development
@@ -31,6 +53,25 @@ export class TelegramBotService {
           }
         });
 
+        // Добавляем обработчик ошибок
+        this.bot.on('error', (error) => {
+          console.error('🤖 Telegram bot error:', error);
+          // Не завершаем процесс при ошибках бота
+        });
+
+        // Добавляем обработчик ошибок polling
+        this.bot.on('polling_error', (error: any) => {
+          console.error('🤖 Telegram bot polling error:', error);
+          // При конфликте 409, не перезапускаем бота
+          if (error.code === 'ETELEGRAM' && error.message.includes('409')) {
+            console.log(
+              '🤖 Telegram bot conflict detected, stopping polling...'
+            );
+            this.bot?.stopPolling();
+          }
+        });
+
+        this.bot.startPolling();
         console.log('🤖 Telegram bot started in polling mode (development)');
       }
     } else {
@@ -50,6 +91,12 @@ export class TelegramBotService {
           if (msg.text && msg.text.startsWith('/start')) {
             await this.handleStartCommand(msg);
           }
+        });
+
+        // Добавляем обработчик ошибок
+        this.bot.on('error', (error) => {
+          console.error('🤖 Telegram bot error:', error);
+          // Не завершаем процесс при ошибках бота
         });
 
         console.log('🤖 Telegram bot started in webhook mode (production)');
@@ -276,7 +323,8 @@ export class TelegramBotService {
           } else {
             // В production режиме проверяем совпадение ID пользователя
             if (authResult.userId === user.id) {
-              const userName = user.first_name || user.username || 'пользователь';
+              const userName =
+                user.first_name || user.username || 'пользователь';
               await this.bot.sendMessage(
                 chatId,
                 `✅ Авторизация успешна!\n\nДобро пожаловать, ${userName}!\n\nТеперь вы можете использовать приложение SuperMock.\n\n🌐 Среда: production\n✅ Безопасная авторизация`
@@ -418,8 +466,8 @@ export class TelegramBotService {
           { reply_markup: keyboard }
         );
       } else {
-        // В режиме разработки отправляем инструкцию без кнопки
-        const devUrl = `http://localhost:5173/auth-callback?auth_id=${chatId}_${Date.now()}`;
+        // В режиме разработки отправляем ссылку на bot-auth
+        const devUrl = `http://localhost:5173/bot-auth?userId=${chatId}`;
 
         await this.bot.sendMessage(
           chatId,
@@ -439,5 +487,16 @@ export class TelegramBotService {
   static async sendCheckTokenButton(chatId: number) {
     // Перенаправляем на новый метод
     await this.sendAuthButton(chatId);
+  }
+
+  /**
+   * Остановить бота
+   */
+  static stop() {
+    if (this.bot) {
+      this.bot.stopPolling();
+      this.bot = null;
+      console.log('🤖 Telegram bot stopped');
+    }
   }
 }

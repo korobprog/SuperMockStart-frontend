@@ -31,7 +31,7 @@ const initialState: UserStatusState = {
 };
 
 // Базовый URL для API
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Получение токена из auth slice
 const getAuthToken = (state: RootState) => {

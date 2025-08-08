@@ -14,6 +14,10 @@ export declare class TelegramBotService {
      */
     static sendMessage(userId: number, message: string): Promise<boolean>;
     /**
+     * Создает LoginUrl объект для авторизации через Telegram Login Widget
+     */
+    static createLoginUrl(userId: number, redirectUrl: string): any;
+    /**
      * Создает URL для авторизации через бота
      */
     static createAuthUrl(userId: number, redirectUrl: string): string;
@@ -36,6 +40,17 @@ export declare class TelegramBotService {
      * Проверяет, может ли бот отправлять сообщения пользователю
      */
     static canSendMessage(userId: number): Promise<boolean>;
+    /**
+     * Отправляет кнопку для авторизации
+     */
+    static sendAuthButton(chatId: number): Promise<void>;
+    /**
+     * Отправляет кнопку для проверки токена (устаревший метод)
+     */
     static sendCheckTokenButton(chatId: number): Promise<void>;
+    /**
+     * Остановить бота
+     */
+    static stop(): void;
 }
 //# sourceMappingURL=telegramBotService.d.ts.map

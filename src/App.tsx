@@ -17,7 +17,13 @@ import Auth from './pages/Auth';
 import DebugAuth from './components/DebugAuth';
 import AuthDemo from './pages/AuthDemo';
 import TelegramAuthCallback from './pages/TelegramAuthCallback';
+import TelegramBotAuth from './pages/TelegramBotAuth';
+import BotAuthTest from './pages/BotAuthTest';
+import TestButtons from './pages/TestButtons';
+import TokenDebug from './pages/TokenDebug';
 import TokenCheck from './pages/TokenCheck';
+import TokenDebugPage from './pages/TokenDebugPage';
+import TokenTest from './pages/TokenTest';
 import Feedback from './pages/Feedback';
 import FeedbackHistory from './pages/FeedbackHistory';
 import TestFeedback from './pages/TestFeedback';
@@ -109,7 +115,13 @@ function App() {
             <Route path="/debug-auth" element={<DebugAuth />} />
             <Route path="/auth-demo" element={<AuthDemo />} />
             <Route path="/auth-callback" element={<TelegramAuthCallback />} />
+            <Route path="/bot-auth" element={<TelegramBotAuth />} />
+            <Route path="/bot-auth-test" element={<BotAuthTest />} />
+            <Route path="/test-buttons" element={<TestButtons />} />
+            <Route path="/token-debug" element={<TokenDebug />} />
             <Route path="/token-check" element={<TokenCheck />} />
+            <Route path="/token-debug-page" element={<TokenDebugPage />} />
+            <Route path="/token-test" element={<TokenTest />} />
             <Route path="/auth-fix" element={<TelegramAuthFix />} />
             <Route
               path="/feedback/:sessionId"

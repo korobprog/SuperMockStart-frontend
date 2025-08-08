@@ -1,7 +1,5 @@
-import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
+import prisma from './prisma.js';
 import { UserStatus } from '../types/index.js';
-const prisma = new PrismaClient();
 export class UserService {
     /**
      * Находит или создает пользователя по Telegram ID
@@ -10,12 +8,12 @@ export class UserService {
         try {
             const telegramId = telegramData.id.toString();
             // Ищем существующего пользователя
-            let user = await prisma.user.findUnique({
+            let user = await prisma.users.findUnique({
                 where: { telegramId },
             });
             if (user) {
                 // Обновляем данные пользователя
-                user = await prisma.user.update({
+                user = await prisma.users.update({
                     where: { id: user.id },
                     data: {
                         username: telegramData.username || user.username,
@@ -41,13 +39,15 @@ export class UserService {
                 };
             }
             // Создаем нового пользователя
-            const newUser = await prisma.user.create({
+            const newUser = await prisma.users.create({
                 data: {
+                    id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     telegramId,
                     username: telegramData.username,
                     firstName: telegramData.firstName,
                     lastName: telegramData.lastName,
                     status: UserStatus.INTERVIEWER,
+                    updatedAt: new Date(),
                 },
             });
             const userResponse = {
@@ -80,10 +80,15 @@ export class UserService {
      */
     static async getUserById(id) {
         try {
-            const user = await prisma.user.findUnique({
+            console.log('🔍 getUserById called with id:', id);
+            console.log('🔍 id type:', typeof id);
+            console.log('🔍 id.toString():', id.toString());
+            const user = await prisma.users.findUnique({
                 where: { id: id.toString() },
             });
+            console.log('🔍 Database query result:', user);
             if (!user) {
+                console.log('❌ User not found in database');
                 return {
                     success: false,
                     error: 'Пользователь не найден',
@@ -100,13 +105,14 @@ export class UserService {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             };
+            console.log('✅ User found and converted:', userResponse);
             return {
                 success: true,
                 data: userResponse,
             };
         }
         catch (error) {
-            console.error('Get user by ID error:', error);
+            console.error('❌ Get user by ID error:', error);
             return {
                 success: false,
                 error: 'Ошибка при получении пользователя',
@@ -118,7 +124,7 @@ export class UserService {
      */
     static async getUserByTelegramId(telegramId) {
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.users.findUnique({
                 where: { telegramId },
             });
             if (!user) {
@@ -156,7 +162,7 @@ export class UserService {
      */
     static async updateUserStatus(userId, status) {
         try {
-            const user = await prisma.user.update({
+            const user = await prisma.users.update({
                 where: { id: userId },
                 data: { status },
             });
@@ -190,7 +196,7 @@ export class UserService {
      */
     static async updateUserStatusByTelegramId({ telegramId, status, }) {
         try {
-            const user = await prisma.user.update({
+            const user = await prisma.users.update({
                 where: { telegramId },
                 data: { status },
             });
@@ -224,7 +230,7 @@ export class UserService {
      */
     static async getAllUsers() {
         try {
-            const users = await prisma.user.findMany({
+            const users = await prisma.users.findMany({
                 orderBy: { createdAt: 'desc' },
             });
             const usersResponse = users.map((user) => ({
@@ -256,7 +262,7 @@ export class UserService {
      */
     static async deleteUser(userId) {
         try {
-            await prisma.user.delete({
+            await prisma.users.delete({
                 where: { id: userId },
             });
             return {
@@ -338,7 +344,7 @@ export class UserService {
      */
     static async linkTelegramAccount(userId, telegramId, userData) {
         try {
-            const user = await prisma.user.update({
+            const user = await prisma.users.update({
                 where: { id: userId },
                 data: { telegramId },
             });
@@ -432,7 +438,7 @@ export class UserService {
      */
     static async getAvailableCandidates() {
         try {
-            const candidates = await prisma.user.findMany({
+            const candidates = await prisma.users.findMany({
                 where: { status: UserStatus.CANDIDATE },
                 orderBy: { createdAt: 'desc' },
             });

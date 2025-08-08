@@ -25,6 +25,10 @@ export declare class AuthController {
      */
     static authenticateWithTelegramWidget(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
+     * Аутентификация через Telegram Login Widget (новый)
+     */
+    static authenticateWithTelegramLogin(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    /**
      * Получение тестового токена для разработки
      */
     static getTestToken(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
@@ -33,9 +37,9 @@ export declare class AuthController {
      */
     static createTestTokenForUser(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
-     * Проверка валидности токена
+     * Верификация JWT токена
      */
-    static verifyToken(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static verifyToken(req: Request, res: Response): Response<any, Record<string, any>> | undefined;
     /**
      * Верификация расширенного JWT токена
      */
@@ -56,5 +60,9 @@ export declare class AuthController {
      * Валидация JWT токена
      */
     static validateToken(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    /**
+     * Создание тестового пользователя для разработки
+     */
+    static createDevUser(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
 }
 //# sourceMappingURL=authController.d.ts.map

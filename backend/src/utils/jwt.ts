@@ -38,6 +38,12 @@ export class JwtUtils {
     user: User,
     authType: 'email' | 'telegram'
   ): string {
+    console.log('🔍 generateExtendedToken called with:', {
+      userId: user.id,
+      telegramId: user.telegramId,
+      authType,
+    });
+
     const payload: ExtendedJwtPayload = {
       userId:
         authType === 'telegram'
@@ -52,8 +58,15 @@ export class JwtUtils {
       userDbId: user.id,
     };
 
+    console.log('🔍 JWT payload:', payload);
+
     const options: SignOptions = { expiresIn: this.expiresIn };
-    return jwt.sign(payload, this.secret, options);
+    const token = jwt.sign(payload, this.secret, options);
+
+    console.log('🔍 Generated token:', token.substring(0, 20) + '...');
+    console.log('🔍 Token length:', token.length);
+
+    return token;
   }
 
   /**
@@ -88,11 +101,15 @@ export class JwtUtils {
       username: 'testuser',
     };
 
-    const payload: JwtPayload = {
+    // Создаем расширенный токен для совместимости с middleware
+    const payload: ExtendedJwtPayload = {
       userId: testUser.id,
       username: testUser.username,
       firstName: testUser.first_name,
       lastName: testUser.last_name,
+      role: 'USER',
+      authType: 'telegram',
+      userDbId: 'test-user-id', // Тестовый ID пользователя
     };
 
     const options: SignOptions = { expiresIn: '30d' }; // Тестовый токен на 30 дней
@@ -117,10 +134,24 @@ export class JwtUtils {
    */
   static verifyExtendedToken(token: string): ExtendedJwtPayload | null {
     try {
+      console.log('🔍 JwtUtils.verifyExtendedToken called');
+      console.log('🔍 token format check:', {
+        isJWT: token.split('.').length === 3,
+        parts: token.split('.').length,
+      });
+
       const decoded = jwt.verify(token, this.secret) as ExtendedJwtPayload;
+
+      console.log('🔍 JWT decoded successfully:', {
+        userId: decoded.userId,
+        userDbId: decoded.userDbId,
+        authType: decoded.authType,
+        role: decoded.role,
+      });
+
       return decoded;
     } catch (error) {
-      console.error('Extended JWT verification failed:', error);
+      console.error('❌ Extended JWT verification failed:', error);
       return null;
     }
   }

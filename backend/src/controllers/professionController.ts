@@ -20,7 +20,7 @@ export class ProfessionController {
       }
 
       // Находим пользователя по ID из токена
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: userId },
       });
 
@@ -32,7 +32,7 @@ export class ProfessionController {
       }
 
       // Сохраняем выбранную профессию в базу данных
-      const selectedProfession = await prisma.selectedProfession.create({
+      const selectedProfession = await prisma.selected_professions.create({
         data: {
           userId: user.id,
           profession,
@@ -68,7 +68,7 @@ export class ProfessionController {
       }
 
       // Получаем все выбранные профессии аутентифицированного пользователя
-      const professions = await prisma.selectedProfession.findMany({
+      const professions = await prisma.selected_professions.findMany({
         where: { userId: authenticatedUserId },
         orderBy: { createdAt: 'desc' },
       });
@@ -99,7 +99,7 @@ export class ProfessionController {
       }
 
       // Удаляем профессию из базы данных
-      await prisma.selectedProfession.delete({
+      await prisma.selected_professions.delete({
         where: { id },
       });
 

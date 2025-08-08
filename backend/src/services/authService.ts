@@ -229,7 +229,9 @@ export class AuthService {
   /**
    * Получает тестовый токен для разработки
    */
-  static getTestToken(): ApiResponse<{ token: string; user: TelegramUser }> {
+  static async getTestToken(): Promise<
+    ApiResponse<{ token: string; user: User }>
+  > {
     try {
       // В продакшн режиме не выдаем тестовые токены
       if (process.env.NODE_ENV === 'production') {
@@ -239,20 +241,29 @@ export class AuthService {
         };
       }
 
-      const token = JwtUtils.generateTestToken();
-      const testUser: TelegramUser = {
+      // Создаем тестового пользователя в базе данных
+      const userResult = await UserService.findOrCreateTelegramUser({
         id: 123456789,
-        is_bot: false,
-        first_name: 'Test',
-        last_name: 'User',
         username: 'testuser',
-      };
+        firstName: 'Test',
+        lastName: 'User',
+      });
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error || 'Failed to create test user',
+        };
+      }
+
+      // Генерируем JWT токен для созданного пользователя
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
 
       return {
         success: true,
         data: {
           token,
-          user: testUser,
+          user: userResult.data,
         },
         message: 'Test token generated successfully',
       };
@@ -306,9 +317,22 @@ export class AuthService {
    */
   static async verifyExtendedToken(token: string): Promise<ApiResponse<User>> {
     try {
+      console.log(
+        '🔍 verifyExtendedToken called with token:',
+        token.substring(0, 20) + '...'
+      );
+      console.log('🔍 token length:', token.length);
+      console.log('🔍 token format check:', {
+        isJWT: token.split('.').length === 3,
+        parts: token.split('.').length,
+      });
+
       const payload = JwtUtils.verifyExtendedToken(token);
 
+      console.log('🔍 JWT payload:', payload);
+
       if (!payload) {
+        console.log('❌ JWT verification failed - no payload');
         return {
           success: false,
           error: 'Invalid or expired token',
@@ -320,36 +344,45 @@ export class AuthService {
 
       if (payload.userDbId) {
         // Если есть userDbId, используем его для поиска пользователя
+        console.log('🔍 Using userDbId:', payload.userDbId);
         userResult = await UserService.getUserById(payload.userDbId);
       } else if (payload.authType === 'email') {
         // Для email авторизации без userDbId (обратная совместимость)
+        console.log('🔍 Using userId for email auth:', payload.userId);
         userResult = await UserService.getUserById(payload.userId);
       } else if (payload.authType === 'telegram') {
         // Для Telegram авторизации без userDbId (обратная совместимость)
+        console.log('🔍 Using telegramId:', payload.userId);
         userResult = await UserService.getUserByTelegramId(
           payload.userId.toString()
         );
       } else {
+        console.log('❌ Invalid token format - no valid auth type or userDbId');
         return {
           success: false,
           error: 'Invalid token format',
         };
       }
 
+      console.log('🔍 UserService result:', userResult);
+
       if (!userResult.success || !userResult.data) {
+        console.log('❌ User not found:', userResult.error);
+        console.log('❌ UserService response:', userResult);
         return {
           success: false,
           error: 'User not found',
         };
       }
 
+      console.log('✅ User found:', userResult.data.id);
       return {
         success: true,
         data: userResult.data,
         message: 'Token verified successfully',
       };
     } catch (error) {
-      console.error('Extended token verification error:', error);
+      console.error('❌ Extended token verification error:', error);
       return {
         success: false,
         error: 'Token verification failed',

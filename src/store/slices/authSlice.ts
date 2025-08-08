@@ -29,6 +29,10 @@ const getInitialState = (): AuthState => {
   const savedToken = getStoredToken();
   const savedUser = getStoredUser();
 
+  console.log('🔍 getInitialState called');
+  console.log('🔍 savedToken:', savedToken ? 'present' : 'missing');
+  console.log('🔍 savedUser:', savedUser ? 'present' : 'missing');
+
   return {
     token: savedToken,
     user: savedUser,
@@ -49,7 +53,7 @@ export const verifyToken = createAsyncThunk(
       throw new Error('No token found');
     }
 
-    const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     console.log(
       '🔍 Sending verifyToken request with token:',
@@ -79,7 +83,7 @@ export const verifyToken = createAsyncThunk(
 export const loginWithTelegram = createAsyncThunk(
   'auth/loginWithTelegram',
   async (initData: string) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     console.log(
       '🔍 Sending loginWithTelegram request with initData:',
@@ -139,8 +143,7 @@ export const getTestToken = createAsyncThunk(
 
     // Используем debounce для предотвращения множественных запросов
     return debouncedGetTestToken(async () => {
-      const API_URL =
-        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
       console.log('🔍 Sending getTestToken request');
 
@@ -182,7 +185,7 @@ export const getTestToken = createAsyncThunk(
 export const loginWithTelegramWidget = createAsyncThunk(
   'auth/loginWithTelegramWidget',
   async (widgetData: any) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     console.log('🔍 Sending loginWithTelegramWidget request:', widgetData);
 

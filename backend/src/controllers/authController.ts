@@ -346,7 +346,7 @@ export class AuthController {
         } as ApiResponse);
       }
 
-      const result = AuthService.getTestToken();
+      const result = await AuthService.getTestToken();
 
       if (!result.success) {
         return res.status(500).json(result);

@@ -1,5 +1,6 @@
 import { TelegramBotService } from '../services/telegramBotService.js';
-import { AuthService } from '../services/authService.js';
+import { UserService } from '../services/userService.js';
+import { JwtUtils } from '../utils/jwt.js';
 export class TelegramBotController {
     /**
      * Создает URL для авторизации через бота
@@ -22,6 +23,33 @@ export class TelegramBotController {
         }
         catch (error) {
             console.error('Create auth URL error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Internal server error',
+            });
+        }
+    }
+    /**
+     * Создает LoginUrl объект для авторизации через Telegram Login Widget
+     */
+    static async createLoginUrl(req, res) {
+        try {
+            const { userId, redirectUrl } = req.body;
+            if (!userId || !redirectUrl) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'userId and redirectUrl are required',
+                });
+            }
+            const loginUrl = TelegramBotService.createLoginUrl(userId, redirectUrl);
+            res.json({
+                success: true,
+                data: { loginUrl },
+                message: 'LoginUrl created successfully',
+            });
+        }
+        catch (error) {
+            console.error('Create LoginUrl error:', error);
             res.status(500).json({
                 success: false,
                 error: 'Internal server error',
@@ -56,12 +84,25 @@ export class TelegramBotController {
                     error: 'User not found or bot cannot access user info',
                 });
             }
-            // Генерируем JWT токен
-            const token = AuthService.generateTokenForUser(userInfo);
+            // Создаем или находим пользователя в базе данных
+            const userResult = await UserService.findOrCreateTelegramUser({
+                id: userInfo.id,
+                username: userInfo.username,
+                firstName: userInfo.first_name,
+                lastName: userInfo.last_name,
+            });
+            if (!userResult.success || !userResult.data) {
+                return res.status(500).json({
+                    success: false,
+                    error: userResult.error || 'Failed to create user in database',
+                });
+            }
+            // Генерируем расширенный JWT токен
+            const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
             res.json({
                 success: true,
                 data: {
-                    user: userInfo,
+                    user: userResult.data,
                     token,
                     canSendMessage,
                 },

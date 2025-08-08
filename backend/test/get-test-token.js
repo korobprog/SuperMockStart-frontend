@@ -60,7 +60,9 @@ async function getTestToken() {
       console.log(
         'curl -H "Authorization: Bearer ' +
           token +
-          '" http://localhost:3001/api/calendar/sessions/test-session-1'
+          `" ${
+            process.env.VITE_API_URL || 'http://localhost:3001'
+          }/api/calendar/sessions/test-session-1`
       );
     } else {
       console.error('❌ Ошибка получения токена:', response.data.error);

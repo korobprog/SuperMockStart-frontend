@@ -1,7 +1,10 @@
-import prisma from './prisma.js';
+import { PrismaClient } from '@prisma/client';
 import pkg from '@prisma/client';
 const { NotificationType } = pkg;
 import { TelegramBotService } from './telegramBotService.js';
+import crypto from 'crypto';
+
+const prisma = new PrismaClient();
 
 export class NotificationService {
   /**
@@ -10,6 +13,7 @@ export class NotificationService {
   static async sendInterviewConfirmation(session: any) {
     const notifications = [
       {
+        id: crypto.randomUUID(),
         userId: session.candidateId,
         sessionId: session.id,
         type: NotificationType.INTERVIEW_CONFIRMED,
@@ -21,6 +25,7 @@ export class NotificationService {
         )}. Ссылка для подключения: ${session.meetingLink}`,
       },
       {
+        id: crypto.randomUUID(),
         userId: session.interviewerId,
         sessionId: session.id,
         type: NotificationType.INTERVIEW_CONFIRMED,
@@ -34,7 +39,7 @@ export class NotificationService {
     ];
 
     // Сохраняем уведомления в БД
-    await prisma.notification.createMany({
+    await prisma.notifications.createMany({
       data: notifications,
     });
 
@@ -62,6 +67,7 @@ export class NotificationService {
     if (reminderTime > new Date()) {
       const reminderNotifications = [
         {
+          id: crypto.randomUUID(),
           userId: session.candidateId,
           sessionId: session.id,
           type: NotificationType.INTERVIEW_REMINDER,
@@ -70,6 +76,7 @@ export class NotificationService {
           scheduled: reminderTime,
         },
         {
+          id: crypto.randomUUID(),
           userId: session.interviewerId,
           sessionId: session.id,
           type: NotificationType.INTERVIEW_REMINDER,
@@ -79,7 +86,7 @@ export class NotificationService {
         },
       ];
 
-      await prisma.notification.createMany({
+      await prisma.notifications.createMany({
         data: reminderNotifications,
       });
     }
@@ -91,13 +98,13 @@ export class NotificationService {
   static async sendScheduledNotifications() {
     const now = new Date();
 
-    const notifications = await prisma.notification.findMany({
+    const notifications = await prisma.notifications.findMany({
       where: {
         scheduled: { lte: now },
         sent: false,
       },
       include: {
-        user: true,
+        users: true,
       },
     });
 
@@ -109,7 +116,7 @@ export class NotificationService {
           notification.message
         );
 
-        await prisma.notification.update({
+        await prisma.notifications.update({
           where: { id: notification.id },
           data: {
             sent: true,
@@ -126,11 +133,11 @@ export class NotificationService {
    * Отправить уведомление о просьбе обратной связи
    */
   static async sendFeedbackRequest(sessionId: string) {
-    const session = await prisma.interviewSession.findUnique({
+    const session = await prisma.interview_sessions.findUnique({
       where: { id: sessionId },
       include: {
-        candidate: true,
-        interviewer: true,
+        users_interview_sessions_candidateIdTousers: true,
+        users_interview_sessions_interviewerIdTousers: true,
       },
     });
 
@@ -138,6 +145,7 @@ export class NotificationService {
 
     const notifications = [
       {
+        id: crypto.randomUUID(),
         userId: session.candidateId,
         sessionId: session.id,
         type: NotificationType.FEEDBACK_REQUEST,
@@ -146,6 +154,7 @@ export class NotificationService {
           'Пожалуйста, поделитесь своим опытом прошедшего собеседования. Ваш отзыв поможет улучшить систему.',
       },
       {
+        id: crypto.randomUUID(),
         userId: session.interviewerId,
         sessionId: session.id,
         type: NotificationType.FEEDBACK_REQUEST,
@@ -155,7 +164,7 @@ export class NotificationService {
       },
     ];
 
-    await prisma.notification.createMany({
+    await prisma.notifications.createMany({
       data: notifications,
     });
 
@@ -173,7 +182,7 @@ export class NotificationService {
    */
   static async sendFeedbackReminders() {
     // Находим завершенные сессии без обратной связи старше 24 часов
-    const sessionsNeedingFeedback = await prisma.interviewSession.findMany({
+    const sessionsNeedingFeedback = await prisma.interview_sessions.findMany({
       where: {
         status: 'COMPLETED',
         updatedAt: {
@@ -181,17 +190,17 @@ export class NotificationService {
         },
       },
       include: {
-        feedbacks: true,
-        candidate: true,
-        interviewer: true,
+        feedback: true,
+        users_interview_sessions_candidateIdTousers: true,
+        users_interview_sessions_interviewerIdTousers: true,
       },
     });
 
     for (const session of sessionsNeedingFeedback) {
-      const candidateGaveFeedback = session.feedbacks.some(
+      const candidateGaveFeedback = session.feedback.some(
         (f) => f.fromUserId === session.candidateId
       );
-      const interviewerGaveFeedback = session.feedbacks.some(
+      const interviewerGaveFeedback = session.feedback.some(
         (f) => f.fromUserId === session.interviewerId
       );
 
@@ -217,8 +226,9 @@ export class NotificationService {
    * Уведомить о смене ролей
    */
   static async notifyRoleChange(userId: string, newRole: string) {
-    await prisma.notification.create({
+    await prisma.notifications.create({
       data: {
+        id: crypto.randomUUID(),
         userId,
         type: NotificationType.ROLE_CHANGED,
         title: 'Роль изменена',
@@ -242,7 +252,7 @@ export class NotificationService {
     message: string
   ) {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: userId },
       });
 
@@ -275,15 +285,15 @@ export class NotificationService {
    * Получить уведомления пользователя
    */
   static async getUserNotifications(userId: string, limit = 50) {
-    return await prisma.notification.findMany({
+    return await prisma.notifications.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
-        session: {
+        interview_sessions: {
           include: {
-            candidate: true,
-            interviewer: true,
+            users_interview_sessions_candidateIdTousers: true,
+            users_interview_sessions_interviewerIdTousers: true,
           },
         },
       },
@@ -297,7 +307,7 @@ export class NotificationService {
     userId: string,
     notificationIds: string[]
   ) {
-    await prisma.notification.updateMany({
+    await prisma.notifications.updateMany({
       where: {
         id: { in: notificationIds },
         userId,

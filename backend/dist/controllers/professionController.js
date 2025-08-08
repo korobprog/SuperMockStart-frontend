@@ -6,16 +6,17 @@ export class ProfessionController {
     // Добавление выбранной профессии
     static async addSelectedProfession(req, res) {
         try {
-            const { userId, profession } = req.body;
+            const { profession } = req.body;
+            const userId = req.extendedUser?.id;
             if (!userId || !profession) {
                 return res.status(400).json({
                     success: false,
-                    message: 'userId и profession обязательны',
+                    message: 'profession обязателен',
                 });
             }
-            // Находим пользователя по telegramId
-            const user = await prisma.user.findUnique({
-                where: { telegramId: userId },
+            // Находим пользователя по ID из токена
+            const user = await prisma.users.findUnique({
+                where: { id: userId },
             });
             if (!user) {
                 return res.status(404).json({
@@ -24,7 +25,7 @@ export class ProfessionController {
                 });
             }
             // Сохраняем выбранную профессию в базу данных
-            const selectedProfession = await prisma.selectedProfession.create({
+            const selectedProfession = await prisma.selected_professions.create({
                 data: {
                     userId: user.id,
                     profession,
@@ -49,26 +50,16 @@ export class ProfessionController {
     // Получение всех выбранных профессий пользователя
     static async getUserProfessions(req, res) {
         try {
-            const { userId } = req.params;
-            if (!userId) {
-                return res.status(400).json({
+            const authenticatedUserId = req.extendedUser?.id;
+            if (!authenticatedUserId) {
+                return res.status(401).json({
                     success: false,
-                    message: 'userId обязателен',
+                    message: 'Unauthorized',
                 });
             }
-            // Находим пользователя по telegramId
-            const user = await prisma.user.findUnique({
-                where: { telegramId: userId },
-            });
-            if (!user) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Пользователь не найден',
-                });
-            }
-            // Получаем все выбранные профессии пользователя
-            const professions = await prisma.selectedProfession.findMany({
-                where: { userId: user.id },
+            // Получаем все выбранные профессии аутентифицированного пользователя
+            const professions = await prisma.selected_professions.findMany({
+                where: { userId: authenticatedUserId },
                 orderBy: { createdAt: 'desc' },
             });
             res.status(200).json({
@@ -95,7 +86,7 @@ export class ProfessionController {
                 });
             }
             // Удаляем профессию из базы данных
-            await prisma.selectedProfession.delete({
+            await prisma.selected_professions.delete({
                 where: { id },
             });
             res.status(200).json({
