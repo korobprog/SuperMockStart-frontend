@@ -116,6 +116,7 @@ export class TelegramUtils {
         auth_date: widgetData.auth_date,
         has_hash: !!widgetData.hash,
         bot_token_length: this.botToken ? this.botToken.length : 0,
+        full_data: widgetData,
       });
 
       // Проверяем обязательные поля
@@ -125,32 +126,62 @@ export class TelegramUtils {
         !widgetData.auth_date ||
         !widgetData.hash
       ) {
-        console.error('❌ Missing required fields in widget data');
+        console.error('❌ Missing required fields in widget data', {
+          missing_id: !widgetData.id,
+          missing_first_name: !widgetData.first_name,
+          missing_auth_date: !widgetData.auth_date,
+          missing_hash: !widgetData.hash,
+        });
         return false;
       }
 
       // Проверяем срок действия данных (не более 5 минут для Login Widget)
       const currentTime = Math.floor(Date.now() / 1000);
       const fiveMinutes = 5 * 60;
-      if (currentTime - widgetData.auth_date > fiveMinutes) {
-        console.error('❌ Widget data expired');
+      const timeDiff = currentTime - widgetData.auth_date;
+      
+      console.log('⏰ Time validation:', {
+        current_time: currentTime,
+        auth_date: widgetData.auth_date,
+        time_diff: timeDiff,
+        five_minutes: fiveMinutes,
+        is_expired: timeDiff > fiveMinutes,
+      });
+      
+      if (timeDiff > fiveMinutes) {
+        console.error('❌ Widget data expired:', {
+          time_diff_seconds: timeDiff,
+          max_allowed_seconds: fiveMinutes,
+        });
         return false;
       }
 
       // Создаем строку для проверки согласно документации Telegram
-      const dataCheckString = Object.entries(widgetData)
+      const dataEntries = Object.entries(widgetData)
         .filter(([key]) => key !== 'hash')
-        .sort(([a], [b]) => a.localeCompare(b))
+        .sort(([a], [b]) => a.localeCompare(b));
+        
+      console.log('📝 Data entries for validation:', dataEntries);
+      
+      const dataCheckString = dataEntries
         .map(([key, value]) => `${key}=${value}`)
         .join('\n');
 
-      console.log('📋 Data check string:', dataCheckString);
+      console.log('📋 Data check string:', {
+        string: dataCheckString,
+        length: dataCheckString.length,
+      });
 
       // Создаем секретный ключ согласно документации Telegram
       const secretKey = crypto
         .createHash('sha256')
         .update(this.botToken)
         .digest();
+
+      console.log('🔑 Secret key info:', {
+        bot_token_sha256: crypto.createHash('sha256').update(this.botToken).digest('hex'),
+        secret_key_length: secretKey.length,
+      });
 
       // Вычисляем хеш
       const calculatedHash = crypto
@@ -162,6 +193,8 @@ export class TelegramUtils {
         received: widgetData.hash,
         calculated: calculatedHash,
         match: calculatedHash === widgetData.hash,
+        received_length: widgetData.hash?.length || 0,
+        calculated_length: calculatedHash.length,
       });
 
       // Проверяем хеш
@@ -169,6 +202,12 @@ export class TelegramUtils {
 
       if (!isValid) {
         console.error('❌ Widget data hash validation failed');
+        console.error('Debug info:', {
+          widgetData,
+          dataCheckString,
+          calculatedHash,
+          receivedHash: widgetData.hash,
+        });
       } else {
         console.log('✅ Widget data hash validation successful');
       }

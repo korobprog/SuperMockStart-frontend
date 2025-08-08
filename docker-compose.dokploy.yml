@@ -37,12 +37,13 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATABASE_URL=postgresql://postgres:krishna1284radha@database:5432/supermock?schema=public
-      - JWT_SECRET=052aa937e5faf8542efe8c091a7ff830
+      - JWT_SECRET=052aa937e3faf8542efe8c091a7ff830
       - JWT_EXPIRES_IN=7d
       - TELEGRAM_TOKEN=8464088869:AAFcZb7HmYQJa6vaYjfTDCjfr187p9hhk2o
       - BOT_USERNAME=SuperMock_bot
       - FRONTEND_URL=https://supermock.ru
       - BACKEND_URL=https://api.supermock.ru
+      - COOKIE_DOMAIN=.supermock.ru
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
     networks:
@@ -54,10 +55,10 @@ services:
       - ../files/backend-logs:/app/logs
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-backend-web.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-backend-web.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.supermock-backend-web.entrypoints=web
       - traefik.http.routers.supermock-backend-web.middlewares=redirect-to-https@file
-      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.supermock-backend.entrypoints=websecure
       - traefik.http.routers.supermock-backend.tls.certResolver=letsencrypt
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3001
