@@ -1,260 +1,210 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import TelegramLoginWidget from '../components/TelegramLoginWidget';
+import TelegramConfigDebug from '../components/TelegramConfigDebug';
 import {
+  ModernCard,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-  ModernCard,
 } from '../components/ui/card';
-import BackgroundGradient from '../components/BackgroundGradient';
+import { Button } from '../components/ui/button';
+
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
 
 const BotAuthTest: React.FC = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'initial' | 'pending' | 'success' | 'error'>(
-    'initial'
-  );
+  const [authStatus, setAuthStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
+  const [user, setUser] = useState<TelegramUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleBotAuth = async () => {
-    setLoading(true);
+  const handleAuthSuccess = (user: TelegramUser, token: string) => {
+    console.log('✅ Auth success:', { user, token });
+    setUser(user);
+    setToken(token);
+    setAuthStatus('success');
     setError(null);
-    try {
-      // Генерируем случайный userId для тестирования
-      const userId = Math.floor(Math.random() * 1000000) + 100000;
-
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-      console.log('🔍 Starting bot authentication for userId:', userId);
-
-      // 1. Создаем URL для авторизации
-      const authUrlResponse = await fetch(
-        `${API_URL}/api/telegram-bot/auth-url`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId,
-            redirectUrl: `${window.location.origin}/bot-auth`,
-          }),
-        }
-      );
-
-      if (!authUrlResponse.ok) {
-        throw new Error('Failed to create auth URL');
-      }
-
-      const authUrlData = await authUrlResponse.json();
-      const authUrl = authUrlData.data.authUrl;
-
-      console.log('🔗 Auth URL created:', authUrl);
-
-      // 2. Открываем ссылку на бота в новом окне
-      window.open(authUrl, '_blank');
-
-      // 3. Сохраняем userId для последующей проверки
-      localStorage.setItem('pending_bot_auth_userId', userId.toString());
-
-      // 4. Переходим к ожиданию
-      setStep('pending');
-      setLoading(false);
-    } catch (error) {
-      console.error('❌ Bot auth error:', error);
-      setError(error instanceof Error ? error.message : 'Unknown error');
-      setStep('error');
-      setLoading(false);
-    }
   };
 
-  const handleCheckAuth = async () => {
-    setLoading(true);
-    try {
-      const userId = localStorage.getItem('pending_bot_auth_userId');
-
-      if (!userId) {
-        throw new Error('No pending authentication found');
-      }
-
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-      console.log('🔍 Checking bot authentication for userId:', userId);
-
-      // Проверяем авторизацию через бота
-      const verifyResponse = await fetch(
-        `${API_URL}/api/telegram-bot/verify-user`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId: parseInt(userId) }),
-        }
-      );
-
-      if (verifyResponse.ok) {
-        const verifyData = await verifyResponse.json();
-        console.log('✅ Bot authentication successful:', verifyData);
-
-        // Очищаем pending auth
-        localStorage.removeItem('pending_bot_auth_userId');
-
-        // Сохраняем токен и пользователя
-        localStorage.setItem('token', verifyData.data.token);
-        localStorage.setItem('user', JSON.stringify(verifyData.data.user));
-
-        setStep('success');
-
-        // Перенаправляем через 2 секунды
-        setTimeout(() => {
-          navigate('/collectingcontacts');
-        }, 2000);
-      } else {
-        const errorData = await verifyResponse.json();
-        throw new Error(errorData.error || 'Bot verification failed');
-      }
-    } catch (error) {
-      console.error('❌ Check auth error:', error);
-      setError(error instanceof Error ? error.message : 'Unknown error');
-      setStep('error');
-    } finally {
-      setLoading(false);
-    }
+  const handleAuthError = (error: string) => {
+    console.error('❌ Auth error:', error);
+    setError(error);
+    setAuthStatus('error');
+    setUser(null);
+    setToken(null);
   };
 
-  const handleReset = () => {
-    localStorage.removeItem('pending_bot_auth_userId');
-    setStep('initial');
+  const handleLogout = () => {
+    localStorage.removeItem('telegram_user');
+    localStorage.removeItem('telegram_token');
+    localStorage.removeItem('telegram_bot_username');
+    setUser(null);
+    setToken(null);
+    setAuthStatus('idle');
     setError(null);
   };
 
   return (
-    <BackgroundGradient className="min-h-screen">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto">
-          <ModernCard>
-            <CardHeader>
-              <CardTitle className="text-center">
-                🤖 Тест авторизации через Telegram бота
-              </CardTitle>
-              <CardDescription className="text-center">
-                Простая авторизация без Login Widget
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {step === 'initial' && (
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-700">
-                      ✅ Авторизация через Telegram бота работает
-                    </p>
-                    <p className="text-xs text-green-600 mt-1">
-                      Нажмите кнопку ниже для начала авторизации
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleBotAuth}
-                    disabled={loading}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Подготовка...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                        </svg>
-                        Войти через Telegram бота
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-center mb-8">
+        🔐 Авторизация через Telegram бота
+      </h1>
 
-              {step === 'pending' && (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm text-blue-700">
-                      🔄 Ожидание авторизации через бота...
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      После авторизации в боте нажмите кнопку ниже
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleCheckAuth}
-                    disabled={loading}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Проверка...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                        </svg>
-                        Проверить авторизацию
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-
-              {step === 'success' && (
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-700">
-                      ✅ Авторизация успешна!
-                    </p>
-                    <p className="text-xs text-green-600 mt-1">
-                      Перенаправление...
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {step === 'error' && (
-                <div className="space-y-4">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-700">❌ Ошибка: {error}</p>
-                  </div>
-                  <Button onClick={handleReset} className="w-full">
-                    Попробовать снова
-                  </Button>
-                </div>
-              )}
-
-              <div className="mt-4 text-center">
-                <Button
-                  onClick={() => navigate('/')}
-                  variant="outline"
-                  className="text-sm"
-                >
-                  Вернуться на главную
-                </Button>
-              </div>
-            </CardContent>
-          </ModernCard>
-        </div>
+      <div className="text-center mb-8">
+        <p className="text-lg text-muted-foreground">
+          Безопасная и быстрая авторизация через Telegram бота
+        </p>
       </div>
-    </BackgroundGradient>
+
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Debug Information */}
+        <TelegramConfigDebug />
+
+        {/* Auth Status */}
+        <ModernCard>
+          <CardHeader>
+            <CardTitle className="text-center">
+              📊 Authentication Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div
+                className={`p-4 rounded-lg ${
+                  authStatus === 'success'
+                    ? 'bg-green-50 border border-green-200'
+                    : authStatus === 'error'
+                    ? 'bg-red-50 border border-red-200'
+                    : authStatus === 'loading'
+                    ? 'bg-yellow-50 border border-yellow-200'
+                    : 'bg-gray-50 border border-gray-200'
+                }`}
+              >
+                <p className="font-semibold">
+                  Status: {authStatus.toUpperCase()}
+                </p>
+                {user && (
+                  <div className="mt-2">
+                    <p>
+                      <strong>User ID:</strong> {user.id}
+                    </p>
+                    <p>
+                      <strong>Name:</strong> {user.first_name}{' '}
+                      {user.last_name || ''}
+                    </p>
+                    <p>
+                      <strong>Username:</strong> @{user.username || 'none'}
+                    </p>
+                    <p>
+                      <strong>Auth Date:</strong>{' '}
+                      {new Date(user.auth_date * 1000).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+                {token && (
+                  <div className="mt-2">
+                    <p>
+                      <strong>Token:</strong> {token.substring(0, 20)}...
+                    </p>
+                  </div>
+                )}
+                {error && (
+                  <div className="mt-2 text-red-600">
+                    <p>
+                      <strong>Error:</strong> {error}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {user && (
+                <div className="flex justify-center">
+                  <Button onClick={handleLogout} variant="outline">
+                    🚪 Logout
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </ModernCard>
+
+        {/* Telegram Login Widget */}
+        {!user && (
+          <TelegramLoginWidget
+            onAuthSuccess={handleAuthSuccess}
+            onAuthError={handleAuthError}
+          />
+        )}
+
+        {/* Instructions */}
+        <ModernCard>
+          <CardHeader>
+            <CardTitle className="text-center">📋 How to Test</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <p>
+                1. <strong>Check Debug Info:</strong> Verify the correct bot is
+                selected for your environment
+              </p>
+              <p>
+                2. <strong>Click Login:</strong> Use the Telegram Login Widget
+                to authenticate
+              </p>
+              <p>
+                3. <strong>Check Console:</strong> Open browser console for
+                detailed logs
+              </p>
+              <p>
+                4. <strong>Verify Status:</strong> Check the authentication
+                status above
+              </p>
+              <p>
+                5. <strong>Test Logout:</strong> Try logging out and logging
+                back in
+              </p>
+            </div>
+          </CardContent>
+        </ModernCard>
+
+        {/* Environment Info */}
+        <ModernCard>
+          <CardHeader>
+            <CardTitle className="text-center">
+              🌍 Environment Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>Current URL:</strong> {window.location.href}
+              </p>
+              <p>
+                <strong>Origin:</strong> {window.location.origin}
+              </p>
+              <p>
+                <strong>User Agent:</strong> {navigator.userAgent}
+              </p>
+              <p>
+                <strong>Local Storage:</strong>{' '}
+                {localStorage.getItem('telegram_user')
+                  ? 'User data present'
+                  : 'No user data'}
+              </p>
+            </div>
+          </CardContent>
+        </ModernCard>
+      </div>
+    </div>
   );
 };
 

@@ -12,12 +12,14 @@ interface TelegramBotAuthButtonProps {
   onAuthSuccess?: (userId: number, token: string) => void;
   onAuthError?: (error: string) => void;
   className?: string;
+  directAuth?: boolean; // Новый проп для прямой авторизации
 }
 
 const TelegramBotAuthButton: React.FC<TelegramBotAuthButtonProps> = ({
   onAuthSuccess,
   onAuthError,
   className = '',
+  directAuth = false, // По умолчанию false для обратной совместимости
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -64,8 +66,8 @@ const TelegramBotAuthButton: React.FC<TelegramBotAuthButtonProps> = ({
 
 1️⃣ Откройте ссылку на бота в новом окне
 2️⃣ Нажмите кнопку "Start" или отправьте команду /start
-3️⃣ Следуйте инструкциям бота
-4️⃣ После авторизации вернитесь сюда и нажмите "Проверить авторизацию"
+3️⃣ Следуйте инструкциям бота для завершения авторизации
+4️⃣ После успешной авторизации вернитесь сюда и нажмите "Проверить авторизацию"
 
 Ссылка на бота: ${authUrl}
       `;
@@ -131,21 +133,100 @@ const TelegramBotAuthButton: React.FC<TelegramBotAuthButtonProps> = ({
 
   const hasPendingAuth = localStorage.getItem('pending_bot_auth_userId');
 
+  // Если это прямая авторизация, показываем упрощенный интерфейс
+  if (directAuth) {
+    return (
+      <div className={className}>
+        {hasPendingAuth ? (
+          // Если есть pending авторизация
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                🔄 Ожидание авторизации через бота...
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                После авторизации в боте нажмите кнопку ниже
+              </p>
+            </div>
+            <Button
+              onClick={handleCheckAuth}
+              disabled={loading}
+              className="w-full bg-green-500 hover:bg-green-600 text-white"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Проверка...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                  </svg>
+                  Проверить авторизацию
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          // Начальная кнопка авторизации
+          <div className="space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-sm text-green-700">
+                ✅ Авторизация через Telegram бота работает
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                Нажмите кнопку ниже для начала авторизации
+              </p>
+            </div>
+            <Button
+              onClick={handleBotAuth}
+              disabled={loading}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Подготовка...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                  </svg>
+                  Войти через Telegram бота
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <ModernCard className={`max-w-md mx-auto ${className}`}>
       <CardHeader>
         <CardTitle className="text-center">
           <span className="hidden sm:inline">
-            🤖 Авторизация через Telegram бота
+            🔐 Авторизация через Telegram бота
           </span>
           <span className="sm:hidden">
-            🤖 Авторизация
+            🔐 Авторизация
             <br />
             через бота
           </span>
         </CardTitle>
         <CardDescription className="text-center">
-          Войдите через Telegram бота для доступа к приложению
+          Основной способ входа в SuperMock через Telegram бота
         </CardDescription>
       </CardHeader>
       <CardContent>

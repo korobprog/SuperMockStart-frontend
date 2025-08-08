@@ -69,12 +69,20 @@ const Home: React.FC = () => {
             {!isAuthenticated && (
               <>
                 <Button
-                  onClick={() => navigate('/bot-auth-test')}
+                  onClick={() => navigate('/bot-auth')}
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-semibold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  🔐 Войти через Telegram бота
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button
+                  onClick={() => navigate('/auth')}
                   variant="outline"
                   size="lg"
                   className="font-semibold text-lg py-4 px-8 rounded-xl"
                 >
-                  Войти через Telegram бота
+                  Альтернативная авторизация
                 </Button>
                 <Button
                   onClick={() => navigate('/test-buttons')}

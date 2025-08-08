@@ -97,7 +97,7 @@ router.post('/telegram-login', AuthController.authenticateWithTelegramLogin);
  * @desc Аутентификация через Telegram Login Widget (новый формат)
  * @access Public
  */
-router.post('/telegram', AuthController.authenticateWithTelegramLoginWidget);
+router.post('/telegram', AuthController.authenticateWithTelegramLogin);
 
 /**
  * @route GET /api/auth/test-token

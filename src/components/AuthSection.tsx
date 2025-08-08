@@ -29,6 +29,7 @@ const AuthSection: React.FC<AuthSectionProps> = ({
       <div className="space-y-4">
         {import.meta.env.VITE_NODE_ENV === 'production' ? (
           <div className="space-y-4">
+            {/* Основной способ - Telegram Bot */}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
@@ -39,18 +40,44 @@ const AuthSection: React.FC<AuthSectionProps> = ({
                 </span>
               </div>
             </div>
-            <TelegramLoginWidget
-              onAuthSuccess={(user) => {
-                const token =
-                  Math.random().toString(36).substring(2, 15) +
-                  Date.now().toString(36);
+            <TelegramBotAuthButton
+              onAuthSuccess={(userId, token) => {
+                // Создаем объект пользователя для совместимости
+                const user = {
+                  id: userId,
+                  first_name: 'User',
+                  is_bot: false,
+                };
                 onAuthSuccess(user, token);
               }}
               onAuthError={onAuthError}
             />
+
+            {/* Резервный способ - Login Widget */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center">
+                  <div className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm text-blue-700 font-medium">
+                    Альтернативный способ авторизации
+                  </span>
+                </div>
+              </div>
+              <TelegramLoginWidget
+                onAuthSuccess={(user) => {
+                  const token =
+                    Math.random().toString(36).substring(2, 15) +
+                    Date.now().toString(36);
+                  onAuthSuccess(user, token);
+                }}
+                onAuthError={onAuthError}
+              />
+            </div>
           </div>
         ) : (
-          <Tabs value="widget" className="w-full">
+          <Tabs value="bot" className="w-full">
             <TabsList
               className={`grid w-full ${
                 import.meta.env.VITE_NODE_ENV !== 'production'
@@ -97,13 +124,13 @@ const AuthSection: React.FC<AuthSectionProps> = ({
               </TabsContent>
             )}
             <TabsContent value="bot" className="space-y-4 mt-4">
-              <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 sm:p-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center">
-                  <div className="w-5 h-5 bg-accent/20 rounded-full flex items-center justify-center mr-2">
-                    <div className="w-2 h-2 bg-accent rounded-full"></div>
+                  <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                   </div>
-                  <span className="text-sm text-accent font-medium">
-                    Регистрация через Telegram бота
+                  <span className="text-sm text-green-700 font-medium">
+                    Основной способ авторизации через Telegram бота
                   </span>
                 </div>
               </div>
@@ -121,14 +148,13 @@ const AuthSection: React.FC<AuthSectionProps> = ({
               />
             </TabsContent>
             <TabsContent value="widget" className="space-y-4 mt-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center">
-                  <div className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center mr-2">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <div className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                   </div>
-                  <span className="text-sm text-green-700 font-medium">
-                    Быстрая авторизация через Telegram Login Widget (работает в
-                    dev и prod)
+                  <span className="text-sm text-blue-700 font-medium">
+                    Альтернативная авторизация через Telegram Login Widget
                   </span>
                 </div>
               </div>
