@@ -45,7 +45,6 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
 }) => {
   const widgetRef = useRef<HTMLDivElement>(null);
 
-  // Определяем бота в зависимости от окружения
   const getCurrentBotUsername = () => {
     if (botUsername) return botUsername;
     return getBotUsername();
@@ -54,10 +53,8 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
   useEffect(() => {
     const currentBotUsername = getCurrentBotUsername();
 
-    // Логируем конфигурацию при инициализации
     logBotConfig();
 
-    // Загружаем Telegram Login Widget скрипт
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
     script.setAttribute('data-telegram-login', currentBotUsername);
@@ -66,63 +63,54 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     script.setAttribute('data-request-access', 'write');
     script.setAttribute('data-lang', 'ru');
 
-    // Обработчик успешной авторизации
     window.TelegramLoginWidget = {
       dataOnauth: async (user: TelegramUser) => {
         try {
-          console.log('🔐 Telegram Login Widget auth success:', user);
-          console.log('🤖 Using bot:', currentBotUsername);
-
-          // Отправляем данные на бэкенд для валидации
-          const response = await fetch(
-            `${
-              import.meta.env.VITE_API_URL || 'https://api.supermock.ru'
-            }/api/auth/telegram`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
+          const response = await fetch(`${apiUrl}/api/auth/telegram-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              telegramData: {
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                username: user.username,
+                photo_url: user.photo_url,
+                auth_date: user.auth_date,
+                hash: user.hash,
               },
-              body: JSON.stringify({
-                initData: window.location.search.substring(1), // Получаем initData из URL
-                user: user,
-                botUsername: currentBotUsername, // Передаем информацию о боте
-              }),
-            }
-          );
+              user,
+              botUsername: currentBotUsername,
+            }),
+          });
 
           if (!response.ok) {
-            throw new Error('Ошибка валидации на сервере');
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Ошибка валидации на сервере');
           }
 
           const data = await response.json();
 
-          if (data.success) {
-            // Сохраняем пользователя и токен
-            localStorage.setItem('telegram_user', JSON.stringify(user));
-            localStorage.setItem('telegram_token', data.token);
+          if (data.success && (data.data?.token || data.token)) {
+            const token: string = data.data?.token || data.token;
+            localStorage.setItem('extended_token', token);
+            localStorage.setItem('user', JSON.stringify(data.data?.user || user));
             localStorage.setItem('telegram_bot_username', currentBotUsername);
-
-            onAuthSuccess?.(user, data.token);
-            console.log('✅ Auth successful, token saved');
+            onAuthSuccess?.(user, token);
           } else {
             throw new Error(data.error || 'Ошибка авторизации');
           }
         } catch (error) {
-          console.error('❌ Telegram Login Widget auth error:', error);
-          onAuthError?.(
-            error instanceof Error ? error.message : 'Unknown error'
-          );
+          onAuthError?.(error instanceof Error ? error.message : 'Unknown error');
         }
       },
     };
 
-    // Добавляем скрипт в DOM
     if (widgetRef.current) {
       widgetRef.current.appendChild(script);
     }
 
-    // Очистка при размонтировании
     return () => {
       if (script.parentNode) {
         script.parentNode.removeChild(script);
@@ -136,9 +124,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
   return (
     <ModernCard className={`max-w-md mx-auto ${className}`}>
       <CardHeader>
-        <CardTitle className="text-center">
-          🔐 Авторизация через Telegram
-        </CardTitle>
+        <CardTitle className="text-center">🔐 Авторизация через Telegram</CardTitle>
         <CardDescription className="text-center">
           Войдите через Telegram для доступа к приложению
         </CardDescription>
@@ -154,9 +140,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
             </p>
           </div>
 
-          <div ref={widgetRef} className="flex justify-center">
-            {/* Telegram Login Widget будет вставлен сюда */}
-          </div>
+          <div ref={widgetRef} className="flex justify-center" />
 
           <div className="text-xs text-gray-500 text-center">
             Авторизация происходит через официальный Telegram API

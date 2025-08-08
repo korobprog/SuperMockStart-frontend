@@ -67,37 +67,12 @@ router.post(
   AuthController.changePassword
 );
 
-/**
- * @route POST /api/auth/telegram
- * @desc Аутентификация через Telegram Web App
- * @access Public
- */
-router.post(
-  '/telegram',
-  validateTelegramData,
-  AuthController.authenticateWithTelegram
-);
+// Mini App (WebApp) auth by initData
+router.post('/telegram', validateTelegramData, AuthController.authenticateWithTelegram);
 
-/**
- * @route POST /api/auth/telegram-widget
- * @desc Аутентификация через Telegram Login Widget
- * @access Public
- */
+// Login Widget auth (web)
 router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
-
-/**
- * @route POST /api/auth/telegram-login
- * @desc Аутентификация через Telegram Login Widget (новый)
- * @access Public
- */
 router.post('/telegram-login', AuthController.authenticateWithTelegramLogin);
-
-/**
- * @route POST /api/auth/telegram
- * @desc Аутентификация через Telegram Login Widget (новый формат)
- * @access Public
- */
-router.post('/telegram', AuthController.authenticateWithTelegramLogin);
 
 /**
  * @route GET /api/auth/test-token

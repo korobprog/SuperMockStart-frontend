@@ -52,5 +52,9 @@ export declare class TelegramBotService {
      * Остановить бота
      */
     static stop(): void;
+    /**
+     * Принудительно перезапустить бота
+     */
+    static restart(): Promise<void>;
 }
 //# sourceMappingURL=telegramBotService.d.ts.map

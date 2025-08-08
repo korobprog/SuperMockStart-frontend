@@ -25,22 +25,15 @@ const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
 
   const handleGetStarted = () => {
-    console.log('🔍 handleGetStarted called');
-    console.log('🔍 isAuthenticated:', isAuthenticated);
-    console.log('🔍 user:', user);
-
     if (isAuthenticated) {
-      console.log('🔍 Navigating to /collectingcontacts');
       navigate('/collectingcontacts');
     } else {
-      console.log('🔍 Navigating to /auth');
       navigate('/auth');
     }
   };
 
   return (
     <BackgroundGradient className="min-h-screen">
-      {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 sm:py-24">
         <div className="text-center max-w-4xl mx-auto">
           <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -52,8 +45,7 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="text-xl sm:text-2xl text-muted-foreground mb-8">
-            Платформа для проведения технических интервью с использованием
-            Telegram
+            Платформа для проведения технических интервью с использованием Telegram
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -62,46 +54,9 @@ const Home: React.FC = () => {
               size="lg"
               className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
-              {isAuthenticated ? 'Продолжить' : 'Начать интервью'}
+              {isAuthenticated ? 'Продолжить' : 'Войти через Telegram'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-
-            {!isAuthenticated && (
-              <>
-                <Button
-                  onClick={() => navigate('/bot-auth')}
-                  size="lg"
-                  className="bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-semibold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  🔐 Войти через Telegram бота
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button
-                  onClick={() => navigate('/auth')}
-                  variant="outline"
-                  size="lg"
-                  className="font-semibold text-lg py-4 px-8 rounded-xl"
-                >
-                  Альтернативная авторизация
-                </Button>
-                <Button
-                  onClick={() => navigate('/test-buttons')}
-                  variant="outline"
-                  size="sm"
-                  className="text-sm"
-                >
-                  🧪 Тест кнопок
-                </Button>
-                <Button
-                  onClick={() => navigate('/bot-auth?userId=1736594064')}
-                  variant="outline"
-                  size="sm"
-                  className="text-sm"
-                >
-                  🔐 Тест авторизации
-                </Button>
-              </>
-            )}
           </div>
 
           {isAuthenticated && user && (
@@ -117,7 +72,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Почему SuperMock?</h2>
@@ -136,8 +90,7 @@ const Home: React.FC = () => {
             </CardHeader>
             <CardContent className="text-center">
               <CardDescription>
-                Защищенная авторизация через Telegram без необходимости
-                регистрации
+                Защищенная авторизация через Telegram без необходимости регистрации
               </CardDescription>
             </CardContent>
           </Card>
@@ -172,47 +125,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Как это работает</h2>
-          <p className="text-lg text-muted-foreground">
-            Простой процесс для начала интервью
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">1</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Авторизация</h3>
-            <p className="text-muted-foreground">
-              Войдите через Telegram одним кликом
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">2</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Заполнение формы</h3>
-            <p className="text-muted-foreground">Укажите ваши данные и опыт</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">3</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Интервью</h3>
-            <p className="text-muted-foreground">
-              Пройдите техническое интервью
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
       <section className="container mx-auto px-4 py-16">
         <Card className="max-w-2xl mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <CardHeader className="text-center">
@@ -227,7 +139,7 @@ const Home: React.FC = () => {
               size="lg"
               className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold"
             >
-              {isAuthenticated ? 'Продолжить интервью' : 'Начать сейчас'}
+              {isAuthenticated ? 'Продолжить интервью' : 'Войти через Telegram'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </CardContent>
