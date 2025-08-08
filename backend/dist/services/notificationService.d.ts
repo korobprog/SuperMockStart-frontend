@@ -35,7 +35,44 @@ export declare class NotificationService {
     /**
      * Получить уведомления пользователя
      */
-    static getUserNotifications(userId: string, limit?: number): Promise<{
+    static getUserNotifications(userId: string, limit?: number): Promise<({
+        interview_sessions: ({
+            users_interview_sessions_candidateIdTousers: {
+                id: string;
+                username: string | null;
+                firstName: string | null;
+                lastName: string | null;
+                role: pkg.$Enums.UserRole;
+                createdAt: Date;
+                status: pkg.$Enums.UserStatus;
+                updatedAt: Date;
+                telegramId: string;
+            };
+            users_interview_sessions_interviewerIdTousers: {
+                id: string;
+                username: string | null;
+                firstName: string | null;
+                lastName: string | null;
+                role: pkg.$Enums.UserRole;
+                createdAt: Date;
+                status: pkg.$Enums.UserStatus;
+                updatedAt: Date;
+                telegramId: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            interviewId: string;
+            scheduledDateTime: Date;
+            profession: string;
+            meetingLink: string;
+            status: pkg.$Enums.SessionStatus;
+            candidateId: string;
+            interviewerId: string;
+            updatedAt: Date;
+            language: string;
+        }) | null;
+    } & {
         id: string;
         userId: string;
         message: string;
@@ -46,7 +83,7 @@ export declare class NotificationService {
         sent: boolean;
         sentAt: Date | null;
         createdAt: Date;
-    }[]>;
+    })[]>;
     /**
      * Отметить уведомления как прочитанные
      */

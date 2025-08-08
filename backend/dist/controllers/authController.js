@@ -213,7 +213,7 @@ export class AuthController {
      */
     static async authenticateWithTelegramLogin(req, res) {
         try {
-            const { telegramData, user } = req.body;
+            const { telegramData, user, botUsername } = req.body;
             if (!telegramData || !user) {
                 return res.status(400).json({
                     success: false,
@@ -227,6 +227,10 @@ export class AuthController {
                     error: 'Required Telegram fields are missing',
                 });
             }
+            // Определяем бота в зависимости от окружения
+            const isDev = process.env.NODE_ENV === 'development';
+            const expectedBot = isDev ? 'SuperMockTest_bot' : 'SuperMock_bot';
+            console.log(`🔐 Telegram Login - Bot: ${botUsername || 'not specified'}, Expected: ${expectedBot}, Env: ${process.env.NODE_ENV}`);
             // TODO: В продакшне здесь должна быть проверка hash
             const isProduction = process.env.NODE_ENV === 'production';
             if (isProduction) {
@@ -253,6 +257,7 @@ export class AuthController {
                 data: {
                     user: userResult.data,
                     token,
+                    botUsername: botUsername || expectedBot,
                 },
                 message: 'Telegram login successful',
             });

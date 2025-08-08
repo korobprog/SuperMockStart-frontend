@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import pkg from '@prisma/client';
 const { NotificationType } = pkg;
 import { TelegramBotService } from './telegramBotService.js';
+import crypto from 'crypto';
 const prisma = new PrismaClient();
 export class NotificationService {
     /**
@@ -10,6 +11,7 @@ export class NotificationService {
     static async sendInterviewConfirmation(session) {
         const notifications = [
             {
+                id: crypto.randomUUID(),
                 userId: session.candidateId,
                 sessionId: session.id,
                 type: NotificationType.INTERVIEW_CONFIRMED,
@@ -17,6 +19,7 @@ export class NotificationService {
                 message: `Ваше собеседование по профессии "${session.profession}" назначено на ${this.formatDateTime(session.scheduledDateTime)}. Ссылка для подключения: ${session.meetingLink}`,
             },
             {
+                id: crypto.randomUUID(),
                 userId: session.interviewerId,
                 sessionId: session.id,
                 type: NotificationType.INTERVIEW_CONFIRMED,
@@ -45,6 +48,7 @@ export class NotificationService {
         if (reminderTime > new Date()) {
             const reminderNotifications = [
                 {
+                    id: crypto.randomUUID(),
                     userId: session.candidateId,
                     sessionId: session.id,
                     type: NotificationType.INTERVIEW_REMINDER,
@@ -53,6 +57,7 @@ export class NotificationService {
                     scheduled: reminderTime,
                 },
                 {
+                    id: crypto.randomUUID(),
                     userId: session.interviewerId,
                     sessionId: session.id,
                     type: NotificationType.INTERVIEW_REMINDER,
@@ -77,7 +82,7 @@ export class NotificationService {
                 sent: false,
             },
             include: {
-                user: true,
+                users: true,
             },
         });
         for (const notification of notifications) {
@@ -103,14 +108,15 @@ export class NotificationService {
         const session = await prisma.interview_sessions.findUnique({
             where: { id: sessionId },
             include: {
-                candidate: true,
-                interviewer: true,
+                users_interview_sessions_candidateIdTousers: true,
+                users_interview_sessions_interviewerIdTousers: true,
             },
         });
         if (!session)
             return;
         const notifications = [
             {
+                id: crypto.randomUUID(),
                 userId: session.candidateId,
                 sessionId: session.id,
                 type: NotificationType.FEEDBACK_REQUEST,
@@ -118,6 +124,7 @@ export class NotificationService {
                 message: 'Пожалуйста, поделитесь своим опытом прошедшего собеседования. Ваш отзыв поможет улучшить систему.',
             },
             {
+                id: crypto.randomUUID(),
                 userId: session.interviewerId,
                 sessionId: session.id,
                 type: NotificationType.FEEDBACK_REQUEST,
@@ -145,14 +152,14 @@ export class NotificationService {
                 },
             },
             include: {
-                feedbacks: true,
-                candidate: true,
-                interviewer: true,
+                feedback: true,
+                users_interview_sessions_candidateIdTousers: true,
+                users_interview_sessions_interviewerIdTousers: true,
             },
         });
         for (const session of sessionsNeedingFeedback) {
-            const candidateGaveFeedback = session.feedbacks.some((f) => f.fromUserId === session.candidateId);
-            const interviewerGaveFeedback = session.feedbacks.some((f) => f.fromUserId === session.interviewerId);
+            const candidateGaveFeedback = session.feedback.some((f) => f.fromUserId === session.candidateId);
+            const interviewerGaveFeedback = session.feedback.some((f) => f.fromUserId === session.interviewerId);
             if (!candidateGaveFeedback) {
                 await this.sendTelegramNotification(session.candidateId, 'Напоминание об отзыве', 'Вы еще не оставили отзыв о прошедшем собеседовании. Пожалуйста, поделитесь своим опытом.');
             }
@@ -167,6 +174,7 @@ export class NotificationService {
     static async notifyRoleChange(userId, newRole) {
         await prisma.notifications.create({
             data: {
+                id: crypto.randomUUID(),
                 userId,
                 type: NotificationType.ROLE_CHANGED,
                 title: 'Роль изменена',
@@ -213,10 +221,10 @@ export class NotificationService {
             orderBy: { createdAt: 'desc' },
             take: limit,
             include: {
-                session: {
+                interview_sessions: {
                     include: {
-                        candidate: true,
-                        interviewer: true,
+                        users_interview_sessions_candidateIdTousers: true,
+                        users_interview_sessions_interviewerIdTousers: true,
                     },
                 },
             },

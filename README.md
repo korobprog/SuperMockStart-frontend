@@ -236,3 +236,31 @@ frontend/
 ## Лицензия
 
 MIT
+
+## Telegram Authorization (Web + Mini Apps)
+
+Set environment variables:
+
+```
+# Frontend
+VITE_API_URL=https://api.supermock.ru
+VITE_NODE_ENV=development
+VITE_TELEGRAM_BOT_USERNAME=YOUR_DEV_BOT_USERNAME
+VITE_TELEGRAM_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
+
+# Backend
+PORT=3001
+HTTPS_PORT=3443
+TELEGRAM_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
+BOT_USERNAME=YOUR_DEV_BOT_USERNAME
+JWT_SECRET=please_change_me_in_prod
+JWT_EXPIRES_IN=7d
+FRONTEND_URL=http://localhost:5173
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=200
+```
+
+- Web (browser): Auth page shows Telegram Login Widget and sends data to `POST /api/auth/telegram-login`.
+- Mini App (Telegram WebApp): Auth page detects `window.Telegram.WebApp` and sends `initData` to `POST /api/auth/telegram`.
+
+On first login, user is redirected to the professions form. After saving, they are redirected to interview booking where the previously selected profession is preselected from DB and on slot submit they join the queue.

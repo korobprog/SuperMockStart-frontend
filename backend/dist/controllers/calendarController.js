@@ -68,22 +68,22 @@ export class CalendarController {
             const user = await prisma.users.findFirst({
                 where: { id: userId },
                 include: {
-                    formData: {
+                    user_form_data: {
                         orderBy: { createdAt: 'desc' },
                         take: 1,
                     },
                 },
             });
             console.log('🔍 joinQueue - user found:', !!user);
-            console.log('🔍 joinQueue - user.formData:', user?.formData);
-            if (!user || !user.formData[0]) {
-                console.log('❌ joinQueue - User or formData not found');
+            console.log('🔍 joinQueue - user.user_form_data:', user?.user_form_data);
+            if (!user || !user.user_form_data[0]) {
+                console.log('❌ joinQueue - User or user_form_data not found');
                 return res.status(400).json({
                     success: false,
                     error: 'User language not found. Please complete the registration form first.',
                 });
             }
-            const userLanguage = user.formData[0].language;
+            const userLanguage = user.user_form_data[0].language;
             // Добавляем в очередь с языком
             const queueEntry = await CalendarService.joinQueue({
                 userId: user.id, // Используем id из базы данных

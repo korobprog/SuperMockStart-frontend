@@ -1,5 +1,6 @@
 import prisma from './prisma.js';
 import { NotificationService } from './notificationService.js';
+import crypto from 'crypto';
 export class FeedbackService {
     /**
      * Оставить отзыв о собеседовании
@@ -9,8 +10,8 @@ export class FeedbackService {
         const session = await prisma.interview_sessions.findUnique({
             where: { id: data.sessionId },
             include: {
-                candidate: true,
-                interviewer: true,
+                users_interview_sessions_candidateIdTousers: true,
+                users_interview_sessions_interviewerIdTousers: true,
             },
         });
         if (!session) {
@@ -40,6 +41,7 @@ export class FeedbackService {
         // Создаем отзыв
         const feedback = await prisma.feedback.create({
             data: {
+                id: crypto.randomUUID(),
                 sessionId: data.sessionId,
                 fromUserId: data.fromUserId,
                 toUserId,
@@ -48,9 +50,9 @@ export class FeedbackService {
                 skills: data.skills,
             },
             include: {
-                fromUser: true,
-                toUser: true,
-                session: true,
+                users_feedback_fromUserIdTousers: true,
+                users_feedback_toUserIdTousers: true,
+                interview_sessions: true,
             },
         });
         // Проверяем, оставили ли оба участника отзывы
@@ -74,21 +76,21 @@ export class FeedbackService {
         const feedback = await prisma.feedback.findMany({
             where,
             include: {
-                fromUser: {
+                users_feedback_fromUserIdTousers: {
                     select: {
                         firstName: true,
                         lastName: true,
                         username: true,
                     },
                 },
-                toUser: {
+                users_feedback_toUserIdTousers: {
                     select: {
                         firstName: true,
                         lastName: true,
                         username: true,
                     },
                 },
-                session: {
+                interview_sessions: {
                     select: {
                         profession: true,
                         scheduledDateTime: true,
@@ -119,14 +121,14 @@ export class FeedbackService {
         const feedback = await prisma.feedback.findMany({
             where: { sessionId },
             include: {
-                fromUser: {
+                users_feedback_fromUserIdTousers: {
                     select: {
                         firstName: true,
                         lastName: true,
                         username: true,
                     },
                 },
-                toUser: {
+                users_feedback_toUserIdTousers: {
                     select: {
                         firstName: true,
                         lastName: true,
