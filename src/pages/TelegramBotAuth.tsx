@@ -11,8 +11,9 @@ const TelegramBotAuth: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasParams, setHasParams] = useState(false);
 
   useEffect(() => {
     const handleBotAuth = async () => {
@@ -25,76 +26,86 @@ const TelegramBotAuth: React.FC = () => {
 
         console.log('📋 Bot auth parameters:', { userId, token });
 
-        // Проверяем обязательные поля
-        if (!userId) {
-          console.error('❌ Missing required bot auth parameters');
-          setError('Отсутствуют обязательные параметры авторизации');
-          setLoading(false);
-          return;
-        }
+        // Если есть параметры, обрабатываем их
+        if (userId || token) {
+          setHasParams(true);
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          if (!userId) {
+            console.error('❌ Missing userId parameter');
+            setError('Отсутствует обязательный параметр userId');
+            setLoading(false);
+            return;
+          }
 
-        if (token) {
-          // Если токен уже есть, используем его
-          console.log('🔑 Using provided token');
-          dispatch(setToken(token));
-          setLoading(false);
-        } else {
-          // Если токена нет, верифицируем пользователя через бота
-          console.log('🔍 Verifying user through bot...');
-          const verifyResponse = await fetch(
-            `${API_URL}/api/telegram-bot/verify-user`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ userId: parseInt(userId) }),
-            }
-          );
+          const API_URL =
+            import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
-          if (verifyResponse.ok) {
-            const verifyData = await verifyResponse.json();
-            console.log('✅ Bot verification successful:', verifyData);
-
-            // Сохраняем токен и пользователя в Redux store
-            dispatch(setToken(verifyData.data.token));
-
-            // Преобразуем пользователя в формат, ожидаемый Redux
-            const userForRedux = {
-              id: verifyData.data.user.id,
-              first_name: verifyData.data.user.firstName || 'User',
-              last_name: verifyData.data.user.lastName,
-              username: verifyData.data.user.username,
-              is_bot: false,
-            };
-
-            dispatch(setUser(userForRedux));
-
-            // Также сохраняем в localStorage для совместимости
-            localStorage.setItem('authToken', verifyData.data.token);
-            localStorage.setItem('token', verifyData.data.token);
-
-            // Преобразуем пользователя в формат, ожидаемый auth.ts
-            const userForStorage = {
-              id: verifyData.data.user.id,
-              first_name: verifyData.data.user.firstName || 'User',
-              last_name: verifyData.data.user.lastName,
-              username: verifyData.data.user.username,
-              is_bot: false,
-            };
-
-            localStorage.setItem('user', JSON.stringify(userForStorage));
-
-            console.log('✅ Bot auth completed successfully');
+          if (token) {
+            // Если токен уже есть, используем его
+            console.log('🔑 Using provided token');
+            dispatch(setToken(token));
             setLoading(false);
           } else {
-            const errorData = await verifyResponse.json();
-            console.error('❌ Bot verification failed:', errorData);
-            setError(errorData.error || 'Ошибка верификации через бота');
-            setLoading(false);
+            // Если токена нет, верифицируем пользователя через бота
+            console.log('🔍 Verifying user through bot...');
+            const verifyResponse = await fetch(
+              `${API_URL}/api/telegram-bot/verify-user`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: parseInt(userId) }),
+              }
+            );
+
+            if (verifyResponse.ok) {
+              const verifyData = await verifyResponse.json();
+              console.log('✅ Bot verification successful:', verifyData);
+
+              // Сохраняем токен и пользователя в Redux store
+              dispatch(setToken(verifyData.data.token));
+
+              // Преобразуем пользователя в формат, ожидаемый Redux
+              const userForRedux = {
+                id: verifyData.data.user.id,
+                first_name: verifyData.data.user.firstName || 'User',
+                last_name: verifyData.data.user.lastName,
+                username: verifyData.data.user.username,
+                is_bot: false,
+              };
+
+              dispatch(setUser(userForRedux));
+
+              // Также сохраняем в localStorage для совместимости
+              localStorage.setItem('authToken', verifyData.data.token);
+              localStorage.setItem('token', verifyData.data.token);
+
+              // Преобразуем пользователя в формат, ожидаемый auth.ts
+              const userForStorage = {
+                id: verifyData.data.user.id,
+                first_name: verifyData.data.user.firstName || 'User',
+                last_name: verifyData.data.user.lastName,
+                username: verifyData.data.user.username,
+                is_bot: false,
+              };
+
+              localStorage.setItem('user', JSON.stringify(userForStorage));
+
+              console.log('✅ Bot auth completed successfully');
+              setLoading(false);
+            } else {
+              const errorData = await verifyResponse.json();
+              console.error('❌ Bot verification failed:', errorData);
+              setError(errorData.error || 'Ошибка верификации через бота');
+              setLoading(false);
+            }
           }
+        } else {
+          // Если параметров нет, показываем интерфейс авторизации
+          console.log('📋 No parameters provided, showing auth interface');
+          setHasParams(false);
+          setLoading(false);
         }
       } catch (error) {
         console.error('❌ Error during bot auth:', error);
@@ -136,7 +147,8 @@ const TelegramBotAuth: React.FC = () => {
     navigate('/');
   };
 
-  if (loading) {
+  // Если есть параметры и загрузка, показываем загрузку
+  if (hasParams && loading) {
     return (
       <BackgroundGradient className="min-h-screen">
         <div className="container mx-auto px-4 py-16">
@@ -149,7 +161,8 @@ const TelegramBotAuth: React.FC = () => {
     );
   }
 
-  if (error) {
+  // Если есть параметры и ошибка, показываем ошибку
+  if (hasParams && error) {
     return (
       <BackgroundGradient className="min-h-screen">
         <div className="container mx-auto px-4 py-16">
@@ -169,6 +182,7 @@ const TelegramBotAuth: React.FC = () => {
     );
   }
 
+  // Если параметров нет или авторизация завершена, показываем интерфейс
   return (
     <BackgroundGradient className="min-h-screen">
       {/* Header */}

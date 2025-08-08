@@ -29,7 +29,8 @@ const TelegramBotAuthButton: React.FC<TelegramBotAuthButtonProps> = ({
       // Генерируем случайный userId для тестирования
       const userId = Math.floor(Math.random() * 1000000) + 100000;
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL =
+        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
       console.log('🔍 Starting bot authentication for userId:', userId);
 
@@ -95,7 +96,8 @@ const TelegramBotAuthButton: React.FC<TelegramBotAuthButtonProps> = ({
         throw new Error('No pending authentication found');
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL =
+        import.meta.env.VITE_API_URL || 'https://api.supermock.ru';
 
       console.log('🔍 Checking bot authentication for userId:', userId);
 
