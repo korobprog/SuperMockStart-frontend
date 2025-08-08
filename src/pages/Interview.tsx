@@ -53,7 +53,6 @@ import {
 
 import { getLanguageName, getCountryFlag } from '../utils/language';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
-import { getStoredToken } from '../utils/auth';
 
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -871,7 +870,6 @@ const Interview = () => {
 
     setJoiningQueue(true);
     try {
-      const token = getAuthToken();
       const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'POST',
         headers: {
@@ -922,7 +920,6 @@ const Interview = () => {
 
   const leaveQueue = async () => {
     try {
-      const token = getAuthToken();
       const response = await fetch(`${API_URL}/api/calendar/queue`, {
         method: 'DELETE',
         credentials: 'include',
@@ -952,7 +949,7 @@ const Interview = () => {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({ rating, comment }),
+          body: JSON.stringify({ rating: 0, comment: '' }),
         }
       );
 

@@ -31,9 +31,6 @@ export const addSelectedProfession = createAsyncThunk(
   'profession/addSelectedProfession',
   async ({ profession }: { userId: string; profession: string }) => {
     try {
-      // Get auth token from localStorage
-      const token = localStorage.getItem('authToken');
-
       const response = await fetch(`${API_BASE_URL}/api/professions/selected`, {
         method: 'POST',
         headers: {
@@ -61,8 +58,6 @@ export const addSelectedProfession = createAsyncThunk(
 export const fetchUserProfessions = createAsyncThunk(
   'profession/fetchUserProfessions',
   async () => {
-    const token = localStorage.getItem('authToken');
-
     const response = await fetch(
       `${API_BASE_URL}/api/professions/user/professions`,
       {
@@ -85,8 +80,6 @@ export const fetchUserProfessions = createAsyncThunk(
 export const removeSelectedProfession = createAsyncThunk(
   'profession/removeSelectedProfession',
   async (professionId: string) => {
-    const token = localStorage.getItem('authToken');
-
     const response = await fetch(
       `${API_BASE_URL}/api/professions/selected/${professionId}`,
       {
