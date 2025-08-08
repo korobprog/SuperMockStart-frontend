@@ -30,16 +30,16 @@ const TestButtons: React.FC = () => {
                   Главная страница
                 </Button>
                 <Button
-                  onClick={() => handleTestNavigation('/auth')}
+                  onClick={() => handleTestNavigation('/collectingcontacts')}
                   className="w-full"
                 >
-                  Страница авторизации
+                  Форма профессий
                 </Button>
                 <Button
-                  onClick={() => handleTestNavigation('/bot-auth-test')}
+                  onClick={() => handleTestNavigation('/profile')}
                   className="w-full"
                 >
-                  Тест авторизации через бота
+                  Профиль (защищено)
                 </Button>
                 <Button
                   onClick={() => handleTestNavigation('/collectingcontacts')}
@@ -54,22 +54,10 @@ const TestButtons: React.FC = () => {
               <h2 className="text-lg font-semibold mb-2">Тестовые страницы:</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Button
-                  onClick={() => handleTestNavigation('/debug-auth')}
+                  onClick={() => handleTestNavigation('/dashboard')}
                   className="w-full"
                 >
-                  Debug Auth
-                </Button>
-                <Button
-                  onClick={() => handleTestNavigation('/auth-demo')}
-                  className="w-full"
-                >
-                  Auth Demo
-                </Button>
-                <Button
-                  onClick={() => handleTestNavigation('/token-check')}
-                  className="w-full"
-                >
-                  Token Check
+                  Дашборд (защищено)
                 </Button>
                 <Button
                   onClick={() => handleTestNavigation('/test-feedback')}

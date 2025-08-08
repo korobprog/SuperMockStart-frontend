@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../index';
 
 // Типы
 export enum UserStatus {
@@ -33,42 +32,31 @@ const initialState: UserStatusState = {
 // Базовый URL для API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// Получение токена из auth slice
-const getAuthToken = (state: RootState) => {
-  return state.auth.token;
+// Получение токена напрямую из localStorage
+const getAuthToken = () => {
+  return (
+    localStorage.getItem('extended_token') ||
+    localStorage.getItem('telegram_token') ||
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('token') ||
+    null
+  );
 };
 
 // Async thunks
 export const fetchUserStatus = createAsyncThunk(
   'userStatus/fetchUserStatus',
-  async (_, { getState, dispatch }) => {
-    const state = getState() as RootState;
-    let token = getAuthToken(state);
+  async () => {
+    let token = getAuthToken();
 
     if (!token) {
-      // В продакшн режиме не загружаем тестовый токен автоматически
       const isProduction = import.meta.env.VITE_NODE_ENV === 'production';
-
-      if (!isProduction) {
-        // Если токена нет, пробуем получить тестовый токен через authSlice только в dev режиме
-        try {
-          const authResult = await dispatch({ type: 'auth/getTestToken' });
-          if ((authResult as any).meta?.requestStatus === 'fulfilled') {
-            token = (authResult as any).payload?.token;
-          }
-        } catch (error) {
-          console.error('Ошибка получения тестового токена:', error);
-        }
+      if (isProduction) {
+        throw new Error('Authentication required. Please login through Telegram.');
       } else {
-        // В продакшне просто выбрасываем ошибку, если токена нет
-        throw new Error(
-          'Authentication required. Please login through Telegram.'
-        );
+        // В dev оставляем поведение на стороне UI: получаем токен другими путями
+        throw new Error('No auth token found');
       }
-    }
-
-    if (!token) {
-      throw new Error('No auth token found');
     }
 
     const response = await fetch(`${API_BASE_URL}/api/user-status/status`, {
@@ -79,9 +67,7 @@ export const fetchUserStatus = createAsyncThunk(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -91,13 +77,8 @@ export const fetchUserStatus = createAsyncThunk(
 
 export const updateUserStatus = createAsyncThunk(
   'userStatus/updateUserStatus',
-  async (
-    { userId, status }: { userId: string; status: UserStatus },
-    { getState }
-  ) => {
-    const state = getState() as RootState;
-    const token = getAuthToken(state);
-
+  async ({ userId, status }: { userId: string; status: UserStatus }) => {
+    const token = getAuthToken();
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -113,9 +94,7 @@ export const updateUserStatus = createAsyncThunk(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -125,10 +104,8 @@ export const updateUserStatus = createAsyncThunk(
 
 export const fetchAvailableCandidates = createAsyncThunk(
   'userStatus/fetchAvailableCandidates',
-  async (_, { getState }) => {
-    const state = getState() as RootState;
-    const token = getAuthToken(state);
-
+  async () => {
+    const token = getAuthToken();
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -141,9 +118,7 @@ export const fetchAvailableCandidates = createAsyncThunk(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -153,10 +128,8 @@ export const fetchAvailableCandidates = createAsyncThunk(
 
 export const fetchUserInterviews = createAsyncThunk(
   'userStatus/fetchUserInterviews',
-  async (_, { getState }) => {
-    const state = getState() as RootState;
-    const token = getAuthToken(state);
-
+  async () => {
+    const token = getAuthToken();
     if (!token) {
       throw new Error('No auth token found');
     }
@@ -169,9 +142,7 @@ export const fetchUserInterviews = createAsyncThunk(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
