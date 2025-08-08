@@ -93,6 +93,13 @@ router.post('/telegram-widget', AuthController.authenticateWithTelegramWidget);
 router.post('/telegram-login', AuthController.authenticateWithTelegramLogin);
 
 /**
+ * @route POST /api/auth/telegram
+ * @desc Аутентификация через Telegram Login Widget (новый формат)
+ * @access Public
+ */
+router.post('/telegram', AuthController.authenticateWithTelegramLoginWidget);
+
+/**
  * @route GET /api/auth/test-token
  * @desc Получение тестового токена для разработки
  * @access Public

@@ -32,6 +32,7 @@ import TelegramAuthFix from './pages/TelegramAuthFix';
 import ModernBordersDemo from './pages/ModernBordersDemo';
 import TailwindTest from './pages/TailwindTest';
 import CSSVariablesTest from './pages/CSSVariablesTest';
+import TelegramConfigTest from './pages/TelegramConfigTest';
 import AuthProvider from './components/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -143,6 +144,10 @@ function App() {
             <Route
               path="/test-complete-session"
               element={<TestCompleteSession />}
+            />
+            <Route
+              path="/telegram-config-test"
+              element={<TelegramConfigTest />}
             />
           </Routes>
         </div>

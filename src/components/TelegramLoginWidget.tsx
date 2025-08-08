@@ -1,17 +1,38 @@
 import React, { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { loginWithTelegramWidget } from '../store/slices/authSlice';
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  ModernCard,
+} from './ui/card';
+import {
+  getBotUsername,
+  getBotInfo,
+  logBotConfig,
+} from '../utils/telegramConfig';
+
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
 
 interface TelegramLoginWidgetProps {
-  onAuthSuccess?: (user: any) => void;
+  onAuthSuccess?: (user: TelegramUser, token: string) => void;
   onAuthError?: (error: string) => void;
   className?: string;
+  botUsername?: string;
 }
 
 declare global {
   interface Window {
     TelegramLoginWidget: {
-      dataOnauth: (user: any) => void;
+      dataOnauth: (user: TelegramUser) => void;
     };
   }
 }
@@ -20,94 +41,80 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
   onAuthSuccess,
   onAuthError,
   className = '',
+  botUsername,
 }) => {
   const widgetRef = useRef<HTMLDivElement>(null);
-  const dispatch = useDispatch();
+
+  // Определяем бота в зависимости от окружения
+  const getCurrentBotUsername = () => {
+    if (botUsername) return botUsername;
+    return getBotUsername();
+  };
 
   useEffect(() => {
-    // Получаем имя бота из переменной окружения
-    const botUsername =
-      import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'SuperMock_bot';
+    const currentBotUsername = getCurrentBotUsername();
 
-    // Создаем URL для callback - используем полный URL с протоколом
-    const callbackUrl = `${window.location.protocol}//${window.location.host}/auth-callback`;
+    // Логируем конфигурацию при инициализации
+    logBotConfig();
 
-    // Для production используем HTTPS
-    const finalCallbackUrl =
-      import.meta.env.VITE_NODE_ENV === 'production'
-        ? callbackUrl.replace('http://', 'https://')
-        : callbackUrl;
-
-    console.log('🔗 Telegram Login Widget callback URL:', finalCallbackUrl);
-    console.log('🤖 Bot username:', botUsername);
-    console.log('🌐 Current location:', window.location.href);
-    console.log('🔧 Protocol:', window.location.protocol);
-    console.log('🏠 Host:', window.location.host);
-    console.log('🌍 Environment:', import.meta.env.VITE_NODE_ENV);
-
-    // Создаем скрипт для Telegram Login Widget
+    // Загружаем Telegram Login Widget скрипт
     const script = document.createElement('script');
-    script.async = true;
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
-    script.setAttribute('data-telegram-login', botUsername);
+    script.setAttribute('data-telegram-login', currentBotUsername);
     script.setAttribute('data-size', 'large');
-    script.setAttribute('data-auth-url', finalCallbackUrl);
+    script.setAttribute('data-auth-url', window.location.origin);
     script.setAttribute('data-request-access', 'write');
-    script.setAttribute('data-userpic', 'false');
     script.setAttribute('data-lang', 'ru');
 
     // Обработчик успешной авторизации
-    const handleAuth = async (user: any) => {
-      console.log('✅ Telegram Login Widget auth success:', user);
-
-      // Проверяем, что user является объектом
-      if (!user || typeof user !== 'object') {
-        console.error('❌ Invalid user data received:', user);
-        onAuthError?.('Получены некорректные данные пользователя');
-        return;
-      }
-
-      try {
-        // Проверяем обязательные поля согласно документации Telegram
-        if (!user.id || !user.first_name || !user.auth_date || !user.hash) {
-          console.error('❌ Missing required user fields:', user);
-          onAuthError?.('Отсутствуют обязательные данные пользователя');
-          return;
-        }
-
-        // Отправляем данные на сервер через Redux в правильном формате
-        const result = await dispatch(loginWithTelegramWidget(user) as any);
-
-        if (result.meta?.requestStatus === 'fulfilled') {
-          console.log('✅ Telegram Widget authentication successful');
-          onAuthSuccess?.(user);
-        } else {
-          console.error('❌ Telegram Widget authentication failed');
-          onAuthError?.('Ошибка авторизации через Telegram Widget');
-        }
-      } catch (error) {
-        console.error('❌ Error during Telegram Widget authentication:', error);
-        onAuthError?.('Ошибка авторизации через Telegram Widget');
-      }
-    };
-
-    // Добавляем обработчик в window с проверкой
     window.TelegramLoginWidget = {
-      dataOnauth: (user: any) => {
-        // Дополнительная проверка перед вызовом handleAuth
-        if (user && typeof user === 'object') {
-          handleAuth(user);
-        } else {
-          console.error('❌ Invalid user data in dataOnauth:', user);
-          onAuthError?.('Некорректные данные авторизации');
+      dataOnauth: async (user: TelegramUser) => {
+        try {
+          console.log('🔐 Telegram Login Widget auth success:', user);
+          console.log('🤖 Using bot:', currentBotUsername);
+
+          // Отправляем данные на бэкенд для валидации
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_API_URL || 'https://api.supermock.ru'
+            }/api/auth/telegram`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                initData: window.location.search.substring(1), // Получаем initData из URL
+                user: user,
+                botUsername: currentBotUsername, // Передаем информацию о боте
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Ошибка валидации на сервере');
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Сохраняем пользователя и токен
+            localStorage.setItem('telegram_user', JSON.stringify(user));
+            localStorage.setItem('telegram_token', data.token);
+            localStorage.setItem('telegram_bot_username', currentBotUsername);
+
+            onAuthSuccess?.(user, data.token);
+            console.log('✅ Auth successful, token saved');
+          } else {
+            throw new Error(data.error || 'Ошибка авторизации');
+          }
+        } catch (error) {
+          console.error('❌ Telegram Login Widget auth error:', error);
+          onAuthError?.(
+            error instanceof Error ? error.message : 'Unknown error'
+          );
         }
       },
-    };
-
-    // Добавляем обработчик ошибок загрузки скрипта
-    script.onerror = () => {
-      console.error('❌ Failed to load Telegram Login Widget script');
-      onAuthError?.('Не удалось загрузить виджет авторизации Telegram');
     };
 
     // Добавляем скрипт в DOM
@@ -120,20 +127,43 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
-      (window as any).TelegramLoginWidget = undefined;
     };
-  }, [onAuthSuccess, onAuthError, dispatch]);
+  }, [botUsername, onAuthSuccess, onAuthError]);
+
+  const currentBotUsername = getCurrentBotUsername();
+  const botInfo = getBotInfo();
 
   return (
-    <div className={`telegram-login-widget ${className}`}>
-      <div className="text-center mb-4">
-        <h3 className="text-lg font-semibold mb-2">Войти через Telegram</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Нажмите кнопку ниже для авторизации через Telegram
-        </p>
-      </div>
-      <div ref={widgetRef} className="flex justify-center" />
-    </div>
+    <ModernCard className={`max-w-md mx-auto ${className}`}>
+      <CardHeader>
+        <CardTitle className="text-center">
+          🔐 Авторизация через Telegram
+        </CardTitle>
+        <CardDescription className="text-center">
+          Войдите через Telegram для доступа к приложению
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-700">
+              ✅ Используйте Telegram Login Widget для безопасной авторизации
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              🤖 Бот: {currentBotUsername} ({botInfo.environment.toUpperCase()})
+            </p>
+          </div>
+
+          <div ref={widgetRef} className="flex justify-center">
+            {/* Telegram Login Widget будет вставлен сюда */}
+          </div>
+
+          <div className="text-xs text-gray-500 text-center">
+            Авторизация происходит через официальный Telegram API
+          </div>
+        </div>
+      </CardContent>
+    </ModernCard>
   );
 };
 

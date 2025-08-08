@@ -33,69 +33,19 @@ export class TelegramBotService {
     const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (isDevelopment) {
-      // В development используем polling
+      // В development создаем бота без polling для избежания конфликтов
       this.bot = new TelegramBot(token, {
-        polling: true,
+        polling: false,
         webHook: false,
       });
 
-      // Добавляем обработчик сообщений для development
-      if (this.bot) {
-        this.bot.on('message', async (msg) => {
-          console.log('📱 Received message in development:', {
-            chatId: msg.chat.id,
-            userId: msg.from?.id,
-            text: msg.text,
-          });
-
-          if (msg.text && msg.text.startsWith('/start')) {
-            console.log('🔐 Processing /start command in development');
-            await this.handleStartCommand(msg);
-          }
-        });
-
-        // Добавляем обработчик ошибок
-        this.bot.on('error', (error) => {
-          console.error('🤖 Telegram bot error:', error);
-          // Не завершаем процесс при ошибках бота
-        });
-
-        // Добавляем обработчик ошибок polling с улучшенной обработкой конфликтов
-        this.bot.on('polling_error', (error: any) => {
-          console.error('🤖 Telegram bot polling error:', error);
-
-          // При конфликте 409, пытаемся перезапустить бота
-          if (error.code === 'ETELEGRAM' && error.message.includes('409')) {
-            console.log(
-              '🤖 Telegram bot conflict detected, attempting to restart...'
-            );
-
-            // Останавливаем текущий polling
-            this.bot?.stopPolling();
-
-            // Ждем немного и пытаемся перезапустить
-            setTimeout(() => {
-              try {
-                console.log('🤖 Restarting bot polling...');
-                this.bot?.startPolling();
-              } catch (restartError) {
-                console.error(
-                  '🤖 Failed to restart bot polling:',
-                  restartError
-                );
-              }
-            }, 5000); // Ждем 5 секунд перед перезапуском
-          }
-        });
-
-        // Пытаемся запустить polling
-        try {
-          this.bot.startPolling();
-          console.log('🤖 Telegram bot started in polling mode (development)');
-        } catch (error) {
-          console.error('🤖 Failed to start bot polling:', error);
-        }
-      }
+      console.log(
+        '🤖 Telegram bot initialized in development mode (no polling)'
+      );
+      console.log(
+        '⚠️  Note: Bot polling disabled in development to avoid conflicts'
+      );
+      console.log('📱 Messages will be sent via direct API calls only');
     } else {
       // В продакшене используем webhook
       this.bot = new TelegramBot(token, {
