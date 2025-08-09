@@ -36,13 +36,13 @@ export declare class CalendarService {
         users: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
     } & {
         id: string;
@@ -75,24 +75,24 @@ export declare class CalendarService {
             candidate: {
                 id: string;
                 username: string | null;
-                firstName: string | null;
-                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
+                firstName: string | null;
+                lastName: string | null;
             };
             interviewer: {
                 id: string;
                 username: string | null;
-                firstName: string | null;
-                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
+                firstName: string | null;
+                lastName: string | null;
             };
         };
         usersInQueueWithSameLanguage?: undefined;
@@ -116,24 +116,24 @@ export declare class CalendarService {
         users_interview_sessions_candidateIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
         users_interview_sessions_interviewerIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
     } & {
         id: string;
@@ -155,13 +155,13 @@ export declare class CalendarService {
         users_interview_sessions_candidateIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
         interviews: {
             id: string;
@@ -176,13 +176,13 @@ export declare class CalendarService {
         users_interview_sessions_interviewerIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: pkg.$Enums.UserRole;
             createdAt: Date;
             status: pkg.$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
     } & {
         id: string;

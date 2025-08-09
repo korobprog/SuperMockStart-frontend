@@ -1,6 +1,7 @@
 import pkg from '@prisma/client';
 const { PrismaClient } = pkg;
 import { UserService } from '../services/userService.js';
+import crypto from 'crypto';
 const prisma = new PrismaClient();
 export class ProfessionController {
     // Добавление выбранной профессии
@@ -27,11 +28,12 @@ export class ProfessionController {
             // Сохраняем выбранную профессию в базу данных
             const selectedProfession = await prisma.selected_professions.create({
                 data: {
+                    id: crypto.randomUUID(),
                     userId: user.id,
                     profession,
                 },
                 include: {
-                    user: true,
+                    users: true,
                 },
             });
             res.status(201).json({

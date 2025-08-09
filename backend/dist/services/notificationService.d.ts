@@ -40,24 +40,24 @@ export declare class NotificationService {
             users_interview_sessions_candidateIdTousers: {
                 id: string;
                 username: string | null;
-                firstName: string | null;
-                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
+                firstName: string | null;
+                lastName: string | null;
             };
             users_interview_sessions_interviewerIdTousers: {
                 id: string;
                 username: string | null;
-                firstName: string | null;
-                lastName: string | null;
                 role: pkg.$Enums.UserRole;
                 createdAt: Date;
                 status: pkg.$Enums.UserStatus;
                 updatedAt: Date;
                 telegramId: string;
+                firstName: string | null;
+                lastName: string | null;
             };
         } & {
             id: string;
@@ -74,8 +74,8 @@ export declare class NotificationService {
         }) | null;
     } & {
         id: string;
-        userId: string;
         message: string;
+        userId: string;
         sessionId: string | null;
         type: pkg.$Enums.NotificationType;
         title: string;
