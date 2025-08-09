@@ -44,9 +44,10 @@ COPY prisma ./prisma
 # Устанавливаем только production зависимости, пропускаем postinstall скрипт
 RUN pnpm install --frozen-lockfile --prod --silent --ignore-scripts
 
-# Копируем сгенерированный Prisma клиент из build этапа
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# Генерируем Prisma клиент в production stage
+RUN pnpm prisma generate
+
+# Копируем собранные файлы TypeScript из build stage
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
