@@ -323,9 +323,27 @@ export class TelegramBotService {
                 await this.bot.sendMessage(chatId, `🔗 Добро пожаловать в SuperMock!\n\nНажмите кнопку ниже для авторизации в приложении:\n\n🌐 Среда: production\n✅ Безопасная авторизация через Telegram`, { reply_markup: keyboard });
             }
             else {
-                // В режиме разработки отправляем ссылку на bot-auth
-                const devUrl = `http://localhost:5173/bot-auth?userId=${chatId}`;
-                await this.bot.sendMessage(chatId, `🔗 Для авторизации в режиме разработки:\n\n1️⃣ Откройте приложение: http://localhost:5173\n2️⃣ Перейдите на страницу: ${devUrl}\n\n🌐 Среда: development\n⚠️ В режиме разработки используйте тестовые токены`);
+                // В режиме разработки отправляем кнопки для авторизации
+                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                const devUrl = `${frontendUrl}/bot-auth?userId=${chatId}`;
+                // Создаем inline keyboard с кнопками
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            {
+                                text: '🌐 Открыть приложение',
+                                url: frontendUrl,
+                            },
+                        ],
+                        [
+                            {
+                                text: '🔐 Страница авторизации',
+                                url: devUrl,
+                            },
+                        ],
+                    ],
+                };
+                await this.bot.sendMessage(chatId, `🔗 Для авторизации в режиме разработки:\n\n🌐 Среда: development\n⚠️ В режиме разработки используйте тестовые токены`, { reply_markup: keyboard });
             }
             console.log('✅ Auth button sent successfully to chat:', chatId);
         }
