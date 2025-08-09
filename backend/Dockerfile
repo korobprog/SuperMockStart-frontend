@@ -48,17 +48,11 @@ COPY prisma ./prisma
 RUN pnpm install --frozen-lockfile --prod --silent --ignore-scripts
 
 # Копируем собранные файлы TypeScript из build stage
-
-# Копируем собранные файлы
 COPY --from=build /app/dist ./dist
 
 # Копируем сгенерированный Prisma клиент из build stage
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
-
-# Убеждаемся, что package.json скопирован для pnpm start
-COPY --from=build /app/package.json ./package.json
-
 # Копируем скрипт настройки базы данных
 COPY scripts/setup-db.sh ./scripts/setup-db.sh
 RUN chmod +x ./scripts/setup-db.sh

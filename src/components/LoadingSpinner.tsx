@@ -52,4 +52,5 @@ const LoadingSpinner = ({
   return content;
 };
 
+export { LoadingSpinner };
 export default LoadingSpinner;

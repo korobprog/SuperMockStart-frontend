@@ -156,4 +156,11 @@ router.post(
  */
 router.post('/dev-user', AuthController.createDevUser);
 
+/**
+ * @route POST /api/auth/telegram-webapp
+ * @desc Аутентификация через Telegram Web App
+ * @access Public
+ */
+router.post('/telegram-webapp', AuthController.authenticateWithTelegramWebApp);
+
 export default router;

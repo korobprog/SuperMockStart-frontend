@@ -487,4 +487,110 @@ export class AuthService {
       };
     }
   }
+
+  /**
+   * Верифицирует данные Telegram Web App
+   */
+  static async verifyTelegramWebAppData(initData: string): Promise<boolean> {
+    try {
+      // Парсим initData
+      const params = new URLSearchParams(initData);
+      const hash = params.get('hash');
+
+      if (!hash) {
+        return false;
+      }
+
+      // Удаляем hash из параметров для создания строки для подписи
+      params.delete('hash');
+
+      // Сортируем параметры по алфавиту
+      const sortedParams = Array.from(params.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n');
+
+      // Создаем секрет для подписи
+      const secret = process.env.TELEGRAM_BOT_TOKEN;
+      if (!secret) {
+        console.error('TELEGRAM_BOT_TOKEN not found');
+        return false;
+      }
+
+      // Создаем HMAC-SHA256 подпись
+      const crypto = await import('crypto');
+      const hmac = crypto.createHmac('sha256', 'WebAppData');
+      hmac.update(sortedParams);
+      const calculatedHash = hmac.digest('hex');
+
+      return calculatedHash === hash;
+    } catch (error) {
+      console.error('Telegram Web App verification error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Парсит данные пользователя из initData
+   */
+  static parseTelegramWebAppData(initData: string): TelegramUser | null {
+    try {
+      const params = new URLSearchParams(initData);
+      const userStr = params.get('user');
+
+      if (!userStr) {
+        return null;
+      }
+
+      const user = JSON.parse(userStr);
+
+      return {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name || '',
+        username: user.username || '',
+        photo_url: user.photo_url || '',
+      };
+    } catch (error) {
+      console.error('Parse Telegram Web App data error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Аутентифицирует пользователя через Telegram Web App
+   */
+  static async authenticateWithTelegramWebApp(
+    userData: TelegramUser
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
+    try {
+      // Создаем или находим пользователя
+      const userResult = await UserService.findOrCreateTelegramUser(userData);
+
+      if (!userResult.success || !userResult.data) {
+        return {
+          success: false,
+          error: userResult.error || 'Failed to create or find user',
+        };
+      }
+
+      // Генерируем токен
+      const token = JwtUtils.generateExtendedToken(userResult.data, 'telegram');
+
+      return {
+        success: true,
+        data: {
+          token,
+          user: userResult.data,
+        },
+        message: 'Telegram Web App authentication successful',
+      };
+    } catch (error) {
+      console.error('Telegram Web App authentication error:', error);
+      return {
+        success: false,
+        error: 'Failed to authenticate with Telegram Web App',
+      };
+    }
+  }
 }

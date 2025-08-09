@@ -758,4 +758,55 @@ export class AuthController {
       });
     }
   }
+
+  /**
+   * Аутентификация через Telegram Web App
+   */
+  static async authenticateWithTelegramWebApp(req: Request, res: Response) {
+    try {
+      const { initData, user } = req.body;
+
+      if (!initData) {
+        return res.status(400).json({
+          success: false,
+          error: 'InitData is required',
+        });
+      }
+
+      // Верифицируем initData через Telegram API
+      const isValid = await AuthService.verifyTelegramWebAppData(initData);
+
+      if (!isValid) {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid initData signature',
+        });
+      }
+
+      // Извлекаем данные пользователя из initData
+      const userData = AuthService.parseTelegramWebAppData(initData);
+
+      if (!userData) {
+        return res.status(400).json({
+          success: false,
+          error: 'Failed to parse user data from initData',
+        });
+      }
+
+      // Создаем или обновляем пользователя
+      const result = await AuthService.authenticateWithTelegramWebApp(userData);
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Telegram Web App authentication error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      });
+    }
+  }
 }
