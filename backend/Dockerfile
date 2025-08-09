@@ -26,6 +26,9 @@ COPY . .
 # Собираем TypeScript
 RUN pnpm run build
 
+# Генерируем Prisma клиент в build stage (где есть dev-зависимости)
+RUN pnpm prisma generate
+
 # Этап продакшн
 FROM node:20-alpine AS production
 ENV PNPM_HOME="/pnpm"
@@ -44,13 +47,14 @@ COPY prisma ./prisma
 # Устанавливаем только production зависимости, пропускаем postinstall скрипт
 RUN pnpm install --frozen-lockfile --prod --silent --ignore-scripts
 
-# Генерируем Prisma клиент в production stage
-RUN pnpm prisma generate
-
 # Копируем собранные файлы TypeScript из build stage
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
+
+# Копируем сгенерированный Prisma клиент из build stage
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Убеждаемся, что package.json скопирован для pnpm start
 COPY --from=build /app/package.json ./package.json
