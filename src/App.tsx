@@ -95,6 +95,15 @@ function App() {
             />
 
             <Route
+              path="/choose-interview"
+              element={
+                <ProtectedRoute>
+                  <ChooseInterview />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/collectingcontacts"
               element={
                 <ProtectedRoute>
