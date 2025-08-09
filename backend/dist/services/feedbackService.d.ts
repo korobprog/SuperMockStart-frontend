@@ -26,24 +26,24 @@ export declare class FeedbackService {
         users_feedback_fromUserIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             status: import("@prisma/client").$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
         users_feedback_toUserIdTousers: {
             id: string;
             username: string | null;
-            firstName: string | null;
-            lastName: string | null;
             role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             status: import("@prisma/client").$Enums.UserStatus;
             updatedAt: Date;
             telegramId: string;
+            firstName: string | null;
+            lastName: string | null;
         };
     } & {
         id: string;

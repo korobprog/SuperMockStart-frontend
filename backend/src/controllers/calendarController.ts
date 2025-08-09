@@ -365,14 +365,14 @@ export class CalendarController {
           OR: [{ candidateId: userId }, { interviewerId: userId }],
         },
         include: {
-          candidate: {
+          users_interview_sessions_candidateIdTousers: {
             select: {
               firstName: true,
               lastName: true,
               username: true,
             },
           },
-          interviewer: {
+          users_interview_sessions_interviewerIdTousers: {
             select: {
               firstName: true,
               lastName: true,

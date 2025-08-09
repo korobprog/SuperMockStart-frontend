@@ -80,7 +80,7 @@ export class JwtUtils {
             username: testUser.username,
             firstName: testUser.first_name,
             lastName: testUser.last_name,
-            role: 'USER',
+            role: UserRole.USER,
             authType: 'telegram',
             userDbId: 'test-user-id', // Тестовый ID пользователя
         };
