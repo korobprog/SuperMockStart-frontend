@@ -26,7 +26,7 @@ router.get('/check-url', (req, res) => {
   // Telegram не принимает localhost URLs
   const baseUrl = isProduction
     ? 'https://supermock.ru'
-    : 'http://localhost:5173'; // Только для внутреннего использования
+    : process.env.FRONTEND_URL || 'http://localhost:5173'; // Только для внутреннего использования
 
   const checkUrl = userId
     ? `${baseUrl}/token-check?userId=${userId}`
