@@ -20,7 +20,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   fallback,
 }) => {
-  const { loading, isAuthenticated, checkAuthStatus, login } = useTelegramAuth();
+  const { loading, isAuthenticated, isInTelegram, checkAuthStatus, login } = useTelegramAuth();
   const navigate = useNavigate();
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
@@ -55,20 +55,47 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               </svg>
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Требуется авторизация в Telegram
+              Требуется авторизация
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Откройте приложение внутри Telegram Mini App и подтвердите вход. После подтверждения эта страница обновится автоматически.
+              {isInTelegram ? (
+                'Подтвердите вход в Telegram Mini App для продолжения.'
+              ) : (
+                'Для доступа к приложению войдите через Telegram.'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button
-              onClick={() => login()}
-              className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold text-lg py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-blue-400 hover:border-blue-300"
-            >
-              Повторить вход
-            </Button>
-            <Button onClick={() => navigate('/')} variant="outline" className="w-full">
+            {isInTelegram ? (
+              <Button
+                onClick={() => login()}
+                className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold text-lg py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-blue-400 hover:border-blue-300"
+              >
+                Авторизоваться
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-700 text-center">
+                    💡 Это приложение работает через Telegram
+                  </p>
+                </div>
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold text-lg py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-blue-400 hover:border-blue-300"
+                >
+                  Войти через Telegram
+                </Button>
+                <Button
+                  onClick={() => login()}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Открыть в Telegram
+                </Button>
+              </div>
+            )}
+            <Button onClick={() => navigate('/')} variant="ghost" className="w-full">
               Вернуться на главную
             </Button>
           </CardContent>
