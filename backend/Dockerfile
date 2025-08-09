@@ -41,8 +41,12 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 
-# Устанавливаем только production зависимости
-RUN pnpm install --frozen-lockfile --prod --silent
+# Устанавливаем только production зависимости, пропускаем postinstall скрипт
+RUN pnpm install --frozen-lockfile --prod --silent --ignore-scripts
+
+# Копируем сгенерированный Prisma клиент из build этапа
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Копируем собранные файлы
 COPY --from=build /app/dist ./dist
